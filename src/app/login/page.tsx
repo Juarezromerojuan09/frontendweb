@@ -33,8 +33,12 @@ export default function LoginPage() {
         localStorage.setItem('token', response.data.token)
         router.push('/dashboard')
       }
-    } catch (err: any) {
-      setError(err.response?.data?.message || 'Error de autenticación')
+    } catch (err: unknown) {
+      if (axios.isAxiosError(err)) {
+        setError(err.response?.data?.message || 'Error de autenticación')
+      } else {
+        setError('Error de autenticación')
+      }
     } finally {
       setLoading(false)
     }
