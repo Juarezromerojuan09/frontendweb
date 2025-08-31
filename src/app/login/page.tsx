@@ -108,7 +108,15 @@ export default function LoginPage() {
               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
             </button>
           </div>
-        </form>
+        <div className="text-center">
+          <button
+            onClick={() => router.push('/signup')}
+            className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+          >
+            Registrarse
+          </button>
+        </div>
+      </form>
       </div>
     </div>
   )
