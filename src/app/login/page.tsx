@@ -48,75 +48,87 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8">
-        <div>
-          <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
-            Iniciar Sesión
-          </h2>
-          <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
-            Accede a tu cuenta personalizada
-          </p>
-        </div>
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-12 px-4 sm:px-6 lg:px-8 relative">
+      {/* Admin Login Button - Top Right Corner */}
+      <div className="absolute top-4 right-4">
+        <button
+          onClick={() => router.push('/admin/login')}
+          className="inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:bg-gray-800 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700"
+        >
+          Panel Admin
+        </button>
+      </div>
 
-        <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
-          <div className="rounded-md shadow-sm -space-y-px">
-            <div>
-              <label htmlFor="username" className="sr-only">
-                Usuario
-              </label>
-              <input
-                id="username"
-                name="username"
-                type="text"
-                required
-                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                placeholder="Usuario"
-                value={formData.username}
-                onChange={handleChange}
-              />
-            </div>
-            <div>
-              <label htmlFor="password" className="sr-only">
-                Contraseña
-              </label>
-              <input
-                id="password"
-                name="password"
-                type="password"
-                required
-                className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                placeholder="Contraseña"
-                value={formData.password}
-                onChange={handleChange}
-              />
-            </div>
-          </div>
+      <div className="flex items-center justify-center">
+        <div className="max-w-md w-full space-y-8">
+         <div>
+           <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900 dark:text-white">
+             Iniciar Sesión
+           </h2>
+           <p className="mt-2 text-center text-sm text-gray-600 dark:text-gray-400">
+             Accede a tu cuenta personalizada
+           </p>
+         </div>
 
-          {error && (
-            <div className="text-red-500 text-sm text-center">
-              {error}
-            </div>
-          )}
+         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
+           <div className="rounded-md shadow-sm -space-y-px">
+             <div>
+               <label htmlFor="username" className="sr-only">
+                 Usuario
+               </label>
+               <input
+                 id="username"
+                 name="username"
+                 type="text"
+                 required
+                 className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-t-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                 placeholder="Usuario"
+                 value={formData.username}
+                 onChange={handleChange}
+               />
+             </div>
+             <div>
+               <label htmlFor="password" className="sr-only">
+                 Contraseña
+               </label>
+               <input
+                 id="password"
+                 name="password"
+                 type="password"
+                 required
+                 className="relative block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 rounded-b-md focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 focus:z-10 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                 placeholder="Contraseña"
+                 value={formData.password}
+                 onChange={handleChange}
+               />
+             </div>
+           </div>
 
-          <div>
-            <button
-              type="submit"
-              disabled={loading}
-              className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
-            </button>
-          </div>
-        <div className="text-center">
-          <button
-            onClick={() => router.push('/signup')}
-            className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-          >
-            Registrarse
-          </button>
-        </div>
-      </form>
+           {error && (
+             <div className="text-red-500 text-sm text-center">
+               {error}
+             </div>
+           )}
+
+           <div>
+             <button
+               type="submit"
+               disabled={loading}
+               className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50 disabled:cursor-not-allowed"
+             >
+               {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
+             </button>
+           </div>
+         <div className="text-center">
+           <button
+             onClick={() => router.push('/signup')}
+             className="group relative w-full flex justify-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-indigo-600 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+           >
+             Registrarse
+           </button>
+         </div>
+       </form>
+       </div>
       </div>
     </div>
   )
