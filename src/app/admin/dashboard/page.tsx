@@ -1,9 +1,24 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
+
+interface ApiResponse {
+  success: boolean
+  users?: User[]
+  message?: string
+}
+
+interface AxiosError {
+  response?: {
+    status: number
+    data?: {
+      message?: string
+    }
+  }
+}
 
 interface User {
   _id: string
@@ -28,10 +43,46 @@ export default function AdminDashboard() {
   const [searchTerm, setSearchTerm] = useState('')
   const router = useRouter()
 
+  const checkAuth = useCallback(() => {
+    const adminToken = localStorage.getItem('adminToken')
+    if (!adminToken) {
+      router.push('/admin/login')
+    }
+  }, [router])
+
+  const fetchUsers = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const adminToken = localStorage.getItem('adminToken')
+      const response = await axios.get<ApiResponse>(`${apiUrl}/api/admin/users`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        }
+      })
+
+      if (response.data.success && response.data.users) {
+        setUsers(response.data.users)
+        setFilteredUsers(response.data.users)
+      } else {
+        setError('Error al obtener usuarios')
+      }
+    } catch (err) {
+      const axiosErr = err as AxiosError
+      if (axiosErr.response?.status === 401) {
+        localStorage.removeItem('adminToken')
+        router.push('/admin/login')
+      } else {
+        setError('Error al conectar con el servidor')
+      }
+    } finally {
+      setLoading(false)
+    }
+  }, [router])
+
   useEffect(() => {
     checkAuth()
     fetchUsers()
-  }, [])
+  }, [checkAuth, fetchUsers])
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -46,49 +97,14 @@ export default function AdminDashboard() {
     }
   }, [users, searchTerm])
 
-  const checkAuth = () => {
-    const adminToken = localStorage.getItem('adminToken')
-    if (!adminToken) {
-      router.push('/admin/login')
-    }
-  }
-
-  const fetchUsers = async () => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const adminToken = localStorage.getItem('adminToken')
-      const response = await axios.get(`${apiUrl}/api/admin/users`, {
-        headers: {
-          Authorization: `Bearer ${adminToken}`
-        }
-      })
-
-      if (response.data.success) {
-        setUsers(response.data.users)
-        setFilteredUsers(response.data.users)
-      } else {
-        setError('Error al obtener usuarios')
-      }
-    } catch (err: any) {
-      if (err.response?.status === 401) {
-        localStorage.removeItem('adminToken')
-        router.push('/admin/login')
-      } else {
-        setError('Error al conectar con el servidor')
-      }
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  const handleApproveUser = async (userId: string) => {
+  const handleApproveUser = useCallback(async (userId: string) => {
     if (!confirm('¿Estás seguro de que quieres aprobar este usuario?')) return
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const adminToken = localStorage.getItem('adminToken')
 
-      const response = await axios.patch(
+      const response = await axios.patch<ApiResponse>(
         `${apiUrl}/api/admin/users/${userId}`,
         { status: 'active' },
         {
@@ -104,10 +120,16 @@ export default function AdminDashboard() {
         ))
         alert('Usuario aprobado correctamente')
       }
-    } catch (err: any) {
-      alert('Error al aprobar usuario')
+    } catch (err) {
+      const axiosErr = err as AxiosError
+      if (axiosErr.response?.status === 401) {
+        localStorage.removeItem('adminToken')
+        router.push('/admin/login')
+      } else {
+        alert('Error al aprobar usuario')
+      }
     }
-  }
+  }, [users, router])
 
   const getStatusBadge = (status: string) => {
     let bgColor = '', text = ''
@@ -291,6 +313,7 @@ export default function AdminDashboard() {
                             <button
                               onClick={() => handleApproveUser(user._id)}
                               className="inline-flex items-center px-2.5 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500"
+                              type="button"
                             >
                               Aprobar
                             </button>

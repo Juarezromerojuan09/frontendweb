@@ -1,8 +1,29 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import axios from 'axios'
 import { useRouter, useParams } from 'next/navigation'
+
+interface ApiResponse {
+  success: boolean
+  users?: User[]
+  message?: string
+}
+
+interface UpdateResponse {
+  success: boolean
+  message?: string
+  user?: User
+}
+
+interface AxiosError {
+  response?: {
+    status: number
+    data?: {
+      message?: string
+    }
+  }
+}
 
 interface User {
   _id: string
@@ -34,31 +55,26 @@ export default function EditUserPage() {
   const params = useParams()
   const userId = params.id as string
 
-  useEffect(() => {
-    checkAuth()
-    fetchUser()
-  }, [userId])
-
-  const checkAuth = () => {
+  const checkAuth = useCallback(() => {
     const adminToken = localStorage.getItem('adminToken')
     if (!adminToken) {
       router.push('/admin/login')
       return false
     }
     return true
-  }
+  }, [router])
 
-  const fetchUser = async () => {
+  const fetchUser = useCallback(async () => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const adminToken = localStorage.getItem('adminToken')
-      const response = await axios.get(`${apiUrl}/api/admin/users`, {
+      const response = await axios.get<ApiResponse>(`${apiUrl}/api/admin/users`, {
         headers: {
           Authorization: `Bearer ${adminToken}`
         }
       })
 
-      if (response.data.success) {
+      if (response.data.success && response.data.users) {
         const foundUser = response.data.users.find((u: User) => u._id === userId)
         if (foundUser) {
           setUser(foundUser)
@@ -72,8 +88,9 @@ export default function EditUserPage() {
           setError('Usuario no encontrado')
         }
       }
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err) {
+      const axiosErr = err as AxiosError
+      if (axiosErr.response?.status === 401) {
         localStorage.removeItem('adminToken')
         router.push('/admin/login')
       } else {
@@ -82,7 +99,14 @@ export default function EditUserPage() {
     } finally {
       setLoading(false)
     }
-  }
+  }, [userId, router])
+
+  useEffect(() => {
+    if (userId) {
+      checkAuth()
+      fetchUser()
+    }
+  }, [checkAuth, fetchUser, userId])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
@@ -101,7 +125,7 @@ export default function EditUserPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const adminToken = localStorage.getItem('adminToken')
 
-      const updateData: any = {
+      const updateData: Record<string, string> = {
         status: formData.status,
       }
 
@@ -110,7 +134,7 @@ export default function EditUserPage() {
       if (formData.phoneId.trim()) updateData.phoneId = formData.phoneId
       if (formData.accessToken.trim()) updateData.accessToken = formData.accessToken
 
-      const response = await axios.patch(
+      const response = await axios.patch<UpdateResponse>(
         `${apiUrl}/api/admin/users/${userId}`,
         updateData,
         {
@@ -126,8 +150,9 @@ export default function EditUserPage() {
           router.push('/admin/dashboard')
         }, 2000)
       }
-    } catch (err: any) {
-      if (err.response?.status === 401) {
+    } catch (err) {
+      const axiosErr = err as AxiosError
+      if (axiosErr.response?.status === 401) {
         localStorage.removeItem('adminToken')
         router.push('/admin/login')
       } else {
