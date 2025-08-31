@@ -29,10 +29,12 @@ export default function LoginPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const response = await axios.post(`${apiUrl}/api/auth/login`, formData)
 
-      if (response.data.success) {
+      if (response.data.token) {
         // Guardar token de autenticación (utilizar cookies o localStorage según necesidad)
         localStorage.setItem('token', response.data.token)
         router.push('/dashboard')
+      } else {
+        setError('Respuesta inválida del servidor')
       }
     } catch (err: unknown) {
       if (axios.isAxiosError(err)) {
