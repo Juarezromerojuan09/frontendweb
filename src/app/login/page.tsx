@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import axios from 'axios'
 import { useRouter } from 'next/navigation'
 
@@ -12,6 +12,14 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const router = useRouter()
+
+  // Clear any existing authentication data on component mount
+  useEffect(() => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('userId')
+    localStorage.removeItem('userName')
+    localStorage.removeItem('userEmail')
+  }, [])
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
@@ -29,18 +37,36 @@ export default function LoginPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const response = await axios.post(`${apiUrl}/api/auth/login`, formData)
 
-      if (response.data.token) {
-        // Guardar token de autenticación (utilizar cookies o localStorage según necesidad)
+      if (response.data.token && response.data.user) {
+        // Guardar token de autenticación y datos del usuario
         localStorage.setItem('token', response.data.token)
+        localStorage.setItem('userId', response.data.user.id)
+        localStorage.setItem('userName', response.data.user.username)
+        localStorage.setItem('userEmail', response.data.user.email)
         router.push('/dashboard')
       } else {
         setError('Respuesta inválida del servidor')
       }
     } catch (err: unknown) {
+      // Clear localStorage on error to ensure clean state
+      localStorage.removeItem('token')
+      localStorage.removeItem('userId')
+      localStorage.removeItem('userName')
+      localStorage.removeItem('userEmail')
+      
       if (axios.isAxiosError(err)) {
-        setError(err.response?.data?.message || 'Error de autenticación')
+        const errorMessage = err.response?.data?.message || 'Error de autenticación'
+        setError(errorMessage)
+        
+        // Log detailed error for debugging
+        console.error('Login error:', {
+          status: err.response?.status,
+          data: err.response?.data,
+          message: errorMessage
+        })
       } else {
         setError('Error de autenticación')
+        console.error('Unknown login error:', err)
       }
     } finally {
       setLoading(false)

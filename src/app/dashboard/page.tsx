@@ -65,13 +65,22 @@ export default function Dashboard() {
     }
 
     try {
-      // Validar token y obtener datos del usuario
-      // Por ahora simulado, pero debería ser una petición real
-      setUser({
-        name: 'Usuario Demo',
-        email: 'usuario@demo.com',
-        id: '1'
-      })
+      // Obtener datos del usuario desde localStorage
+      const userId = localStorage.getItem('userId')
+      const userName = localStorage.getItem('userName')
+      const userEmail = localStorage.getItem('userEmail')
+
+      if (userId && userName && userEmail) {
+        setUser({
+          name: userName,
+          email: userEmail,
+          id: userId
+        })
+      } else {
+        // Si no hay datos en localStorage, redirigir al login
+        router.push('/login')
+        return
+      }
 
       // Obtener WhatsApp Numbers del usuario
       fetchWhatsAppNumbers()
@@ -86,7 +95,8 @@ export default function Dashboard() {
        const token = localStorage.getItem('token')
        if (!token) return
 
-       const response = await fetch(`${apiUrl}/api/auth/whatsapp-numbers/user/1`, {
+       const userId = localStorage.getItem('userId') || '1';
+       const response = await fetch(`${apiUrl}/api/auth/whatsapp-numbers/user/${userId}`, {
          headers: {
            'Authorization': `Bearer ${token}`,
            'Content-Type': 'application/json'
@@ -104,6 +114,15 @@ export default function Dashboard() {
            }
          }
        } else {
+         if (response.status === 401) {
+           // Token inválido, redirigir al login
+           localStorage.removeItem('token')
+           localStorage.removeItem('userId')
+           localStorage.removeItem('userName')
+           localStorage.removeItem('userEmail')
+           router.push('/login')
+           return
+         }
          console.error('Error fetching WhatsApp numbers:', response.statusText)
        }
      } catch (error) {
@@ -117,10 +136,16 @@ export default function Dashboard() {
        const token = localStorage.getItem('token')
        if (!token) return
 
-       // Aquí debería obtener conversaciones filtradas por WhatsAppNumberId y userId
-       const response = await fetch(`${apiUrl}/api/messages/conversations/1`, {
+       // Obtener conversaciones filtradas por WhatsAppNumberId y userId
+       const userId = localStorage.getItem('userId')
+       if (!userId) {
+         console.error('User ID not found')
+         return
+       }
+       const response = await fetch(`${apiUrl}/api/messages/conversations/${userId}`, {
          headers: {
-           'Content-Type': 'application/json'
+           'Content-Type': 'application/json',
+           'Authorization': `Bearer ${token}`
          }
        })
 
@@ -130,8 +155,16 @@ export default function Dashboard() {
            setConversations(data.conversations)
          }
        } else {
+         if (response.status === 401) {
+           // Token inválido, redirigir al login
+           localStorage.removeItem('token')
+           localStorage.removeItem('userId')
+           localStorage.removeItem('userName')
+           localStorage.removeItem('userEmail')
+           router.push('/login')
+           return
+         }
          console.error('Error fetching conversations:', response.statusText)
-         // Fallback to mock data if API fails
          setConversations([])
        }
      } catch (error) {
@@ -147,11 +180,15 @@ export default function Dashboard() {
       setChatLoading(true)
       // Obtener mensajes de una conversación específica
       const token = localStorage.getItem('token')
-      if (!token) return
+      if (!token) {
+        router.push('/login')
+        return
+      }
 
       const response = await fetch(`${apiUrl}/api/messages/conversation/${customerWaId}/${whatsAppNumberId}`, {
         headers: {
-          'Content-Type': 'application/json'
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
         }
       })
 
@@ -161,8 +198,16 @@ export default function Dashboard() {
           setMessages(data.conversation)
         }
       } else {
+        if (response.status === 401) {
+          // Token inválido, redirigir al login
+          localStorage.removeItem('token')
+          localStorage.removeItem('userId')
+          localStorage.removeItem('userName')
+          localStorage.removeItem('userEmail')
+          router.push('/login')
+          return
+        }
         console.error('Error fetching messages:', response.statusText)
-        // Puedes agregar mock messages aquí si es necesario
         setMessages([])
       }
     } catch (error) {
@@ -171,7 +216,7 @@ export default function Dashboard() {
     } finally {
       setChatLoading(false)
     }
-  }, [apiUrl])
+  }, [apiUrl, router])
 
   const sendMessage = useCallback(async () => {
     if (!newMessage.trim() || !selectedConversation) return
