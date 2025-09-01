@@ -122,8 +122,12 @@ export default function Dashboard() {
            localStorage.removeItem('userEmail')
            router.push('/login')
            return
+         } else if (response.status === 304) {
+           // Not Modified - usar datos en caché o array vacío
+           setWhatsAppNumbers([])
+         } else {
+           console.error('Error fetching WhatsApp numbers:', response.statusText)
          }
-         console.error('Error fetching WhatsApp numbers:', response.statusText)
        }
      } catch (error) {
        console.error('Error fetching WhatsApp numbers:', error)
@@ -163,9 +167,14 @@ export default function Dashboard() {
            localStorage.removeItem('userEmail')
            router.push('/login')
            return
+         } else if (response.status === 304) {
+           // Not Modified - usar datos en caché o array vacío
+           setConversations([])
+           setLoading(false)
+         } else {
+           console.error('Error fetching conversations:', response.statusText)
+           setConversations([])
          }
-         console.error('Error fetching conversations:', response.statusText)
-         setConversations([])
        }
      } catch (error) {
        console.error('Error fetching conversations:', error)
@@ -206,9 +215,14 @@ export default function Dashboard() {
           localStorage.removeItem('userEmail')
           router.push('/login')
           return
+        } else if (response.status === 304) {
+          // Not Modified - usar datos en caché o array vacío
+          setMessages([])
+          setChatLoading(false)
+        } else {
+          console.error('Error fetching messages:', response.statusText)
+          setMessages([])
         }
-        console.error('Error fetching messages:', response.statusText)
-        setMessages([])
       }
     } catch (error) {
       console.error('Error fetching messages:', error)
