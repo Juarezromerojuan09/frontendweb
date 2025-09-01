@@ -29,9 +29,13 @@ interface User {
   _id: string
   fullName: string
   email: string
+  personalPhone: string
   businessName: string
   businessType: string
+  address?: string
   whatsappNumber: string
+  whatsappDisplayName: string
+  businessCategory: string
   status: 'pending_verification' | 'active' | 'suspended'
   wabaId?: string
   phoneId?: string
@@ -54,6 +58,38 @@ export default function EditUserPage() {
   const router = useRouter()
   const params = useParams()
   const userId = params.id as string
+
+  // Edit mode states for individual fields
+  const [editModes, setEditModes] = useState({
+    fullName: false,
+    email: false,
+    personalPhone: false,
+    businessName: false,
+    businessType: false,
+    address: false,
+    whatsappNumber: false,
+    whatsappDisplayName: false,
+    businessCategory: false,
+    wabaId: false,
+    phoneId: false,
+    accessToken: false
+  })
+
+  // Temporary edit values
+  const [editValues, setEditValues] = useState({
+    fullName: '',
+    email: '',
+    personalPhone: '',
+    businessName: '',
+    businessType: '',
+    address: '',
+    whatsappNumber: '',
+    whatsappDisplayName: '',
+    businessCategory: '',
+    wabaId: '',
+    phoneId: '',
+    accessToken: ''
+  })
 
   const checkAuth = useCallback(() => {
     const adminToken = localStorage.getItem('adminToken')
@@ -80,6 +116,22 @@ export default function EditUserPage() {
           setUser(foundUser)
           setFormData({
             status: foundUser.status,
+            wabaId: foundUser.wabaId || '',
+            phoneId: foundUser.phoneId || '',
+            accessToken: foundUser.accessToken || ''
+          })
+
+          // Initialize edit values
+          setEditValues({
+            fullName: foundUser.fullName,
+            email: foundUser.email,
+            personalPhone: foundUser.personalPhone,
+            businessName: foundUser.businessName,
+            businessType: foundUser.businessType,
+            address: foundUser.address || '',
+            whatsappNumber: foundUser.whatsappNumber,
+            whatsappDisplayName: foundUser.whatsappDisplayName,
+            businessCategory: foundUser.businessCategory,
             wabaId: foundUser.wabaId || '',
             phoneId: foundUser.phoneId || '',
             accessToken: foundUser.accessToken || ''
@@ -113,6 +165,69 @@ export default function EditUserPage() {
       ...formData,
       [e.target.name]: e.target.value
     })
+  }
+
+  const handleEditChange = (field: string, value: string) => {
+    setEditValues({
+      ...editValues,
+      [field]: value
+    })
+  }
+
+  const toggleEditMode = (field: string) => {
+    setEditModes({
+      ...editModes,
+      [field]: !editModes[field as keyof typeof editModes]
+    })
+  }
+
+  const saveField = async (field: string) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const adminToken = localStorage.getItem('adminToken')
+
+      const updateData: Record<string, string> = {
+        [field]: editValues[field as keyof typeof editValues] as string
+      }
+
+      const response = await axios.patch<UpdateResponse>(
+        `${apiUrl}/api/admin/users/${userId}`,
+        updateData,
+        {
+          headers: {
+            Authorization: `Bearer ${adminToken}`
+          }
+        }
+      )
+
+      if (response.data.success) {
+        // Update the user state
+        if (user) {
+          setUser({
+            ...user,
+            [field]: editValues[field as keyof typeof editValues]
+          })
+        }
+        setSuccess(`Campo ${field} actualizado correctamente`)
+        setTimeout(() => setSuccess(''), 3000)
+      }
+
+      // Exit edit mode
+      toggleEditMode(field)
+    } catch {
+      setError(`Error al actualizar ${field}`)
+    }
+  }
+
+  const cancelEdit = (field: string) => {
+    // Reset to original value
+    if (user) {
+      setEditValues({
+        ...editValues,
+        [field]: user[field as keyof User] as string || ''
+      })
+    }
+    toggleEditMode(field)
   }
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -168,6 +283,25 @@ export default function EditUserPage() {
     { value: 'active', label: 'Activo' },
     { value: 'suspended', label: 'Suspendido' }
   ]
+
+  const getBusinessCategoryOptions = () => [
+    { value: 'salud', label: 'Salud' },
+    { value: 'belleza', label: 'Belleza' },
+    { value: 'educación', label: 'Educación' },
+    { value: 'negocio', label: 'Negocio' },
+    { value: 'servicios', label: 'Servicios' },
+    { value: 'entretenimiento', label: 'Entretenimiento' },
+    { value: 'viajes', label: 'Viajes' },
+    { value: 'finanzas', label: 'Finanzas' },
+    { value: 'tecnología', label: 'Tecnología' },
+    { value: 'otro', label: 'Otro' }
+  ]
+
+  const PencilIcon = ({ className }: { className?: string }) => (
+    <svg className={`w-4 h-4 ${className || ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+    </svg>
+  )
 
   if (loading) {
     return (
@@ -236,37 +370,410 @@ export default function EditUserPage() {
             </div>
 
             <div className="p-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Nombre Completo
-                  </label>
-                  <div className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed">
-                    {user.fullName}
+              {/* Información Personal */}
+              <div className="mb-8">
+                <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">
+                  Información Personal
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Nombre Completo
+                    </label>
+                    {editModes.fullName ? (
+                      <div className="mt-1 flex space-x-2">
+                        <input
+                          type="text"
+                          value={editValues.fullName}
+                          onChange={(e) => handleEditChange('fullName', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <button
+                          onClick={() => saveField('fullName')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('fullName')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.fullName}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('fullName')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar nombre"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Correo Electrónico
+                    </label>
+                    {editModes.email ? (
+                      <div className="mt-1 flex space-x-2">
+                        <input
+                          type="email"
+                          value={editValues.email}
+                          onChange={(e) => handleEditChange('email', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <button
+                          onClick={() => saveField('email')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('email')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.email}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('email')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar email"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Teléfono Personal
+                    </label>
+                    {editModes.personalPhone ? (
+                      <div className="mt-1 flex space-x-2">
+                        <input
+                          type="tel"
+                          value={editValues.personalPhone}
+                          onChange={(e) => handleEditChange('personalPhone', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <button
+                          onClick={() => saveField('personalPhone')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('personalPhone')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.personalPhone}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('personalPhone')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar teléfono"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Correo Electrónico
-                  </label>
-                  <div className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed">
-                    {user.email}
+              </div>
+
+              {/* Información de Empresa */}
+              <div className="mb-8">
+                <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">
+                  Información de Empresa
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Nombre de Empresa
+                    </label>
+                    {editModes.businessName ? (
+                      <div className="mt-1 flex space-x-2">
+                        <input
+                          type="text"
+                          value={editValues.businessName}
+                          onChange={(e) => handleEditChange('businessName', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <button
+                          onClick={() => saveField('businessName')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('businessName')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.businessName}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('businessName')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar nombre empresa"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Tipo de Negocio
+                    </label>
+                    {editModes.businessType ? (
+                      <div className="mt-1 flex space-x-2">
+                        <select
+                          value={editValues.businessType}
+                          onChange={(e) => handleEditChange('businessType', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        >
+                          <option value="barbería">Barbería</option>
+                          <option value="clínica">Clínica</option>
+                          <option value="tienda online">Tienda Online</option>
+                          <option value="restaurante">Restaurante</option>
+                          <option value="gimnasio">Gimnasio</option>
+                          <option value="escuela">Escuela</option>
+                          <option value="consultoría">Consultoría</option>
+                          <option value="agencia">Agencia</option>
+                          <option value="otro">Otro</option>
+                        </select>
+                        <button
+                          onClick={() => saveField('businessType')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('businessType')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.businessType}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('businessType')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar tipo negocio"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative col-span-full">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Dirección o Link de Ubicación
+                    </label>
+                    {editModes.address ? (
+                      <div className="mt-1 flex space-x-2">
+                        <input
+                          type="text"
+                          value={editValues.address}
+                          onChange={(e) => handleEditChange('address', e.target.value)}
+                          placeholder="Dirección física o link de Google Maps"
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <button
+                          onClick={() => saveField('address')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('address')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.address || 'No especificado'}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('address')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar dirección"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Nombre de Empresa
-                  </label>
-                  <div className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed">
-                    {user.businessName}
+              </div>
+
+              {/* Configuración de WhatsApp */}
+              <div className="mb-8">
+                <h4 className="text-md font-semibold text-gray-900 dark:text-white mb-4">
+                  Configuración de WhatsApp Business
+                </h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Número de WhatsApp
+                    </label>
+                    {editModes.whatsappNumber ? (
+                      <div className="mt-1 flex space-x-2">
+                        <input
+                          type="tel"
+                          value={editValues.whatsappNumber}
+                          onChange={(e) => handleEditChange('whatsappNumber', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <button
+                          onClick={() => saveField('whatsappNumber')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('whatsappNumber')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          +{user.whatsappNumber}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('whatsappNumber')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar WhatsApp"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
                   </div>
-                </div>
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                    Número de WhatsApp
-                  </label>
-                  <div className="mt-1 block w-full px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md sm:text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400 cursor-not-allowed">
-                    +{user.whatsappNumber}
+
+                  <div className="relative">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Nombre de Visualización
+                    </label>
+                    {editModes.whatsappDisplayName ? (
+                      <div className="mt-1 flex space-x-2">
+                        <input
+                          type="text"
+                          value={editValues.whatsappDisplayName}
+                          onChange={(e) => handleEditChange('whatsappDisplayName', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        />
+                        <button
+                          onClick={() => saveField('whatsappDisplayName')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('whatsappDisplayName')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.whatsappDisplayName}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('whatsappDisplayName')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar nombre display"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="relative col-span-full">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Categoría del Negocio
+                    </label>
+                    {editModes.businessCategory ? (
+                      <div className="mt-1 flex space-x-2">
+                        <select
+                          value={editValues.businessCategory}
+                          onChange={(e) => handleEditChange('businessCategory', e.target.value)}
+                          className="block w-full px-3 py-2 border border-indigo-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+                        >
+                          {getBusinessCategoryOptions().map(option => (
+                            <option key={option.value} value={option.value}>
+                              {option.label}
+                            </option>
+                          ))}
+                        </select>
+                        <button
+                          onClick={() => saveField('businessCategory')}
+                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700"
+                        >
+                          ✓
+                        </button>
+                        <button
+                          onClick={() => cancelEdit('businessCategory')}
+                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700"
+                        >
+                          ✕
+                        </button>
+                      </div>
+                    ) : (
+                      <div className="mt-1 flex items-center justify-between">
+                        <div className="px-3 py-2 border border-gray-300 bg-gray-100 text-gray-600 rounded-md flex-1 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-400">
+                          {user.businessCategory}
+                        </div>
+                        <button
+                          onClick={() => toggleEditMode('businessCategory')}
+                          className="ml-2 p-2 text-gray-400 hover:text-gray-600 cursor-pointer"
+                          title="Editar categoría"
+                        >
+                          <PencilIcon />
+                        </button>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>
@@ -293,67 +800,63 @@ export default function EditUserPage() {
                     </select>
                   </div>
 
-                  {/* WhatsApp Business API Configuration */}
-                  <div>
-                    <h4 className="text-md font-medium text-gray-900 dark:text-white mb-4">
-                      Configuración de WhatsApp Business API
-                    </h4>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <label htmlFor="wabaId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          WhatsApp Business Account ID (WABA ID)
-                        </label>
-                        <input
-                          id="wabaId"
-                          name="wabaId"
-                          type="text"
-                          value={formData.wabaId}
-                          onChange={handleChange}
-                          placeholder="Ingrese WABA ID"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                        />
-                        <p className="mt-1 text-xs text-gray-500">
-                          ID único asignado por Meta al WABA
-                        </p>
-                      </div>
-
-                      <div>
-                        <label htmlFor="phoneId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                          Phone Number ID
-                        </label>
-                        <input
-                          id="phoneId"
-                          name="phoneId"
-                          type="text"
-                          value={formData.phoneId}
-                          onChange={handleChange}
-                          placeholder="Ingrese Phone ID"
-                          className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
-                        />
-                        <p className="mt-1 text-xs text-gray-500">
-                          ID del número dentro del WABA
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="mt-6">
-                      <label htmlFor="accessToken" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
-                        Access Token
-                      </label>
-                      <textarea
-                        id="accessToken"
-                        name="accessToken"
-                        value={formData.accessToken}
+                  {/* WhatsApp Business API Configuration - Editable fields */}
+                  <div className="relative">
+                    <label htmlFor="wabaId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      WhatsApp Business Account ID (WABA ID)
+                    </label>
+                    <div className="mt-1 flex items-center justify-between">
+                      <input
+                        id="wabaId"
+                        name="wabaId"
+                        type="text"
+                        value={formData.wabaId}
                         onChange={handleChange}
-                        placeholder="Además el Access Token generado por Meta para este WABA..."
-                        rows={4}
-                        className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                        placeholder="Ingrese WABA ID"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
                       />
-                      <p className="mt-1 text-xs text-gray-500">
-                        Token de acceso generado por Facebook Business Manager
-                      </p>
                     </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      ID único asignado por Meta al WABA
+                    </p>
+                  </div>
+
+                  <div className="relative">
+                    <label htmlFor="phoneId" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Phone Number ID
+                    </label>
+                    <div className="mt-1 flex items-center justify-between">
+                      <input
+                        id="phoneId"
+                        name="phoneId"
+                        type="text"
+                        value={formData.phoneId}
+                        onChange={handleChange}
+                        placeholder="Ingrese Phone ID"
+                        className="block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                      />
+                    </div>
+                    <p className="mt-1 text-xs text-gray-500">
+                      ID del número dentro del WABA
+                    </p>
+                  </div>
+
+                  <div className="relative">
+                    <label htmlFor="accessToken" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                      Access Token
+                    </label>
+                    <textarea
+                      id="accessToken"
+                      name="accessToken"
+                      value={formData.accessToken}
+                      onChange={handleChange}
+                      placeholder="Token de Meta"
+                      rows={4}
+                      className="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white"
+                    />
+                    <p className="mt-1 text-xs text-gray-500">
+                      Token de acceso generado por Facebook Business Manager
+                    </p>
                   </div>
                 </div>
 
