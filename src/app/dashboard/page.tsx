@@ -86,7 +86,7 @@ export default function Dashboard() {
        const token = localStorage.getItem('token')
        if (!token) return
 
-       const response = await fetch(`${apiUrl}/api/admin/whatsapp-numbers/user/1`, {
+       const response = await fetch(`${apiUrl}/api/auth/whatsapp-numbers/user/1`, {
          headers: {
            'Authorization': `Bearer ${token}`,
            'Content-Type': 'application/json'
