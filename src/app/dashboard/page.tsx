@@ -131,6 +131,8 @@ export default function Dashboard() {
        }
      } catch (error) {
        console.error('Error fetching WhatsApp numbers:', error)
+     } finally {
+       setLoading(false)
      }
    }, [apiUrl])
 
