@@ -16,14 +16,19 @@ export default function SignupPage() {
     personalPhone: '',
     whatsappNumber: '',
     whatsappDisplayName: '',
-    businessCategory: ''
+    businessCategory: '',
+    businessDescription: '',
+    website: '',
+    profileImageUrl: ''
   })
+  const [profileImage, setProfileImage] = useState<File | null>(null);
+  const [imagePreview, setImagePreview] = useState<string>('');
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const router = useRouter()
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement | HTMLTextAreaElement>) => {
     setFormData({
       ...formData,
       [e.target.name]: e.target.value
@@ -38,6 +43,45 @@ export default function SignupPage() {
     'barbería', 'clínica', 'tienda online', 'restaurante', 'gimnasio', 'escuela', 'consultoría', 'agencia', 'otro'
   ]
 
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setProfileImage(file);
+
+      // Create image preview
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        if (event.target?.result) {
+          setImagePreview(event.target.result as string);
+        }
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const formData = new FormData();
+      formData.append('profileImage', file);
+
+      const response = await axios.post(`${apiUrl}/api/auth/upload-profile-image`, formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+
+      if (response.data.success) {
+        return response.data.imageUrl;
+      } else {
+        throw new Error('Error uploading image');
+      }
+    } catch (error) {
+      console.error('Error uploading to Cloudinary:', error);
+      throw new Error('Error subiendo imagen de perfil');
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
@@ -45,8 +89,20 @@ export default function SignupPage() {
     setSuccess('')
 
     try {
+      let profileImageUrl = '';
+
+      // Upload image to Cloudinary first if exists
+      if (profileImage) {
+        profileImageUrl = await uploadImageToCloudinary(profileImage);
+      }
+
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const response = await axios.post(`${apiUrl}/api/auth/register`, formData)
+      const registrationData = {
+        ...formData,
+        profileImageUrl
+      };
+
+      const response = await axios.post(`${apiUrl}/api/auth/register`, registrationData);
 
       if (response.data.success) {
         setSuccess('Registro exitoso. Tu cuenta está pendiente de verificación. Te contactaremos pronto.')
@@ -239,6 +295,35 @@ export default function SignupPage() {
                   ))}
                 </select>
               </div>
+              <div>
+                <label htmlFor="businessDescription" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Descripción de la empresa (opcional)
+                </label>
+                <textarea
+                  id="businessDescription"
+                  name="businessDescription"
+                  rows={3}
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white rounded-md"
+                  placeholder="Describe brevemente tu empresa y servicios..."
+                  value={formData.businessDescription}
+                  onChange={handleChange}
+                />
+                <p className="mt-1 text-xs text-gray-500">Esta descripción aparecerá en Facebook Business</p>
+              </div>
+              <div>
+                <label htmlFor="website" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Sitio web (opcional)
+                </label>
+                <input
+                  id="website"
+                  name="website"
+                  type="url"
+                  className="mt-1 block w-full px-3 py-2 border border-gray-300 placeholder-gray-500 text-gray-900 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm dark:bg-gray-800 dark:border-gray-600 dark:text-white rounded-md"
+                  placeholder="https://www.tu-empresa.com"
+                  value={formData.website}
+                  onChange={handleChange}
+                />
+              </div>
             </div>
           </div>
 
@@ -275,6 +360,62 @@ export default function SignupPage() {
                   value={formData.password}
                   onChange={handleChange}
                 />
+              </div>
+            </div>
+          </div>
+
+          {/* Imagen de Perfil */}
+          <div>
+            <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-4">Imagen de Perfil (Opcional)</h3>
+            <div className="space-y-4">
+              <div className="flex items-center space-x-6">
+                {imagePreview ? (
+                  <div className="relative">
+                    <img
+                      src={imagePreview}
+                      alt="Preview"
+                      className="w-20 h-20 rounded-full object-cover border-2 border-gray-300"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setProfileImage(null);
+                        setImagePreview('');
+                      }}
+                      className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center hover:bg-red-700"
+                    >
+                      ✕
+                    </button>
+                  </div>
+                ) : (
+                  <div className="w-20 h-20 rounded-full bg-gray-300 flex items-center justify-center">
+                    <svg className="w-8 h-8 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                    </svg>
+                  </div>
+                )}
+
+                <div>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    id="profileImage"
+                    className="hidden"
+                    onChange={handleImageChange}
+                  />
+                  <label
+                    htmlFor="profileImage"
+                    className="inline-flex items-center px-4 py-2 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 cursor-pointer dark:bg-gray-700 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-600"
+                  >
+                    <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+                    </svg>
+                    Subir Imagen
+                  </label>
+                  <p className="mt-1 text-xs text-gray-500">
+                    JPG o PNG. Tamaño máximo: 5MB
+                  </p>
+                </div>
               </div>
             </div>
           </div>
