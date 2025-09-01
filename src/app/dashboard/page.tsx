@@ -4,13 +4,35 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 interface User {
-  name: string;
-  email: string;
-  id: number;
+   name: string;
+   email: string;
+   id: string;
+}
+
+interface WhatsAppNumber {
+   _id: string;
+   displayName: string;
+   whatsappNumber: string;
+   phoneNumberId: string;
+   isActive: boolean;
+}
+
+interface Conversation {
+   customerWaId: string;
+   customerName: string;
+   customerPhone: string;
+   displayName: string;
+   lastMessage: string;
+   lastMessageTime: string;
+   messageCount: number;
+   pendingReply: boolean;
 }
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
+  const [whatsAppNumbers, setWhatsAppNumbers] = useState<WhatsAppNumber[]>([])
+  const [selectedWhatsAppNumber, setSelectedWhatsAppNumber] = useState<string | null>(null)
+  const [conversations, setConversations] = useState<Conversation[]>([])
   const [loading, setLoading] = useState(true)
   const router = useRouter()
 
@@ -27,7 +49,7 @@ export default function Dashboard() {
     setUser({
       name: 'Usuario Demo',
       email: 'usuario@demo.com',
-      id: 1
+      id: '1'
     })
     setLoading(false)
   }, [router])
