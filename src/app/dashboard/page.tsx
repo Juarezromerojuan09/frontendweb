@@ -307,10 +307,24 @@ export default function Dashboard() {
     })
 
     newSocket.on('new-message', (newMessage: Message) => {
+      console.log('📨 Nuevo mensaje recibido via Socket.IO:', newMessage)
       // Solo agregar el mensaje si pertenece a la conversación actual
       if (selectedConversation === newMessage.customerWaId &&
           selectedWhatsAppNumber === newMessage.whatsAppNumberId) {
         setMessages(prevMessages => [...prevMessages, newMessage])
+        // También actualizar la lista de conversaciones para mostrar el último mensaje
+        setConversations(prevConversations =>
+          prevConversations.map(conv =>
+            conv.customerWaId === newMessage.customerWaId
+              ? {
+                  ...conv,
+                  lastMessage: newMessage.content.body,
+                  lastMessageTime: newMessage.timestamp,
+                  messageCount: conv.messageCount + 1
+                }
+              : conv
+          )
+        )
       }
     })
 
@@ -321,25 +335,29 @@ export default function Dashboard() {
     return () => {
       newSocket.disconnect()
     }
-  }, [apiUrl])
+  }, [apiUrl, selectedConversation, selectedWhatsAppNumber])
 
   // Unirse a la sala de conversación cuando se selecciona una conversación
   useEffect(() => {
     if (socket && selectedConversation && selectedWhatsAppNumber && user) {
-      socket.emit('join-conversation', {
+      const roomData = {
         userId: user.id,
         customerWaId: selectedConversation,
         whatsAppNumberId: selectedWhatsAppNumber
-      })
+      }
+      socket.emit('join-conversation', roomData)
+      console.log('👥 Uniéndose a sala:', roomData)
     }
 
     return () => {
       if (socket && selectedConversation && selectedWhatsAppNumber && user) {
-        socket.emit('leave-conversation', {
+        const roomData = {
           userId: user.id,
           customerWaId: selectedConversation,
           whatsAppNumberId: selectedWhatsAppNumber
-        })
+        }
+        socket.emit('leave-conversation', roomData)
+        console.log('👋 Saliendo de sala:', roomData)
       }
     }
   }, [socket, selectedConversation, selectedWhatsAppNumber, user])
