@@ -43,6 +43,8 @@ interface Message {
    from: 'customer' | 'business';
    type: string;
    messageId: string;
+   customerWaId: string;
+   whatsAppNumberId: string;
    customerProfilePic?: string;
 }
 
@@ -292,22 +294,55 @@ export default function Dashboard() {
     }
   }, [selectedWhatsAppNumber, fetchConversations])
 
-  // Polling para mensajes en tiempo real
+  // Configuración de Socket.IO para mensajes en tiempo real
   useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null
+    const newSocket = io(apiUrl, {
+      transports: ['websocket', 'polling']
+    })
 
-    if (selectedConversation && selectedWhatsAppNumber) {
-      intervalId = setInterval(() => {
-        fetchMessages(selectedConversation, selectedWhatsAppNumber)
-      }, 3000) // Poll cada 3 segundos
+    setSocket(newSocket)
+
+    newSocket.on('connect', () => {
+      console.log('✅ Conectado al servidor Socket.IO')
+    })
+
+    newSocket.on('new-message', (newMessage: Message) => {
+      // Solo agregar el mensaje si pertenece a la conversación actual
+      if (selectedConversation === newMessage.customerWaId &&
+          selectedWhatsAppNumber === newMessage.whatsAppNumberId) {
+        setMessages(prevMessages => [...prevMessages, newMessage])
+      }
+    })
+
+    newSocket.on('disconnect', () => {
+      console.log('❌ Desconectado del servidor Socket.IO')
+    })
+
+    return () => {
+      newSocket.disconnect()
+    }
+  }, [apiUrl])
+
+  // Unirse a la sala de conversación cuando se selecciona una conversación
+  useEffect(() => {
+    if (socket && selectedConversation && selectedWhatsAppNumber && user) {
+      socket.emit('join-conversation', {
+        userId: user.id,
+        customerWaId: selectedConversation,
+        whatsAppNumberId: selectedWhatsAppNumber
+      })
     }
 
     return () => {
-      if (intervalId) {
-        clearInterval(intervalId)
+      if (socket && selectedConversation && selectedWhatsAppNumber && user) {
+        socket.emit('leave-conversation', {
+          userId: user.id,
+          customerWaId: selectedConversation,
+          whatsAppNumberId: selectedWhatsAppNumber
+        })
       }
     }
-  }, [selectedConversation, selectedWhatsAppNumber, fetchMessages])
+  }, [socket, selectedConversation, selectedWhatsAppNumber, user])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
