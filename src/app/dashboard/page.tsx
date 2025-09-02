@@ -446,28 +446,35 @@ export default function Dashboard() {
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-green-500 mx-auto"></div>
                   </div>
+                ) : messages.length === 0 ? (
+                  <div className="text-center text-gray-500 dark:text-gray-400 py-8">
+                    <p>No hay mensajes en esta conversación</p>
+                  </div>
                 ) : (
-                  // Mock messages for demo
-                  <>
-                    <div className="flex justify-start">
-                      <div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-2 max-w-xs lg:max-w-md">
-                        <p className="text-gray-900 dark:text-white">¡Hola! Necesito información sobre sus servicios.</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">10:30 AM</p>
+                  messages.map((message) => (
+                    <div
+                      key={message._id}
+                      className={`flex ${message.from === 'business' ? 'justify-end' : 'justify-start'}`}
+                    >
+                      <div className={`rounded-lg px-4 py-2 max-w-xs lg:max-w-md ${
+                        message.from === 'business'
+                          ? 'bg-green-500 text-white'
+                          : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
+                      }`}>
+                        <p>{message.content.body}</p>
+                        <p className={`text-xs mt-1 ${
+                          message.from === 'business'
+                            ? 'text-green-100'
+                            : 'text-gray-500 dark:text-gray-400'
+                        }`}>
+                          {new Date(message.timestamp).toLocaleTimeString('es-ES', {
+                            hour: '2-digit',
+                            minute: '2-digit'
+                          })}
+                        </p>
                       </div>
                     </div>
-                    <div className="flex justify-end">
-                      <div className="bg-green-500 rounded-lg px-4 py-2 max-w-xs lg:max-w-md">
-                        <p className="text-white">¡Hola! Claro, ¿en qué puedo ayudarte?</p>
-                        <p className="text-xs text-green-100 mt-1">10:31 AM</p>
-                      </div>
-                    </div>
-                    <div className="flex justify-start">
-                      <div className="bg-white dark:bg-gray-700 rounded-lg px-4 py-2 max-w-xs lg:max-w-md">
-                        <p className="text-gray-900 dark:text-white">Me gustaría agendar una cita para mañana.</p>
-                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">10:32 AM</p>
-                      </div>
-                    </div>
-                  </>
+                  ))
                 )}
               </div>
 
