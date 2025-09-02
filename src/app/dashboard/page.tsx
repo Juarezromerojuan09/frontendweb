@@ -32,21 +32,22 @@ interface Conversation {
 }
 
 interface Message {
-   _id: string;
-   content: {
-     body: string;
-     mediaUrl?: string;
-     mediaType?: string;
-     caption?: string;
-   };
-   timestamp: string;
-   from: 'customer' | 'business';
-   type: string;
-   messageId: string;
-   customerWaId: string;
-   whatsAppNumberId: string;
-   customerProfilePic?: string;
- }
+    _id: string;
+    content: {
+      body: string;
+      mediaUrl?: string;
+      mediaType?: string;
+      caption?: string;
+    };
+    timestamp: string;
+    from: 'customer' | 'business';
+    type: string;
+    messageId: string;
+    customerWaId: string;
+    whatsAppNumberId: string;
+    customerProfilePic?: string;
+    status?: 'sent' | 'delivered' | 'read' | 'failed';
+  }
  
  interface UpdatedConversation {
    customerWaId: string;
@@ -339,6 +340,19 @@ export default function Dashboard() {
       }
     })
 
+    // Escuchar eventos de cambio de estado de mensajes
+    newSocket.on('message-status-update', (statusData: { messageId: string; status: string; timestamp: string }) => {
+      console.log('📊 Estado de mensaje actualizado:', statusData)
+      setMessages(prevMessages => {
+        return prevMessages.map(message => {
+          if (message.messageId === statusData.messageId) {
+            return { ...message, status: statusData.status as 'sent' | 'delivered' | 'read' | 'failed' }
+          }
+          return message
+        })
+      })
+    })
+
     // Escuchar eventos de actualización de conversaciones
     newSocket.on('conversation-updated', (updatedConversation: UpdatedConversation) => {
       console.log('🔄 Conversación actualizada:', updatedConversation)
@@ -564,16 +578,6 @@ export default function Dashboard() {
                       <p className="text-sm text-gray-600 dark:text-gray-300 truncate mt-1">
                         {conversation.lastMessage}
                       </p>
-                      <div className="flex items-center mt-1">
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {conversation.messageCount} mensajes
-                        </span>
-                        {conversation.pendingReply && (
-                          <span className="ml-2 px-2 py-1 bg-green-100 text-green-800 text-xs rounded-full">
-                            Responder
-                          </span>
-                        )}
-                      </div>
                     </div>
                   </div>
                 </div>
@@ -646,16 +650,48 @@ export default function Dashboard() {
                           : 'bg-white dark:bg-gray-700 text-gray-900 dark:text-white'
                       }`}>
                         <p>{message.content.body}</p>
-                        <p className={`text-xs mt-1 ${
-                          message.from === 'business'
-                            ? 'text-green-100'
-                            : 'text-gray-500 dark:text-gray-400'
-                        }`}>
+                        <div className={`text-xs mt-1 ${message.from === 'business' ? 'flex items-center justify-end gap-1' : 'text-gray-500 dark:text-gray-400'}`}>
                           {new Date(message.timestamp).toLocaleTimeString('es-ES', {
                             hour: '2-digit',
                             minute: '2-digit'
                           })}
-                        </p>
+                          {message.from === 'business' && (
+                            <div className="flex items-center">
+                              {message.status === 'sent' && (
+                                <>
+                                  <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </>
+                              )}
+                              {message.status === 'delivered' && (
+                                <>
+                                  <svg className="w-3 h-3 text-gray-400 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                  <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </>
+                              )}
+                              {message.status === 'read' && (
+                                <>
+                                  <svg className="w-3 h-3 text-blue-500 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                  <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                </>
+                              )}
+                              {message.status === 'failed' && (
+                                <svg className="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                                </svg>
+                              )}
+                            </div>
+                          )}
+                        </div>
                       </div>
                     </div>
                   ))
