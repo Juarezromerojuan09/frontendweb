@@ -19,15 +19,16 @@ interface WhatsAppNumber {
 }
 
 interface Conversation {
-   customerWaId: string;
-   customerName: string;
-   customerPhone: string;
-   displayName: string;
-   lastMessage: string;
-   lastMessageTime: string;
-   messageCount: number;
-   pendingReply: boolean;
-   customerProfilePic?: string;
+    customerWaId: string;
+    customerName: string;
+    customerPhone: string;
+    displayName: string;
+    lastMessage: string;
+    lastMessageTime: string;
+    messageCount: number;
+    pendingReply: boolean;
+    customerProfilePic?: string;
+    unreadCount?: number;
 }
 
 interface Message {
@@ -53,6 +54,7 @@ interface Message {
    lastMessage: string;
    lastMessageTime: string;
    pendingReply: boolean;
+   unreadCount?: number;
  }
 
 export default function Dashboard() {
@@ -319,6 +321,21 @@ export default function Dashboard() {
       if (selectedConversation === newMessage.customerWaId &&
           selectedWhatsAppNumber === newMessage.whatsAppNumberId) {
         setMessages(prevMessages => [...prevMessages, newMessage])
+      } else if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumber) {
+        // Si es un mensaje de cliente en una conversación diferente, incrementar contador de no leídos
+        setConversations(prevConversations => {
+          return prevConversations.map(conv => {
+            if (conv.customerWaId === newMessage.customerWaId) {
+              return {
+                ...conv,
+                unreadCount: (conv.unreadCount || 0) + 1,
+                lastMessage: newMessage.content.body,
+                lastMessageTime: newMessage.timestamp
+              }
+            }
+            return conv
+          })
+        })
       }
     })
 
@@ -330,16 +347,18 @@ export default function Dashboard() {
         const existingConvIndex = prevConversations.findIndex(
           conv => conv.customerWaId === updatedConversation.customerWaId
         )
-        
+
         if (existingConvIndex >= 0) {
           // Actualizar conversación existente
           const updatedConvs = [...prevConversations]
+          const currentUnreadCount = updatedConvs[existingConvIndex].unreadCount || 0
           updatedConvs[existingConvIndex] = {
             ...updatedConvs[existingConvIndex],
             lastMessage: updatedConversation.lastMessage,
             lastMessageTime: updatedConversation.lastMessageTime,
             messageCount: updatedConvs[existingConvIndex].messageCount + 1,
-            pendingReply: updatedConversation.pendingReply
+            pendingReply: updatedConversation.pendingReply,
+            unreadCount: updatedConversation.pendingReply ? currentUnreadCount + 1 : currentUnreadCount
           }
           return updatedConvs
         } else {
@@ -353,7 +372,8 @@ export default function Dashboard() {
               lastMessage: updatedConversation.lastMessage,
               lastMessageTime: updatedConversation.lastMessageTime,
               messageCount: 1,
-              pendingReply: updatedConversation.pendingReply
+              pendingReply: updatedConversation.pendingReply,
+              unreadCount: updatedConversation.pendingReply ? 1 : 0
             },
             ...prevConversations
           ]
@@ -467,7 +487,7 @@ export default function Dashboard() {
               Conversaciones
             </h2>
             <div className="mt-2 text-sm text-gray-600 dark:text-gray-400">
-              {conversations.filter(c => c.pendingReply).length} mensajes sin responder
+              {conversations.reduce((total, conv) => total + (conv.unreadCount || 0), 0)} mensajes sin leer
             </div>
           </div>
 
@@ -489,6 +509,17 @@ export default function Dashboard() {
                     setSelectedConversation(conversation.customerWaId)
                     if (selectedWhatsAppNumber) {
                       fetchMessages(conversation.customerWaId, selectedWhatsAppNumber)
+                    }
+                    // Marcar mensajes como leídos
+                    if ((conversation.unreadCount || 0) > 0) {
+                      setConversations(prevConversations => {
+                        return prevConversations.map(conv => {
+                          if (conv.customerWaId === conversation.customerWaId) {
+                            return { ...conv, unreadCount: 0 }
+                          }
+                          return conv
+                        })
+                      })
                     }
                   }}
                   className={`p-4 cursor-pointer hover:bg-gray-50 dark:hover:bg-gray-700 border-b border-gray-200 dark:border-gray-700 ${
@@ -516,12 +547,19 @@ export default function Dashboard() {
                         <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {conversation.customerName || conversation.customerPhone}
                         </h3>
-                        <span className="text-xs text-gray-500 dark:text-gray-400">
-                          {new Date(conversation.lastMessageTime).toLocaleTimeString('es-ES', {
-                            hour: '2-digit',
-                            minute: '2-digit'
-                          })}
-                        </span>
+                        <div className="flex items-center space-x-2">
+                          <span className={`text-xs ${(conversation.unreadCount || 0) > 0 ? 'text-blue-600 dark:text-blue-400 font-medium' : 'text-gray-500 dark:text-gray-400'}`}>
+                            {new Date(conversation.lastMessageTime).toLocaleTimeString('es-ES', {
+                              hour: '2-digit',
+                              minute: '2-digit'
+                            })}
+                          </span>
+                          {(conversation.unreadCount || 0) > 0 && (
+                            <div className="bg-blue-600 text-white text-xs rounded-full px-2 py-1 min-w-[20px] h-5 flex items-center justify-center font-medium">
+                              {conversation.unreadCount}
+                            </div>
+                          )}
+                        </div>
                       </div>
                       <p className="text-sm text-gray-600 dark:text-gray-300 truncate mt-1">
                         {conversation.lastMessage}
