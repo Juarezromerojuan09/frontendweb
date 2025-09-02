@@ -312,20 +312,46 @@ export default function Dashboard() {
       if (selectedConversation === newMessage.customerWaId &&
           selectedWhatsAppNumber === newMessage.whatsAppNumberId) {
         setMessages(prevMessages => [...prevMessages, newMessage])
-        // También actualizar la lista de conversaciones para mostrar el último mensaje
-        setConversations(prevConversations =>
-          prevConversations.map(conv =>
-            conv.customerWaId === newMessage.customerWaId
-              ? {
-                  ...conv,
-                  lastMessage: newMessage.content.body,
-                  lastMessageTime: newMessage.timestamp,
-                  messageCount: conv.messageCount + 1
-                }
-              : conv
-          )
-        )
       }
+    })
+
+    // Escuchar eventos de actualización de conversaciones
+    newSocket.on('conversation-updated', (updatedConversation: any) => {
+      console.log('🔄 Conversación actualizada:', updatedConversation)
+      setConversations(prevConversations => {
+        // Buscar si la conversación ya existe
+        const existingConvIndex = prevConversations.findIndex(
+          conv => conv.customerWaId === updatedConversation.customerWaId
+        )
+        
+        if (existingConvIndex >= 0) {
+          // Actualizar conversación existente
+          const updatedConvs = [...prevConversations]
+          updatedConvs[existingConvIndex] = {
+            ...updatedConvs[existingConvIndex],
+            lastMessage: updatedConversation.lastMessage,
+            lastMessageTime: updatedConversation.lastMessageTime,
+            messageCount: updatedConvs[existingConvIndex].messageCount + 1,
+            pendingReply: updatedConversation.pendingReply
+          }
+          return updatedConvs
+        } else {
+          // Agregar nueva conversación si no existe
+          return [
+            {
+              customerWaId: updatedConversation.customerWaId,
+              customerName: updatedConversation.customerName,
+              customerPhone: updatedConversation.customerWaId, // Usar WA ID como teléfono por defecto
+              displayName: 'Nueva Conversación', // Esto debería venir del backend
+              lastMessage: updatedConversation.lastMessage,
+              lastMessageTime: updatedConversation.lastMessageTime,
+              messageCount: 1,
+              pendingReply: updatedConversation.pendingReply
+            },
+            ...prevConversations
+          ]
+        }
+      })
     })
 
     newSocket.on('disconnect', () => {
@@ -335,7 +361,7 @@ export default function Dashboard() {
     return () => {
       newSocket.disconnect()
     }
-  }, [apiUrl, selectedConversation, selectedWhatsAppNumber])
+  }, [apiUrl, selectedConversation, selectedWhatsAppNumber, user])
 
   // Unirse a la sala de conversación cuando se selecciona una conversación
   useEffect(() => {
@@ -361,6 +387,14 @@ export default function Dashboard() {
       }
     }
   }, [socket, selectedConversation, selectedWhatsAppNumber, user])
+
+  // Efecto para unirse a la sala del usuario cuando el usuario o el socket cambian
+  useEffect(() => {
+    if (socket && user) {
+      socket.emit('join-user-room', { userId: user.id });
+      console.log('👤 Uniéndose a sala de usuario:', user.id);
+    }
+  }, [socket, user])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
