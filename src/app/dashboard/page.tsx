@@ -2,7 +2,6 @@
 
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import axios from 'axios'
 import { io, Socket } from 'socket.io-client'
 
 interface User {
@@ -46,7 +45,15 @@ interface Message {
    customerWaId: string;
    whatsAppNumberId: string;
    customerProfilePic?: string;
-}
+ }
+ 
+ interface UpdatedConversation {
+   customerWaId: string;
+   customerName: string;
+   lastMessage: string;
+   lastMessageTime: string;
+   pendingReply: boolean;
+ }
 
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
@@ -316,7 +323,7 @@ export default function Dashboard() {
     })
 
     // Escuchar eventos de actualización de conversaciones
-    newSocket.on('conversation-updated', (updatedConversation: any) => {
+    newSocket.on('conversation-updated', (updatedConversation: UpdatedConversation) => {
       console.log('🔄 Conversación actualizada:', updatedConversation)
       setConversations(prevConversations => {
         // Buscar si la conversación ya existe
@@ -361,7 +368,7 @@ export default function Dashboard() {
     return () => {
       newSocket.disconnect()
     }
-  }, [apiUrl, selectedConversation, selectedWhatsAppNumber, user])
+  }, [apiUrl, selectedConversation, selectedWhatsAppNumber])
 
   // Unirse a la sala de conversación cuando se selecciona una conversación
   useEffect(() => {
@@ -386,7 +393,7 @@ export default function Dashboard() {
         console.log('👋 Saliendo de sala:', roomData)
       }
     }
-  }, [socket, selectedConversation, selectedWhatsAppNumber, user])
+  }, [socket, selectedConversation, selectedWhatsAppNumber, user?.id])
 
   // Efecto para unirse a la sala del usuario cuando el usuario o el socket cambian
   useEffect(() => {
@@ -394,7 +401,7 @@ export default function Dashboard() {
       socket.emit('join-user-room', { userId: user.id });
       console.log('👤 Uniéndose a sala de usuario:', user.id);
     }
-  }, [socket, user])
+  }, [socket, user?.id])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
