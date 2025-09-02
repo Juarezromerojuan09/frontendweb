@@ -3,6 +3,7 @@
 import { useEffect, useState, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
+import { io, Socket } from 'socket.io-client'
 
 interface User {
    name: string;
@@ -27,6 +28,7 @@ interface Conversation {
    lastMessageTime: string;
    messageCount: number;
    pendingReply: boolean;
+   customerProfilePic?: string;
 }
 
 interface Message {
@@ -41,6 +43,7 @@ interface Message {
    from: 'customer' | 'business';
    type: string;
    messageId: string;
+   customerProfilePic?: string;
 }
 
 export default function Dashboard() {
@@ -53,6 +56,7 @@ export default function Dashboard() {
   const [newMessage, setNewMessage] = useState('')
   const [loading, setLoading] = useState(true)
   const [chatLoading, setChatLoading] = useState(false)
+  const [socket, setSocket] = useState<Socket | null>(null)
   const router = useRouter()
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -288,6 +292,23 @@ export default function Dashboard() {
     }
   }, [selectedWhatsAppNumber, fetchConversations])
 
+  // Polling para mensajes en tiempo real
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null
+
+    if (selectedConversation && selectedWhatsAppNumber) {
+      intervalId = setInterval(() => {
+        fetchMessages(selectedConversation, selectedWhatsAppNumber)
+      }, 3000) // Poll cada 3 segundos
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId)
+      }
+    }
+  }, [selectedConversation, selectedWhatsAppNumber, fetchMessages])
+
   const handleLogout = () => {
     localStorage.removeItem('token')
     router.push('/login')
@@ -380,8 +401,23 @@ export default function Dashboard() {
                     selectedConversation === conversation.customerWaId ? 'bg-green-50 dark:bg-green-900' : ''
                   }`}
                 >
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
+                  <div className="flex items-start space-x-3">
+                    <div className="flex-shrink-0">
+                      {conversation.customerProfilePic ? (
+                        <img
+                          src={conversation.customerProfilePic}
+                          alt={conversation.customerName}
+                          className="w-10 h-10 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                          <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between">
                         <h3 className="text-sm font-medium text-gray-900 dark:text-white truncate">
                           {conversation.customerName || conversation.customerPhone}
@@ -420,7 +456,23 @@ export default function Dashboard() {
             <>
               {/* Chat Header */}
               <div className="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 px-4 py-3">
-                <div className="flex items-center">
+                <div className="flex items-center space-x-3">
+                  {(() => {
+                    const currentConversation = conversations.find(c => c.customerWaId === selectedConversation);
+                    return currentConversation?.customerProfilePic ? (
+                      <img
+                        src={currentConversation.customerProfilePic}
+                        alt={currentConversation.customerName}
+                        className="w-10 h-10 rounded-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-10 h-10 bg-gray-300 dark:bg-gray-600 rounded-full flex items-center justify-center">
+                        <svg className="w-6 h-6 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                        </svg>
+                      </div>
+                    );
+                  })()}
                   <div className="flex-1">
                     <h2 className="text-lg font-semibold text-gray-900 dark:text-white">
                       {conversations.find(c => c.customerWaId === selectedConversation)?.customerName ||
