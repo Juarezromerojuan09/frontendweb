@@ -17,15 +17,15 @@
     "socket.io-client": "^4.8.1",
     "tailwindcss": "^4",
     "autoprefixer": "^10.4.21",
-    "@tailwindcss/postcss": "^4.1.12"
+    "@tailwindcss/postcss": "^4.1.12",
+    "typescript": "5.5.2",
+    "@types/react": "^19",
+    "@types/react-dom": "^19",
+    "@types/node": "^20"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
     "eslint": "^9",
-    "eslint-config-next": "15.5.2",
-    "typescript": "5.5.2"
+    "eslint-config-next": "15.5.2"
   }
 }
