@@ -237,7 +237,7 @@ export default function SignupPage() {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {/* Información de la empresa */}
             <div>
-              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Información de la Empresa</h3>
+              <h3 className="text-lg font-medium text-[#3ea0c9] mb-4">Información de la Empresa</h3>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="businessName" className="block text-sm font-medium text-white">
@@ -248,7 +248,7 @@ export default function SignupPage() {
                     name="businessName"
                     type="text"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="Ej. Mi Empresa S.A."
                     value={formData.businessName}
@@ -263,7 +263,7 @@ export default function SignupPage() {
                     id="businessType"
                     name="businessType"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     value={formData.businessType}
                     onChange={handleChange}
@@ -282,7 +282,7 @@ export default function SignupPage() {
                     id="address"
                     name="address"
                     type="text"
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="Ej. Calle Principal 123 o https://maps.google.com/..."
                     value={formData.address}
@@ -294,7 +294,7 @@ export default function SignupPage() {
 
             {/* Datos de contacto del dueño */}
             <div>
-              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Datos de Contacto</h3>
+              <h3 className="text-lg font-medium text-[#3ea0c9] mb-4">Datos de Contacto</h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-white">
@@ -305,7 +305,7 @@ export default function SignupPage() {
                     name="fullName"
                     type="text"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="Juan Pérez"
                     value={formData.fullName}
@@ -321,7 +321,7 @@ export default function SignupPage() {
                     name="email"
                     type="email"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="tu@correo.com"
                     value={formData.email}
@@ -337,7 +337,7 @@ export default function SignupPage() {
                     name="personalPhone"
                     type="tel"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="+521234567890"
                     value={formData.personalPhone}
@@ -349,7 +349,7 @@ export default function SignupPage() {
 
             {/* Datos del número de WhatsApp */}
             <div>
-              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Configuración de WhatsApp Business</h3>
+              <h3 className="text-lg font-medium text-[#3ea0c9] mb-4">Configuración de WhatsApp Business</h3>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="whatsappNumber" className="block text-sm font-medium text-white">
@@ -360,7 +360,7 @@ export default function SignupPage() {
                     name="whatsappNumber"
                     type="tel"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="+521234567890"
                     value={formData.whatsappNumber}
@@ -377,7 +377,7 @@ export default function SignupPage() {
                     name="whatsappDisplayName"
                     type="text"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="Mi Empresa Atención"
                     value={formData.whatsappDisplayName}
@@ -392,7 +392,7 @@ export default function SignupPage() {
                     id="businessCategory"
                     name="businessCategory"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     value={formData.businessCategory}
                     onChange={handleChange}
@@ -411,7 +411,7 @@ export default function SignupPage() {
                     id="businessDescription"
                     name="businessDescription"
                     rows={3}
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="Describe brevemente tu empresa y servicios..."
                     value={formData.businessDescription}
@@ -427,7 +427,7 @@ export default function SignupPage() {
                     id="website"
                     name="website"
                     type="url"
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="https://www.tu-empresa.com"
                     value={formData.website}
@@ -439,7 +439,7 @@ export default function SignupPage() {
 
             {/* Credenciales de acceso */}
             <div>
-              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Credenciales de Acceso</h3>
+              <h3 className="text-lg font-medium text-[#3ea0c9] mb-4">Credenciales de Acceso</h3>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-white">
@@ -450,7 +450,7 @@ export default function SignupPage() {
                     name="username"
                     type="text"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="tuusuario"
                     value={formData.username}
@@ -466,7 +466,7 @@ export default function SignupPage() {
                     name="password"
                     type="password"
                     required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3488ab] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent sm:text-sm rounded-md"
+                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
                     style={{ backgroundColor: '#000e24' }}
                     placeholder="Contraseña segura"
                     value={formData.password}
@@ -478,7 +478,7 @@ export default function SignupPage() {
 
             {/* Imagen de Perfil */}
             <div>
-              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Imagen de Perfil (Opcional)</h3>
+              <h3 className="text-lg font-medium text-[#3ea0c9] mb-4">Imagen de Perfil (Opcional)</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-6">
                   {imagePreview ? (
@@ -486,7 +486,7 @@ export default function SignupPage() {
                       <img
                         src={imagePreview}
                         alt="Preview"
-                        className="w-20 h-20 rounded-full object-cover border-2 border-[#3488ab]"
+                        className="w-20 h-20 rounded-full object-cover border-2 border-[#3ea0c9]"
                       />
                       <button
                         type="button"
@@ -517,7 +517,7 @@ export default function SignupPage() {
                     />
                     <label
                       htmlFor="profileImage"
-                      className="inline-flex items-center px-4 py-2 border-2 border-[#3488ab] rounded-md shadow-sm text-sm font-medium text-white bg-transparent hover:bg-[#3488ab] hover:bg-opacity-20 cursor-pointer transition-colors"
+                      className="inline-flex items-center px-4 py-2 border-2 border-[#3ea0c9] rounded-md shadow-sm text-sm font-medium text-white bg-transparent hover:bg-[#3ea0c9] hover:bg-opacity-20 cursor-pointer transition-colors"
                     >
                       <svg className="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
@@ -559,7 +559,7 @@ export default function SignupPage() {
           <div className="text-center">
             <button
               onClick={() => router.push('/login')}
-              className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium transition-colors"
+              className="text-[#3ea0c9] hover:text-[#2a6c8a] text-sm font-medium transition-colors"
             >
               ¿Ya tienes cuenta? Inicia sesión
             </button>
