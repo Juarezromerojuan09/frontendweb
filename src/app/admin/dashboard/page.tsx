@@ -141,7 +141,7 @@ export default function AdminDashboard() {
     switch (status) {
       case 'pending_verification':
         bgColor = '#233548'
-        textColor = '#483623'
+        textColor = '#76b2f2'
         text = 'Pendiente'
         break
       case 'active':
