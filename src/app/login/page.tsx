@@ -75,27 +75,53 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#0A2540' }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
       {/* Circuit Pattern Background */}
-      <div className="absolute inset-0 opacity-20">
+      <div className="absolute inset-0 opacity-30">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
           <defs>
-            <pattern id="circuitPattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-              <circle cx="10" cy="10" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="50" cy="10" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="90" cy="10" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="10" cy="50" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="50" cy="50" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="90" cy="50" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="10" cy="90" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="50" cy="90" r="2" fill="#1E90FF" opacity="0.3" />
-              <circle cx="90" cy="90" r="2" fill="#1E90FF" opacity="0.3" />
-              <line x1="10" y1="10" x2="90" y2="10" stroke="#1E90FF" strokeWidth="1" opacity="0.2" />
-              <line x1="10" y1="50" x2="90" y2="50" stroke="#1E90FF" strokeWidth="1" opacity="0.2" />
-              <line x1="10" y1="90" x2="90" y2="90" stroke="#1E90FF" strokeWidth="1" opacity="0.2" />
-              <line x1="10" y1="10" x2="10" y2="90" stroke="#1E90FF" strokeWidth="1" opacity="0.2" />
-              <line x1="50" y1="10" x2="50" y2="90" stroke="#1E90FF" strokeWidth="1" opacity="0.2" />
-              <line x1="90" y1="10" x2="90" y2="90" stroke="#1E90FF" strokeWidth="1" opacity="0.2" />
+            <pattern id="circuitPattern" x="0" y="0" width="150" height="150" patternUnits="userSpaceOnUse">
+              {/* Horizontal lines with circles */}
+              <line x1="10" y1="20" x2="140" y2="20" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="10" cy="20" r="1.5" fill="#012f78" />
+              <circle cx="140" cy="20" r="1.5" fill="#012f78" />
+              
+              <line x1="10" y1="50" x2="140" y2="50" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="10" cy="50" r="1.5" fill="#012f78" />
+              <circle cx="140" cy="50" r="1.5" fill="#012f78" />
+              
+              <line x1="10" y1="80" x2="140" y2="80" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="10" cy="80" r="1.5" fill="#012f78" />
+              <circle cx="140" cy="80" r="1.5" fill="#012f78" />
+              
+              <line x1="10" y1="110" x2="140" y2="110" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="10" cy="110" r="1.5" fill="#012f78" />
+              <circle cx="140" cy="110" r="1.5" fill="#012f78" />
+              
+              <line x1="10" y1="140" x2="140" y2="140" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="10" cy="140" r="1.5" fill="#012f78" />
+              <circle cx="140" cy="140" r="1.5" fill="#012f78" />
+              
+              {/* Vertical lines with circles */}
+              <line x1="20" y1="10" x2="20" y2="140" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="20" cy="10" r="1.5" fill="#012f78" />
+              <circle cx="20" cy="140" r="1.5" fill="#012f78" />
+              
+              <line x1="50" y1="10" x2="50" y2="140" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="50" cy="10" r="1.5" fill="#012f78" />
+              <circle cx="50" cy="140" r="1.5" fill="#012f78" />
+              
+              <line x1="80" y1="10" x2="80" y2="140" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="80" cy="10" r="1.5" fill="#012f78" />
+              <circle cx="80" cy="140" r="1.5" fill="#012f78" />
+              
+              <line x1="110" y1="10" x2="110" y2="140" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="110" cy="10" r="1.5" fill="#012f78" />
+              <circle cx="110" cy="140" r="1.5" fill="#012f78" />
+              
+              <line x1="140" y1="10" x2="140" y2="140" stroke="#012f78" strokeWidth="0.5" />
+              <circle cx="140" cy="10" r="1.5" fill="#012f78" />
+              <circle cx="140" cy="140" r="1.5" fill="#012f78" />
             </pattern>
           </defs>
           <rect width="100%" height="100%" fill="url(#circuitPattern)" />
@@ -108,9 +134,9 @@ export default function LoginPage() {
           <Image 
             src="/Logo.png" 
             alt="JS SYNAPTECH" 
-            width={120} 
-            height={30}
-            className="h-8 w-auto"
+            width={160} 
+            height={40}
+            className="h-10 w-auto"
           />
         </div>
       </div>
@@ -119,7 +145,7 @@ export default function LoginPage() {
       <div className="absolute top-6 right-6 z-10">
         <button
           onClick={() => router.push('/admin/login')}
-          className="px-4 py-2 border border-[#1E90FF] text-sm font-medium rounded-md text-[#B7C2D6] bg-transparent hover:bg-[#1E90FF] hover:bg-opacity-10 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#1E90FF] transition-colors"
+          className="px-4 py-2 border border-[#3488ab] text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3488ab] transition-colors"
         >
           Panel Admin
         </button>
@@ -139,7 +165,7 @@ export default function LoginPage() {
                 className="mx-auto"
               />
             </div>
-            <h1 className="text-3xl font-bold uppercase tracking-wider text-[#1E90FF]">
+            <h1 className="text-3xl font-bold uppercase tracking-wider text-[#90e2f8]">
               SYNAPBOT
             </h1>
             <p className="mt-2 text-[#B7C2D6] text-base">
@@ -159,11 +185,11 @@ export default function LoginPage() {
                   name="username"
                   type="text"
                   required
-                  className="w-full px-4 py-3 border-2 border-[#1E90FF] rounded-lg bg-[#0A2540] text-[#B7C2D6] placeholder-[#B7C2D6] placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-[#3488ab] rounded-lg bg-[#000e24] text-[#B7C2D6] placeholder-[#B7C2D6] placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent"
                   placeholder="Usuario"
                   value={formData.username}
                   onChange={handleChange}
-                  style={{ backgroundColor: '#0A2540' }}
+                  style={{ backgroundColor: '#000e24' }}
                 />
               </div>
               <div>
@@ -175,11 +201,11 @@ export default function LoginPage() {
                   name="password"
                   type="password"
                   required
-                  className="w-full px-4 py-3 border-2 border-[#1E90FF] rounded-lg bg-[#0A2540] text-[#B7C2D6] placeholder-[#B7C2D6] placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-[#1E90FF] focus:border-transparent"
+                  className="w-full px-4 py-3 border-2 border-[#3488ab] rounded-lg bg-[#000e24] text-[#B7C2D6] placeholder-[#B7C2D6] placeholder-opacity-70 focus:outline-none focus:ring-2 focus:ring-[#3488ab] focus:border-transparent"
                   placeholder="Contraseña"
                   value={formData.password}
                   onChange={handleChange}
-                  style={{ backgroundColor: '#0A2540' }}
+                  style={{ backgroundColor: '#000e24' }}
                 />
               </div>
             </div>
@@ -194,7 +220,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#00FFAB] hover:bg-[#00E69C] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#00FFAB] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0073ba] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
                 style={{ boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}
               >
                 {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}
@@ -205,7 +231,7 @@ export default function LoginPage() {
               <button
                 type="button"
                 onClick={() => router.push('/signup')}
-                className="text-[#00FFAB] hover:text-[#00E69C] text-sm font-medium transition-colors"
+                className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium transition-colors"
               >
                 ¿No tienes cuenta? Regístrate aquí
               </button>
