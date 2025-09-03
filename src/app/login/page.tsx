@@ -76,62 +76,76 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
-      {/* Circuit Pattern Background with irregular straight lines */}
-      <div className="absolute inset-0 opacity-30">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      {/* Circuit Pattern Background with longer lines and hollow circles */}
+      <div className="absolute inset-0 opacity-25">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
-            <pattern id="circuitPattern" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
-              {/* Irregular straight lines with circles at endpoints */}
-              <line x1="5" y1="15" x2="45" y2="35" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="5" cy="15" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="45" cy="35" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="25" y1="5" x2="65" y2="25" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="25" cy="5" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="65" cy="25" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="85" y1="15" x2="115" y2="45" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="85" cy="15" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="115" cy="45" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="15" y1="55" x2="55" y2="75" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="15" cy="55" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="55" cy="75" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="75" y1="65" x2="105" y2="85" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="75" cy="65" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="105" cy="85" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="35" y1="85" x2="75" y2="105" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="35" cy="85" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="75" cy="105" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="95" y1="95" x2="115" y2="115" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="95" cy="95" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="115" cy="115" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="15" y1="105" x2="45" y2="115" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="15" cy="105" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="45" cy="115" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="65" y1="35" x2="95" y2="55" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="65" cy="35" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="95" cy="55" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="105" y1="5" x2="115" y2="25" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="105" cy="5" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="115" cy="25" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="5" y1="75" x2="25" y2="95" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="5" cy="75" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="25" cy="95" r="1.2" fill="#012f78" opacity="0.7" />
-              
-              <line x1="85" y1="75" x2="105" y2="95" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
-              <circle cx="85" cy="75" r="1.2" fill="#012f78" opacity="0.7" />
-              <circle cx="105" cy="95" r="1.2" fill="#012f78" opacity="0.7" />
+            {/* Radial gradient for fading center */}
+            <radialGradient id="fadeCenter" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
+              <stop offset="0%" stopColor="#000e24" stopOpacity="0" />
+              <stop offset="40%" stopColor="#000e24" stopOpacity="0" />
+              <stop offset="100%" stopColor="#000e24" stopOpacity="1" />
+            </radialGradient>
+            
+            <pattern id="circuitPattern" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+              {/* Longer lines with direction changes and hollow circles */}
+              <g stroke="#012f78" strokeWidth="0.8" fill="none" opacity="0.6">
+                {/* Line 1 - from left to center with angle */}
+                <path d="M0,40 L80,40 L100,60" />
+                <circle cx="100" cy="60" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 2 - from top to center with angle */}
+                <path d="M40,0 L40,80 L60,100" />
+                <circle cx="60" cy="100" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 3 - from right to center with angle */}
+                <path d="M200,60 L120,60 L100,80" />
+                <circle cx="100" cy="80" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 4 - from bottom to center with angle */}
+                <path d="M60,200 L60,120 L80,100" />
+                <circle cx="80" cy="100" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 5 - from top-left to center */}
+                <path d="M0,20 L60,20 L80,40" />
+                <circle cx="80" cy="40" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 6 - from top-right to center */}
+                <path d="M200,20 L140,20 L120,40" />
+                <circle cx="120" cy="40" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 7 - from bottom-left to center */}
+                <path d="M0,180 L60,180 L80,160" />
+                <circle cx="80" cy="160" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 8 - from bottom-right to center */}
+                <path d="M200,180 L140,180 L120,160" />
+                <circle cx="120" cy="160" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 9 - diagonal from left */}
+                <path d="M0,100 L50,100 L70,120" />
+                <circle cx="70" cy="120" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 10 - diagonal from right */}
+                <path d="M200,100 L150,100 L130,80" />
+                <circle cx="130" cy="80" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 11 - diagonal from top */}
+                <path d="M100,0 L100,50 L120,70" />
+                <circle cx="120" cy="70" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 12 - diagonal from bottom */}
+                <path d="M100,200 L100,150 L80,130" />
+                <circle cx="80" cy="130" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+              </g>
             </pattern>
           </defs>
+          
+          {/* Background with pattern */}
           <rect width="100%" height="100%" fill="url(#circuitPattern)" />
+          
+          {/* Fade out center area */}
+          <rect width="100%" height="100%" fill="url(#fadeCenter)" />
         </svg>
       </div>
 
