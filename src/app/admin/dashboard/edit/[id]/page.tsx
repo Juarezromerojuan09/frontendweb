@@ -530,15 +530,15 @@ export default function EditUserPage() {
         </svg>
       </div>
 
-      {/* JS SYNAPTECH Branding - Top Left */}
-      <div className="absolute top-6 left-6 z-10">
+      {/* JS SYNAPTECH Branding - Centered Small Logo */}
+      <div className="absolute top-6 left-0 right-0 z-10 flex justify-center">
         <div className="flex items-center">
-          <Image 
-            src="/Logo.png" 
-            alt="JS SYNAPTECH" 
-            width={192} 
-            height={48}
-            className="h-12 w-auto"
+          <Image
+            src="/Logo.png"
+            alt="JS SYNAPTECH"
+            width={120}
+            height={30}
+            className="h-8 w-auto"
           />
         </div>
       </div>
@@ -607,13 +607,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('fullName')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('fullName')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -649,13 +649,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('email')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('email')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -691,13 +691,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('personalPhone')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('personalPhone')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -821,13 +821,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('businessName')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('businessName')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -872,13 +872,13 @@ export default function EditUserPage() {
                         </select>
                         <button
                           onClick={() => saveField('businessType')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('businessType')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -915,13 +915,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('address')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('address')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -965,13 +965,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('whatsappNumber')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('whatsappNumber')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -1007,13 +1007,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('whatsappDisplayName')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('whatsappDisplayName')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -1054,13 +1054,13 @@ export default function EditUserPage() {
                         </select>
                         <button
                           onClick={() => saveField('businessCategory')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('businessCategory')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -1098,13 +1098,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('businessDescription')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('businessDescription')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
@@ -1145,13 +1145,13 @@ export default function EditUserPage() {
                         />
                         <button
                           onClick={() => saveField('website')}
-                          className="px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-green-600 text-white rounded hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✓
                         </button>
                         <button
                           onClick={() => cancelEdit('website')}
-                          className="px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                          className="w-8 h-8 bg-red-600 text-white rounded hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors flex items-center justify-center"
                         >
                           ✕
                         </button>
