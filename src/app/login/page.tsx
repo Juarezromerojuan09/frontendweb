@@ -76,55 +76,67 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
-      {/* Circuit Pattern Background */}
-      <div className="absolute inset-0 opacity-30">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+      {/* PCB Circuit Pattern Background */}
+      <div className="absolute inset-0 opacity-40">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
           <defs>
-            <pattern id="circuitPattern" x="0" y="0" width="150" height="150" patternUnits="userSpaceOnUse">
-              {/* Horizontal lines with circles */}
-              <line x1="10" y1="20" x2="140" y2="20" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="10" cy="20" r="1.5" fill="#012f78" />
-              <circle cx="140" cy="20" r="1.5" fill="#012f78" />
+            <pattern id="pcbPattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
+              {/* Central processor area - kept clear */}
+              <circle cx="50" cy="50" r="15" fill="none" stroke="none" />
               
-              <line x1="10" y1="50" x2="140" y2="50" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="10" cy="50" r="1.5" fill="#012f78" />
-              <circle cx="140" cy="50" r="1.5" fill="#012f78" />
+              {/* PCB traces radiating from edges to center */}
+              {/* Top edge traces */}
+              <line x1="10" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="20" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="30" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="40" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="50" y1="10" x2="50" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="60" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="70" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="80" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
               
-              <line x1="10" y1="80" x2="140" y2="80" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="10" cy="80" r="1.5" fill="#012f78" />
-              <circle cx="140" cy="80" r="1.5" fill="#012f78" />
+              {/* Right edge traces */}
+              <line x1="90" y1="20" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="30" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="40" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="50" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="60" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="70" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="80" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="90" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
               
-              <line x1="10" y1="110" x2="140" y2="110" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="10" cy="110" r="1.5" fill="#012f78" />
-              <circle cx="140" cy="110" r="1.5" fill="#012f78" />
+              {/* Bottom edge traces */}
+              <line x1="80" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="70" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="60" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="50" y1="90" x2="50" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="40" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="30" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="20" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="10" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
               
-              <line x1="10" y1="140" x2="140" y2="140" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="10" cy="140" r="1.5" fill="#012f78" />
-              <circle cx="140" cy="140" r="1.5" fill="#012f78" />
+              {/* Left edge traces */}
+              <line x1="10" y1="80" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="10" y1="70" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="10" y1="60" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="10" y1="50" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="10" y1="40" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="10" y1="30" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
+              <line x1="10" y1="20" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
               
-              {/* Vertical lines with circles */}
-              <line x1="20" y1="10" x2="20" y2="140" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="20" cy="10" r="1.5" fill="#012f78" />
-              <circle cx="20" cy="140" r="1.5" fill="#012f78" />
-              
-              <line x1="50" y1="10" x2="50" y2="140" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="50" cy="10" r="1.5" fill="#012f78" />
-              <circle cx="50" cy="140" r="1.5" fill="#012f78" />
-              
-              <line x1="80" y1="10" x2="80" y2="140" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="80" cy="10" r="1.5" fill="#012f78" />
-              <circle cx="80" cy="140" r="1.5" fill="#012f78" />
-              
-              <line x1="110" y1="10" x2="110" y2="140" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="110" cy="10" r="1.5" fill="#012f78" />
-              <circle cx="110" cy="140" r="1.5" fill="#012f78" />
-              
-              <line x1="140" y1="10" x2="140" y2="140" stroke="#012f78" strokeWidth="0.5" />
-              <circle cx="140" cy="10" r="1.5" fill="#012f78" />
-              <circle cx="140" cy="140" r="1.5" fill="#012f78" />
+              {/* Connection points/nodes */}
+              <circle cx="40" cy="40" r="1.5" fill="#012f78" />
+              <circle cx="50" cy="40" r="1.5" fill="#012f78" />
+              <circle cx="60" cy="40" r="1.5" fill="#012f78" />
+              <circle cx="40" cy="50" r="1.5" fill="#012f78" />
+              <circle cx="60" cy="50" r="1.5" fill="#012f78" />
+              <circle cx="40" cy="60" r="1.5" fill="#012f78" />
+              <circle cx="50" cy="60" r="1.5" fill="#012f78" />
+              <circle cx="60" cy="60" r="1.5" fill="#012f78" />
             </pattern>
           </defs>
-          <rect width="100%" height="100%" fill="url(#circuitPattern)" />
+          <rect width="100%" height="100%" fill="url(#pcbPattern)" />
         </svg>
       </div>
 
@@ -134,9 +146,9 @@ export default function LoginPage() {
           <Image 
             src="/Logo.png" 
             alt="JS SYNAPTECH" 
-            width={160} 
-            height={40}
-            className="h-10 w-auto"
+            width={192} 
+            height={48}
+            className="h-12 w-auto"
           />
         </div>
       </div>
