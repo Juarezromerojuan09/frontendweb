@@ -163,10 +163,13 @@ export default function LoginPage() {
       </div>
 
       {/* Admin Login Button - Top Right */}
-      <div className="absolute top-6 right-6 z-10">
+      <div className="absolute top-6 right-6 z-50">
         <button
-          onClick={() => router.push('/admin/login')}
-          className="px-4 py-2 border border-[#3488ab] text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3488ab] transition-colors"
+          onClick={() => {
+            console.log('Admin button clicked - navigating to /admin/login');
+            router.push('/admin/login');
+          }}
+          className="px-4 py-2 border border-[#3488ab] text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3488ab] transition-colors cursor-pointer"
         >
           Panel Admin
         </button>
