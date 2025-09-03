@@ -354,11 +354,22 @@ export default function Dashboard() {
 
     newSocket.on('new-message', (newMessage: Message) => {
       console.log('📨 Nuevo mensaje recibido via Socket.IO:', newMessage)
-      // Solo agregar el mensaje si pertenece a la conversación actual
-      if (selectedConversation === newMessage.customerWaId &&
-          selectedWhatsAppNumber === newMessage.whatsAppNumberId) {
-        setMessages(prevMessages => [...prevMessages, newMessage])
-      } else if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumber) {
+      // Remover mensajes optimistas para evitar duplicados
+      setMessages(prevMessages => {
+        const filteredMessages = prevMessages.filter(msg =>
+          !(msg.messageId.startsWith('optimistic-') &&
+            msg.from === 'business' &&
+            msg.customerWaId === newMessage.customerWaId)
+        )
+        // Solo agregar el mensaje si pertenece a la conversación actual
+        if (selectedConversation === newMessage.customerWaId &&
+            selectedWhatsAppNumber === newMessage.whatsAppNumberId) {
+          return [...filteredMessages, newMessage]
+        }
+        return filteredMessages
+      })
+
+      if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumber) {
         // Si es un mensaje de cliente en una conversación diferente, incrementar contador de no leídos
         setConversations(prevConversations => {
           return prevConversations.map(conv => {
