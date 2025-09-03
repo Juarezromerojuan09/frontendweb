@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState, useCallback } from 'react'
+import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { io, Socket } from 'socket.io-client'
 
@@ -25,6 +25,8 @@ interface Conversation {
     displayName: string;
     lastMessage: string;
     lastMessageTime: string;
+    lastMessageStatus?: 'sent' | 'delivered' | 'read' | 'failed';
+    lastMessageFrom?: 'customer' | 'business';
     messageCount: number;
     pendingReply: boolean;
     customerProfilePic?: string;
@@ -69,6 +71,7 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [chatLoading, setChatLoading] = useState(false)
   const [socket, setSocket] = useState<Socket | null>(null)
+  const messagesEndRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -251,13 +254,31 @@ export default function Dashboard() {
   }, [apiUrl, router])
 
   const sendMessage = useCallback(async () => {
-    if (!newMessage.trim() || !selectedConversation) return
+    if (!newMessage.trim() || !selectedConversation || !selectedWhatsAppNumber) return
+
+    const token = localStorage.getItem('token')
+    if (!token) return
+
+    // Crear mensaje optimista
+    const optimisticMessage: Message = {
+      _id: `optimistic-${Date.now()}`,
+      content: {
+        body: newMessage.trim()
+      },
+      timestamp: new Date().toISOString(),
+      from: 'business',
+      type: 'text',
+      messageId: `optimistic-${Date.now()}`,
+      customerWaId: selectedConversation,
+      whatsAppNumberId: selectedWhatsAppNumber,
+      status: 'sent' // Estado inicial
+    }
+
+    // Agregar mensaje optimista al estado local
+    setMessages(prevMessages => [...prevMessages, optimisticMessage])
+    setNewMessage('') // Limpiar el campo de mensaje inmediatamente
 
     try {
-      setChatLoading(true)
-      const token = localStorage.getItem('token')
-      if (!token) return
-
       const response = await fetch(`${apiUrl}/api/messages/send-manual`, {
         method: 'POST',
         headers: {
@@ -274,25 +295,22 @@ export default function Dashboard() {
       if (response.ok) {
         const data = await response.json()
         if (data.success) {
-          // Limpiar el campo de mensaje
-          setNewMessage('')
-          // Opcional: refrescar los mensajes para ver el nuevo mensaje
-          if (selectedConversation && selectedWhatsAppNumber) {
-            fetchMessages(selectedConversation, selectedWhatsAppNumber)
-          }
+          // El mensaje real llegará via Socket.IO, así que no necesitamos hacer nada aquí
+          console.log('✅ Mensaje enviado exitosamente')
         } else {
           console.error('Error en respuesta:', data.message)
+          // Si hay error, podríamos mostrar una notificación al usuario
         }
       } else {
         const errorData = await response.json().catch(() => ({}))
         console.error('Error HTTP:', response.status, errorData.message || response.statusText)
+        // Podríamos mostrar un error al usuario aquí
       }
     } catch (error) {
       console.error('Error enviando mensaje:', error)
-    } finally {
-      setChatLoading(false)
+      // Podríamos mostrar un error al usuario aquí
     }
-  }, [newMessage, selectedConversation, selectedWhatsAppNumber, apiUrl, fetchMessages])
+  }, [newMessage, selectedConversation, selectedWhatsAppNumber, apiUrl])
 
   useEffect(() => {
     fetchUserData()
@@ -343,12 +361,39 @@ export default function Dashboard() {
     // Escuchar eventos de cambio de estado de mensajes
     newSocket.on('message-status-update', (statusData: { messageId: string; status: string; timestamp: string }) => {
       console.log('📊 Estado de mensaje actualizado:', statusData)
+      
+      // Actualizar estado en mensajes del chat
       setMessages(prevMessages => {
         return prevMessages.map(message => {
           if (message.messageId === statusData.messageId) {
             return { ...message, status: statusData.status as 'sent' | 'delivered' | 'read' | 'failed' }
           }
           return message
+        })
+      })
+
+      // Actualizar estado en la lista de conversaciones si es el último mensaje
+      setConversations(prevConversations => {
+        return prevConversations.map(conversation => {
+          // Verificar si este mensaje es el último mensaje de la conversación
+          const updatedMessages = messages.map(msg =>
+            msg.messageId === statusData.messageId
+              ? { ...msg, status: statusData.status as 'sent' | 'delivered' | 'read' | 'failed' }
+              : msg
+          )
+          
+          // Encontrar el último mensaje de negocio en la conversación actualizada
+          const lastBusinessMessage = updatedMessages
+            .filter(msg => msg.from === 'business')
+            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]
+
+          if (lastBusinessMessage && lastBusinessMessage.messageId === statusData.messageId) {
+            return {
+              ...conversation,
+              lastMessageStatus: statusData.status as 'sent' | 'delivered' | 'read' | 'failed'
+            }
+          }
+          return conversation
         })
       })
     })
@@ -436,6 +481,13 @@ export default function Dashboard() {
       console.log('👤 Uniéndose a sala de usuario:', user.id);
     }
   }, [socket, user?.id])
+
+  // Auto-scroll al fondo del chat cuando cambian los mensajes
+  useEffect(() => {
+    if (messagesEndRef.current) {
+      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    }
+  }, [messages, selectedConversation])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -575,14 +627,52 @@ export default function Dashboard() {
                           )}
                         </div>
                       </div>
-                      <p className="text-sm text-gray-600 dark:text-gray-300 truncate mt-1">
-                        {conversation.lastMessage}
-                      </p>
+                      <div className="flex items-center justify-between mt-1">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 truncate flex-1 mr-2">
+                          {conversation.lastMessage}
+                        </p>
+                        {conversation.lastMessageFrom === 'business' && conversation.lastMessageStatus && (
+                          <div className="flex-shrink-0">
+                            {conversation.lastMessageStatus === 'sent' && (
+                              <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                            {conversation.lastMessageStatus === 'delivered' && (
+                              <>
+                                <svg className="w-3 h-3 text-gray-400 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <svg className="w-3 h-3 text-gray-400" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </>
+                            )}
+                            {conversation.lastMessageStatus === 'read' && (
+                              <>
+                                <svg className="w-3 h-3 text-blue-500 mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                                <svg className="w-3 h-3 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                </svg>
+                              </>
+                            )}
+                            {conversation.lastMessageStatus === 'failed' && (
+                              <svg className="w-3 h-3 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                          </div>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
               ))
             )}
+            {/* Elemento invisible para auto-scroll */}
+            <div ref={messagesEndRef} />
           </div>
         </div>
 
@@ -689,6 +779,8 @@ export default function Dashboard() {
                                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                 </svg>
                               )}
+                              {/* Elemento invisible para auto-scroll */}
+                              <div ref={messagesEndRef} />
                             </div>
                           )}
                         </div>
