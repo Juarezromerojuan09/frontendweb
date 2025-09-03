@@ -77,7 +77,7 @@ export default function LoginPage() {
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
       {/* Circuit Pattern Background with longer lines and hollow circles */}
-      <div className="absolute inset-0 opacity-25">
+      <div className="absolute inset-0 opacity-40">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
             {/* Radial gradient for fading center */}
