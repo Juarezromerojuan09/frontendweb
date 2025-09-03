@@ -76,53 +76,64 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
-      {/* PCB Background SVG */}
-      <svg 
-        className="pcb-bg fixed inset-0 z-0 pointer-events-none" 
-        viewBox="0 0 160 160" 
-        preserveAspectRatio="xMidYMid slice" 
-        aria-hidden="true"
-      >
-        <defs>
-          {/* Tile del patrón */}
-          <pattern id="pcb-tile" width="160" height="160" patternUnits="userSpaceOnUse">
-            {/* Líneas/"trazas" */}
-            <g stroke="#022352" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6">
-              <path d="M10 20 H70 A8 8 0 0 1 78 28 V120 H140" />
-              <path d="M20 80 H60 A10 10 0 0 0 70 90 V150" />
-              <path d="M5 130 H90 A8 8 0 0 1 98 138 V155" />
-              <path d="M150 10 V70 A10 10 0 0 1 140 80 H100" />
-              <path d="M120 40 H80 A8 8 0 0 0 72 48 V100 H30" />
-              <path d="M30 30 V50 A8 8 0 0 0 38 58 H110" />
-              <path d="M130 120 H100 A8 8 0 0 0 92 128 V155" />
-            </g>
-            {/* Nodos ("vias"/pads) */}
-            <g fill="#022352" opacity="0.85">
-              <circle cx="78" cy="28" r="3" />
-              <circle cx="70" cy="90" r="3" />
-              <circle cx="98" cy="138" r="3" />
-              <circle cx="140" cy="80" r="3" />
-              <circle cx="72" cy="48" r="3" />
-              <circle cx="38" cy="58" r="3" />
-              <circle cx="100" cy="120" r="3" />
-            </g>
-          </pattern>
-
-          {/* Vignette suave para que no distraiga */}
-          <radialGradient id="soft-fade">
-            <stop offset="60%" stopColor="white" stopOpacity="1"/>
-            <stop offset="100%" stopColor="white" stopOpacity="0"/>
-          </radialGradient>
-          <mask id="fade-mask">
-            <rect width="100%" height="100%" fill="url(#soft-fade)"/>
-          </mask>
-        </defs>
-
-        {/* Fondo sólido */}
-        <rect width="100%" height="100%" fill="#000e24"/>
-        {/* Patrón repetido con máscara suave */}
-        <rect width="100%" height="100%" fill="url(#pcb-tile)" mask="url(#fade-mask)"/>
-      </svg>
+      {/* Circuit Pattern Background with irregular straight lines */}
+      <div className="absolute inset-0 opacity-30">
+        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <pattern id="circuitPattern" x="0" y="0" width="120" height="120" patternUnits="userSpaceOnUse">
+              {/* Irregular straight lines with circles at endpoints */}
+              <line x1="5" y1="15" x2="45" y2="35" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="5" cy="15" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="45" cy="35" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="25" y1="5" x2="65" y2="25" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="25" cy="5" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="65" cy="25" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="85" y1="15" x2="115" y2="45" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="85" cy="15" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="115" cy="45" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="15" y1="55" x2="55" y2="75" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="15" cy="55" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="55" cy="75" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="75" y1="65" x2="105" y2="85" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="75" cy="65" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="105" cy="85" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="35" y1="85" x2="75" y2="105" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="35" cy="85" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="75" cy="105" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="95" y1="95" x2="115" y2="115" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="95" cy="95" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="115" cy="115" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="15" y1="105" x2="45" y2="115" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="15" cy="105" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="45" cy="115" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="65" y1="35" x2="95" y2="55" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="65" cy="35" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="95" cy="55" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="105" y1="5" x2="115" y2="25" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="105" cy="5" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="115" cy="25" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="5" y1="75" x2="25" y2="95" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="5" cy="75" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="25" cy="95" r="1.2" fill="#012f78" opacity="0.7" />
+              
+              <line x1="85" y1="75" x2="105" y2="95" stroke="#012f78" strokeWidth="0.8" opacity="0.6" />
+              <circle cx="85" cy="75" r="1.2" fill="#012f78" opacity="0.7" />
+              <circle cx="105" cy="95" r="1.2" fill="#012f78" opacity="0.7" />
+            </pattern>
+          </defs>
+          <rect width="100%" height="100%" fill="url(#circuitPattern)" />
+        </svg>
+      </div>
 
       {/* JS SYNAPTECH Branding - Top Left */}
       <div className="absolute top-6 left-6 z-10">
