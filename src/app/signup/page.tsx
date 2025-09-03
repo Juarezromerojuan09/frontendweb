@@ -229,7 +229,7 @@ export default function SignupPage() {
             <h1 className="text-3xl font-bold uppercase tracking-wider text-[#90e2f8]">
               Registro de Usuario
             </h1>
-            <p className="mt-2 text-[#90e2f8] text-base">
+            <p className="mt-2 text-[#90ecf8] text-base">
               Crea una nueva cuenta para tu negocio
             </p>
           </div>
@@ -237,7 +237,7 @@ export default function SignupPage() {
           <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
             {/* Información de la empresa */}
             <div>
-              <h3 className="text-lg font-medium text-[#145e77] mb-4">Información de la Empresa</h3>
+              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Información de la Empresa</h3>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="businessName" className="block text-sm font-medium text-white">
@@ -294,7 +294,7 @@ export default function SignupPage() {
 
             {/* Datos de contacto del dueño */}
             <div>
-              <h3 className="text-lg font-medium text-[#145e77] mb-4">Datos de Contacto</h3>
+              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Datos de Contacto</h3>
               <div className="grid grid-cols-1 gap-4">
                 <div>
                   <label htmlFor="fullName" className="block text-sm font-medium text-white">
@@ -349,7 +349,7 @@ export default function SignupPage() {
 
             {/* Datos del número de WhatsApp */}
             <div>
-              <h3 className="text-lg font-medium text-[#145e77] mb-4">Configuración de WhatsApp Business</h3>
+              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Configuración de WhatsApp Business</h3>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="whatsappNumber" className="block text-sm font-medium text-white">
@@ -439,7 +439,7 @@ export default function SignupPage() {
 
             {/* Credenciales de acceso */}
             <div>
-              <h3 className="text-lg font-medium text-[#145e77] mb-4">Credenciales de Acceso</h3>
+              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Credenciales de Acceso</h3>
               <div className="space-y-4">
                 <div>
                   <label htmlFor="username" className="block text-sm font-medium text-white">
@@ -478,7 +478,7 @@ export default function SignupPage() {
 
             {/* Imagen de Perfil */}
             <div>
-              <h3 className="text-lg font-medium text-[#145e77] mb-4">Imagen de Perfil (Opcional)</h3>
+              <h3 className="text-lg font-medium text-[#3488ab] mb-4">Imagen de Perfil (Opcional)</h3>
               <div className="space-y-4">
                 <div className="flex items-center space-x-6">
                   {imagePreview ? (
@@ -501,7 +501,7 @@ export default function SignupPage() {
                     </div>
                   ) : (
                     <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ backgroundColor: '#0b1e34' }}>
-                      <svg className="w-8 h-8" fill="#90e2f8" stroke="currentColor" viewBox="0 0 24 24">
+                      <svg className="w-9 h-9" fill="#90e2f8" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                     </div>
