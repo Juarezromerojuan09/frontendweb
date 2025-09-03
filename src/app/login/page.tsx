@@ -169,7 +169,7 @@ export default function LoginPage() {
             console.log('Admin button clicked - navigating to /admin/login');
             router.push('/admin/login');
           }}
-          className="px-4 py-2 border border-[#3488ab] text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#3488ab] transition-colors cursor-pointer"
+          className="px-4 py-2 border border-[#3488ab] text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors cursor-pointer"
         >
           Panel Admin
         </button>
@@ -244,7 +244,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0073ba] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
                 style={{ boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}
               >
                 {loading ? 'Iniciando sesión...' : 'Iniciar Sesión'}

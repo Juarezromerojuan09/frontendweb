@@ -548,7 +548,7 @@ export default function SignupPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#0073ba] disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
                 style={{ boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}
               >
                 {loading ? 'Registrando...' : 'Registrar'}
