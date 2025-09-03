@@ -76,69 +76,53 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
-      {/* PCB Circuit Pattern Background */}
-      <div className="absolute inset-0 opacity-40">
-        <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">
-          <defs>
-            <pattern id="pcbPattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-              {/* Central processor area - kept clear */}
-              <circle cx="50" cy="50" r="15" fill="none" stroke="none" />
-              
-              {/* PCB traces radiating from edges to center */}
-              {/* Top edge traces */}
-              <line x1="10" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="20" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="30" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="40" y1="10" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="50" y1="10" x2="50" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="60" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="70" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="80" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="10" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              
-              {/* Right edge traces */}
-              <line x1="90" y1="20" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="30" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="40" x2="60" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="50" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="60" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="70" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="80" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="90" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              
-              {/* Bottom edge traces */}
-              <line x1="80" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="70" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="60" y1="90" x2="60" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="50" y1="90" x2="50" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="40" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="30" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="20" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="10" y1="90" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              
-              {/* Left edge traces */}
-              <line x1="10" y1="80" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="10" y1="70" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="10" y1="60" x2="40" y2="60" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="10" y1="50" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="10" y1="40" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="10" y1="30" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              <line x1="10" y1="20" x2="40" y2="40" stroke="#012f78" strokeWidth="1.2" />
-              
-              {/* Connection points/nodes */}
-              <circle cx="40" cy="40" r="1.5" fill="#012f78" />
-              <circle cx="50" cy="40" r="1.5" fill="#012f78" />
-              <circle cx="60" cy="40" r="1.5" fill="#012f78" />
-              <circle cx="40" cy="50" r="1.5" fill="#012f78" />
-              <circle cx="60" cy="50" r="1.5" fill="#012f78" />
-              <circle cx="40" cy="60" r="1.5" fill="#012f78" />
-              <circle cx="50" cy="60" r="1.5" fill="#012f78" />
-              <circle cx="60" cy="60" r="1.5" fill="#012f78" />
-            </pattern>
-          </defs>
-          <rect width="100%" height="100%" fill="url(#pcbPattern)" />
-        </svg>
-      </div>
+      {/* PCB Background SVG */}
+      <svg 
+        className="pcb-bg fixed inset-0 z-0 pointer-events-none" 
+        viewBox="0 0 160 160" 
+        preserveAspectRatio="xMidYMid slice" 
+        aria-hidden="true"
+      >
+        <defs>
+          {/* Tile del patrón */}
+          <pattern id="pcb-tile" width="160" height="160" patternUnits="userSpaceOnUse">
+            {/* Líneas/"trazas" */}
+            <g stroke="#022352" strokeWidth="2" strokeLinecap="round" fill="none" opacity="0.6">
+              <path d="M10 20 H70 A8 8 0 0 1 78 28 V120 H140" />
+              <path d="M20 80 H60 A10 10 0 0 0 70 90 V150" />
+              <path d="M5 130 H90 A8 8 0 0 1 98 138 V155" />
+              <path d="M150 10 V70 A10 10 0 0 1 140 80 H100" />
+              <path d="M120 40 H80 A8 8 0 0 0 72 48 V100 H30" />
+              <path d="M30 30 V50 A8 8 0 0 0 38 58 H110" />
+              <path d="M130 120 H100 A8 8 0 0 0 92 128 V155" />
+            </g>
+            {/* Nodos ("vias"/pads) */}
+            <g fill="#022352" opacity="0.85">
+              <circle cx="78" cy="28" r="3" />
+              <circle cx="70" cy="90" r="3" />
+              <circle cx="98" cy="138" r="3" />
+              <circle cx="140" cy="80" r="3" />
+              <circle cx="72" cy="48" r="3" />
+              <circle cx="38" cy="58" r="3" />
+              <circle cx="100" cy="120" r="3" />
+            </g>
+          </pattern>
+
+          {/* Vignette suave para que no distraiga */}
+          <radialGradient id="soft-fade">
+            <stop offset="60%" stopColor="white" stopOpacity="1"/>
+            <stop offset="100%" stopColor="white" stopOpacity="0"/>
+          </radialGradient>
+          <mask id="fade-mask">
+            <rect width="100%" height="100%" fill="url(#soft-fade)"/>
+          </mask>
+        </defs>
+
+        {/* Fondo sólido */}
+        <rect width="100%" height="100%" fill="#000e24"/>
+        {/* Patrón repetido con máscara suave */}
+        <rect width="100%" height="100%" fill="url(#pcb-tile)" mask="url(#fade-mask)"/>
+      </svg>
 
       {/* JS SYNAPTECH Branding - Top Left */}
       <div className="absolute top-6 left-6 z-10">
@@ -164,7 +148,7 @@ export default function LoginPage() {
       </div>
 
       {/* Main Content */}
-      <div className="relative z-0 flex items-center justify-center min-h-screen px-4 py-12 sm:px-6 lg:px-8">
+      <div className="relative z-10 flex items-center justify-center min-h-screen px-4 py-12 sm:px-6 lg:px-8">
         <div className="max-w-md w-full space-y-8">
           {/* SYNAPBOT Logo */}
           <div className="text-center">
