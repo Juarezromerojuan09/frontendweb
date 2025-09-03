@@ -428,7 +428,7 @@ export default function Dashboard() {
     })
 
     // Escuchar eventos de actualización de conversaciones
-    newSocket.on('conversation-updated', (updatedConversation: UpdatedConversation) => {
+    newSocket.on('conversation-updated', (updatedConversation: any) => {
       console.log('🔄 Conversación actualizada:', updatedConversation)
       setConversations(prevConversations => {
         // Buscar si la conversación ya existe
@@ -440,25 +440,38 @@ export default function Dashboard() {
           // Actualizar conversación existente
           const updatedConvs = [...prevConversations]
           const currentUnreadCount = updatedConvs[existingConvIndex].unreadCount || 0
+          
+          // Determinar si debemos mostrar palomitas (solo para mensajes de negocio)
+          const shouldShowCheckmarks = updatedConversation.lastMessageFrom === 'business' &&
+                                     updatedConversation.lastMessageStatus;
+          
           updatedConvs[existingConvIndex] = {
             ...updatedConvs[existingConvIndex],
             lastMessage: updatedConversation.lastMessage,
             lastMessageTime: updatedConversation.lastMessageTime,
             messageCount: updatedConvs[existingConvIndex].messageCount + 1,
             pendingReply: updatedConversation.pendingReply,
-            unreadCount: updatedConversation.pendingReply ? currentUnreadCount + 1 : currentUnreadCount
+            unreadCount: updatedConversation.pendingReply ? currentUnreadCount + 1 : currentUnreadCount,
+            // Solo mantener lastMessageStatus y lastMessageFrom para mensajes de negocio
+            lastMessageStatus: shouldShowCheckmarks ? updatedConversation.lastMessageStatus : undefined,
+            lastMessageFrom: shouldShowCheckmarks ? updatedConversation.lastMessageFrom : undefined
           }
           return updatedConvs
         } else {
           // Agregar nueva conversación si no existe
+          const shouldShowCheckmarks = updatedConversation.lastMessageFrom === 'business' &&
+                                     updatedConversation.lastMessageStatus;
+          
           return [
             {
               customerWaId: updatedConversation.customerWaId,
               customerName: updatedConversation.customerName,
-              customerPhone: updatedConversation.customerWaId, // Usar WA ID como teléfono por defecto
-              displayName: 'Nueva Conversación', // Esto debería venir del backend
+              customerPhone: updatedConversation.customerWaId,
+              displayName: 'Nueva Conversación',
               lastMessage: updatedConversation.lastMessage,
               lastMessageTime: updatedConversation.lastMessageTime,
+              lastMessageStatus: shouldShowCheckmarks ? updatedConversation.lastMessageStatus : undefined,
+              lastMessageFrom: shouldShowCheckmarks ? updatedConversation.lastMessageFrom : undefined,
               messageCount: 1,
               pendingReply: updatedConversation.pendingReply,
               unreadCount: updatedConversation.pendingReply ? 1 : 0
