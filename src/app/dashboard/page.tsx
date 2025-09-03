@@ -274,8 +274,26 @@ export default function Dashboard() {
       status: 'sent' // Estado inicial
     }
 
-    // Agregar mensaje optimista al estado local
+    // Agregar mensaje optimista al estado local de mensajes
     setMessages(prevMessages => [...prevMessages, optimisticMessage])
+    
+    // Actualizar la lista de conversaciones con el nuevo mensaje
+    setConversations(prevConversations => {
+      return prevConversations.map(conversation => {
+        if (conversation.customerWaId === selectedConversation) {
+          return {
+            ...conversation,
+            lastMessage: newMessage.trim(),
+            lastMessageTime: new Date().toISOString(),
+            lastMessageStatus: 'sent',
+            lastMessageFrom: 'business',
+            messageCount: conversation.messageCount + 1
+          }
+        }
+        return conversation
+      })
+    })
+
     setNewMessage('') // Limpiar el campo de mensaje inmediatamente
 
     try {
