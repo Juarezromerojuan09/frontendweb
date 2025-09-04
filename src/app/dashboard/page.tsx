@@ -547,8 +547,8 @@ export default function Dashboard() {
 
   return (
     <div className="h-screen flex flex-col relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
-      {/* Circuit Pattern Background with longer lines and hollow circles */}
-      <div className="absolute inset-0 opacity-40">
+      {/* Circuit Pattern Background with longer lines and hollow circles - Behind everything */}
+      <div className="absolute inset-0 opacity-40 z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
             {/* Radial gradient for fading center */}
@@ -620,30 +620,31 @@ export default function Dashboard() {
         </svg>
       </div>
 
-      {/* SYNAPBOT Logo - Top Center */}
-      <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10">
-        <Image
-          src="/Logobot.png"
-          alt="SYNAPBOT"
-          width={192}
-          height={48}
-          className="h-12 w-auto"
-        />
-      </div>
+      {/* Header with integrated logo, title, and buttons - Compact layout */}
+      <div className="relative z-50 bg-[#0b1e34] shadow-sm border-b border-[#012f78] px-6 py-3">
+        <div className="flex items-center justify-between">
+          {/* Left section - Logo and title */}
+          <div className="flex items-center space-x-3">
+            <Image
+              src="/Logobot.png"
+              alt="SYNAPBOT"
+              width={100}
+              height={25}
+              className="h-6 w-auto"
+            />
+            <h1 className="text-lg font-semibold text-[#90e2f8]">
+              Whatsapp Synapbot
+            </h1>
+          </div>
 
-      {/* Header */}
-      <div className="relative z-10 bg-[#0b1e34] shadow-sm border-b border-[#012f78] px-4 py-3 mt-16">
-        <div className="flex justify-between items-center">
-          <h1 className="text-xl font-semibold text-[#90e2f8]">
-            Whatsapp Synapbot
-          </h1>
-          <div className="flex items-center space-x-4">
+          {/* Right section - User info and logout button */}
+          <div className="flex items-center space-x-3">
             <span className="text-sm text-[#B7C2D6]">
               {user?.name}
             </span>
             <button
               onClick={handleLogout}
-              className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
+              className="px-3 py-1.5 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
             >
               Salir
             </button>
@@ -652,15 +653,15 @@ export default function Dashboard() {
       </div>
 
       {/* Selector de WhatsApp Numbers */}
-      <div className="bg-[#0b1e34] border-b border-[#012f78] px-4 py-2">
-        <div className="flex items-center space-x-2">
+      <div className="bg-[#0b1e34] border-b border-[#012f78] px-6 py-3 relative z-50">
+        <div className="flex items-center space-x-3">
           <label className="text-sm font-medium text-[#B7C2D6]">
             Número WhatsApp:
           </label>
           <select
             value={selectedWhatsAppNumber || ''}
             onChange={(e) => setSelectedWhatsAppNumber(e.target.value)}
-            className="flex-1 max-w-xs px-3 py-1 text-sm border border-[#3ea0c9] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent bg-[#000e24] text-white"
+            className="flex-1 max-w-xs px-4 py-2 text-sm border-2 border-[#3ea0c9] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent bg-[#000e24] text-white cursor-pointer"
           >
             {whatsAppNumbers.map((wa) => (
               <option key={wa._id} value={wa._id}>
@@ -672,7 +673,7 @@ export default function Dashboard() {
       </div>
 
       {/* Main Content - WhatsApp Layout */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-1 overflow-hidden relative z-50">
         {/* Conversations Sidebar */}
         <div className="w-full md:w-1/3 lg:w-1/4 bg-[#0b1e34] border-r border-[#012f78]">
           <div className="p-4 border-b border-[#012f78]">
@@ -699,6 +700,7 @@ export default function Dashboard() {
                 <div
                   key={conversation.customerWaId}
                   onClick={() => {
+                    console.log('Conversación seleccionada:', conversation.customerWaId);
                     setSelectedConversation(conversation.customerWaId)
                     if (selectedWhatsAppNumber) {
                       fetchMessages(conversation.customerWaId, selectedWhatsAppNumber)
@@ -715,8 +717,8 @@ export default function Dashboard() {
                       })
                     }
                   }}
-                  className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-30 border-b border-[#012f78] ${
-                    selectedConversation === conversation.customerWaId ? 'bg-[#012f78] bg-opacity-50' : ''
+                  className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-50 border-b border-[#012f78] relative z-40 transition-colors ${
+                    selectedConversation === conversation.customerWaId ? 'bg-[#012f78] bg-opacity-70' : ''
                   }`}
                 >
                   <div className="flex items-start space-x-3">
@@ -759,34 +761,34 @@ export default function Dashboard() {
                           {conversation.lastMessage}
                         </p>
                         {conversation.lastMessageFrom === 'business' && conversation.lastMessageStatus && (
-                          <div className="flex-shrink-0">
+                          <div className="flex-shrink-0 flex items-center space-x-1">
                             {conversation.lastMessageStatus === 'sent' && (
-                              <svg className="w-3 h-3 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             )}
                             {conversation.lastMessageStatus === 'delivered' && (
                               <>
-                                <svg className="w-3 h-3 text-[#B7C2D6] mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
-                                <svg className="w-3 h-3 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               </>
                             )}
                             {conversation.lastMessageStatus === 'read' && (
                               <>
-                                <svg className="w-3 h-3 text-[#90e2f8] mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
-                                <svg className="w-3 h-3 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               </>
                             )}
                             {conversation.lastMessageStatus === 'failed' && (
-                              <svg className="w-3 h-3 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                               </svg>
                             )}
@@ -804,7 +806,7 @@ export default function Dashboard() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-[#000e24]">
+        <div className="flex-1 flex flex-col bg-[#000e24] relative z-50">
           {selectedConversation ? (
             <>
               {/* Chat Header */}
@@ -918,7 +920,7 @@ export default function Dashboard() {
               </div>
 
               {/* Message Input */}
-              <div className="bg-[#0b1e34] border-t border-[#012f78] px-4 py-3">
+              <div className="bg-[#0b1e34] border-t border-[#012f78] px-4 py-3 relative z-50">
                 <div className="flex items-end space-x-2">
                   <div className="flex-1">
                     <textarea
