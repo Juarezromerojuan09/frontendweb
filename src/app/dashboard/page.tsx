@@ -675,8 +675,8 @@ export default function Dashboard() {
       {/* Main Content - WhatsApp Layout */}
       <div className="flex flex-1 overflow-hidden relative z-50">
         {/* Conversations Sidebar */}
-        <div className="w-full md:w-1/3 lg:w-1/4 bg-[#0b1e34] border-r border-[#012f78]">
-          <div className="p-4 border-b border-[#012f78]">
+        <div className="w-full md:w-1/3 lg:w-1/4 bg-[#0b1e34] border-r border-[#012f78] flex flex-col h-full">
+          <div className="p-4 border-b border-[#012f78] flex-shrink-0">
             <h2 className="text-lg font-semibold text-white">
               Conversaciones
             </h2>
@@ -685,7 +685,7 @@ export default function Dashboard() {
             </div>
           </div>
 
-          <div className="overflow-y-auto h-full pb-4">
+          <div className="overflow-y-auto flex-1 pb-4">
             {loading ? (
               <div className="p-4 text-center">
                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#90e2f8] mx-auto"></div>
@@ -717,7 +717,7 @@ export default function Dashboard() {
                       })
                     }
                   }}
-                  className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-50 border-b border-[#012f78] relative z-40 transition-colors ${
+                  className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-50 border-b border-[#012f78] relative z-50 transition-colors ${
                     selectedConversation === conversation.customerWaId ? 'bg-[#012f78] bg-opacity-70' : ''
                   }`}
                 >
@@ -762,37 +762,37 @@ export default function Dashboard() {
                         </p>
                         {conversation.lastMessageFrom === 'business' && conversation.lastMessageStatus && (
                           <div className="flex-shrink-0 flex items-center space-x-1">
-                            {conversation.lastMessageStatus === 'sent' && (
-                              <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                            {conversation.lastMessageStatus === 'delivered' && (
-                              <>
-                                <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              </>
-                            )}
-                            {conversation.lastMessageStatus === 'read' && (
-                              <>
-                                <svg className="w-4 h-4 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                                <svg className="w-4 h-4 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              </>
-                            )}
-                            {conversation.lastMessageStatus === 'failed' && (
-                              <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
-                                <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
-                              </svg>
-                            )}
-                          </div>
+                           {conversation.lastMessageStatus === 'sent' && (
+                             <svg className="w-5 h-5 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                               <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                             </svg>
+                           )}
+                           {conversation.lastMessageStatus === 'delivered' && (
+                             <>
+                               <svg className="w-5 h-5 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                               </svg>
+                               <svg className="w-5 h-5 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                               </svg>
+                             </>
+                           )}
+                           {conversation.lastMessageStatus === 'read' && (
+                             <>
+                               <svg className="w-5 h-5 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
+                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                               </svg>
+                               <svg className="w-5 h-5 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
+                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                               </svg>
+                             </>
+                           )}
+                           {conversation.lastMessageStatus === 'failed' && (
+                             <svg className="w-5 h-5 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                               <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
+                             </svg>
+                           )}
+                         </div>
                         )}
                       </div>
                     </div>
@@ -806,11 +806,11 @@ export default function Dashboard() {
         </div>
 
         {/* Chat Area */}
-        <div className="flex-1 flex flex-col bg-[#000e24] relative z-50">
+        <div className="flex-1 flex flex-col bg-[#000e24] relative z-50 h-full">
           {selectedConversation ? (
             <>
               {/* Chat Header */}
-              <div className="bg-[#0b1e34] border-b border-[#012f78] px-4 py-3">
+              <div className="bg-[#0b1e34] border-b border-[#012f78] px-4 py-3 flex-shrink-0">
                 <div className="flex items-center space-x-3">
                   {(() => {
                     const currentConversation = conversations.find(c => c.customerWaId === selectedConversation);
@@ -848,7 +848,7 @@ export default function Dashboard() {
               </div>
 
               {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              <div className="flex-1 overflow-y-auto p-4 space-y-4 h-full">
                 {chatLoading ? (
                   <div className="text-center">
                     <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#90e2f8] mx-auto"></div>
@@ -865,8 +865,8 @@ export default function Dashboard() {
                     >
                       <div className={`rounded-lg px-4 py-2 max-w-xs lg:max-w-md ${
                         message.from === 'business'
-                          ? 'bg-[#0073ba] text-white'
-                          : 'bg-[#0b1e34] text-white border border-[#3ea0c9]'
+                          ? 'bg-[#045d57] text-white'
+                          : 'bg-[#1f272a] text-white'
                       }`}>
                         <p>{message.content.body}</p>
                         <div className={`text-xs mt-1 ${message.from === 'business' ? 'flex items-center justify-end gap-1 text-[#B7C2D6]' : 'text-[#B7C2D6]'}`}>
@@ -878,33 +878,33 @@ export default function Dashboard() {
                             <div className="flex items-center">
                               {message.status === 'sent' && (
                                 <>
-                                  <svg className="w-3 h-3 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
                                 </>
                               )}
                               {message.status === 'delivered' && (
                                 <>
-                                  <svg className="w-3 h-3 text-[#B7C2D6] mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-4 h-4 text-[#B7C2D6] mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
-                                  <svg className="w-3 h-3 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
                                 </>
                               )}
                               {message.status === 'read' && (
                                 <>
-                                  <svg className="w-3 h-3 text-[#90e2f8] mr-0.5" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-4 h-4 text-[#90e2f8] mr-0.5" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
-                                  <svg className="w-3 h-3 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-4 h-4 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
                                 </>
                               )}
                               {message.status === 'failed' && (
-                                <svg className="w-3 h-3 text-red-400" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-4 h-4 text-red-400" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clipRule="evenodd" />
                                 </svg>
                               )}
@@ -920,7 +920,7 @@ export default function Dashboard() {
               </div>
 
               {/* Message Input */}
-              <div className="bg-[#0b1e34] border-t border-[#012f78] px-4 py-3 relative z-50">
+              <div className="bg-[#0b1e34] border-t border-[#012f78] px-4 py-3 relative z-50 flex-shrink-0">
                 <div className="flex items-end space-x-2">
                   <div className="flex-1">
                     <textarea
@@ -939,11 +939,11 @@ export default function Dashboard() {
                   </div>
                   <button
                     onClick={sendMessage}
-                    className="bg-[#0073ba] hover:bg-[#005a92] text-white rounded-full p-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors"
+                    className="bg-[#0073ba] hover:bg-[#005a92] text-white rounded-full p-2 disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors flex items-center justify-center"
                     disabled={!newMessage.trim() || chatLoading}
                   >
-                    <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-6.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14 5l7 7m0 0l-7 7m7-7H3" />
                     </svg>
                   </button>
                 </div>
