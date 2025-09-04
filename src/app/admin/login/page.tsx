@@ -221,7 +221,10 @@ export default function AdminLoginPage() {
 
             <div className="text-center">
               <button
-                onClick={() => router.push('/login')}
+                onClick={() => {
+                  console.log('Botón Volver al inicio de sesión clickeado - redirigiendo a /login');
+                  router.push('/login');
+                }}
                 className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium cursor-pointer transition-colors"
               >
                 Volver al inicio de sesión

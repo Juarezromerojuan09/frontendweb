@@ -286,15 +286,21 @@ export default function AdminDashboard() {
       </div>
 
       {/* Navigation Buttons - Top Right */}
-      <div className="absolute top-6 right-6 z-10 flex items-center space-x-4">
+      <div className="absolute top-6 right-6 z-50 flex items-center space-x-4">
         <button
-          onClick={() => router.push('/login')}
+          onClick={() => {
+            console.log('Botón Volver clickeado - redirigiendo a /login');
+            router.push('/login');
+          }}
           className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium cursor-pointer transition-colors"
         >
           Volver
         </button>
         <button
-          onClick={handleLogout}
+          onClick={() => {
+            console.log('Botón Cerrar sesión clickeado');
+            handleLogout();
+          }}
           className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
         >
           Cerrar sesión
