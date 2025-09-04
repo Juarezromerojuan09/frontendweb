@@ -289,13 +289,13 @@ export default function AdminDashboard() {
       <div className="absolute top-6 right-6 z-10 flex items-center space-x-4">
         <button
           onClick={() => router.push('/login')}
-          className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium transition-colors"
+          className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium cursor-pointer transition-colors"
         >
           Volver
         </button>
         <button
           onClick={handleLogout}
-          className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+          className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
         >
           Cerrar sesión
         </button>
@@ -435,7 +435,7 @@ export default function AdminDashboard() {
                           {user.status === 'pending_verification' && (
                             <button
                               onClick={() => handleApproveUser(user._id)}
-                              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 transition-colors"
+                              className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500 cursor-pointer transition-colors"
                               type="button"
                             >
                               Aprobar
@@ -443,7 +443,7 @@ export default function AdminDashboard() {
                           )}
                           <Link
                             href={`/admin/dashboard/edit/${user._id}`}
-                            className="inline-flex items-center px-3 py-1.5 border border-[#3ea0c9] text-xs font-medium rounded text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white transition-colors"
+                            className="inline-flex items-center px-3 py-1.5 border border-[#3ea0c9] text-xs font-medium rounded text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
                           >
                             Editar
                           </Link>

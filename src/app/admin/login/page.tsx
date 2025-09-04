@@ -212,7 +212,7 @@ export default function AdminLoginPage() {
               <button
                 type="submit"
                 disabled={loading}
-                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors shadow-md"
+                className="w-full py-3 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer transition-colors shadow-md"
                 style={{ boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}
               >
                 {loading ? 'Iniciando sesión...' : 'Acceder al Panel Admin'}
@@ -222,7 +222,7 @@ export default function AdminLoginPage() {
             <div className="text-center">
               <button
                 onClick={() => router.push('/login')}
-                className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium transition-colors"
+                className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium cursor-pointer transition-colors"
               >
                 Volver al inicio de sesión
               </button>
