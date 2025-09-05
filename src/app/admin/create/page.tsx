@@ -92,14 +92,14 @@ export default function AdminCreate() {
       }
     } catch (err) {
       const axiosErr = err as AxiosError
-      if (axiosErr.response?.status === 401) {
+      if (axiosErr.response?.status === 401 && axiosErr.response.data?.message === 'Token inválido') {
+        setError('Token de administración inválido')
+      } else if (axiosErr.response?.status === 401) {
         setError('No autorizado. Por favor inicia sesión nuevamente.')
         localStorage.removeItem('adminToken')
         router.push('/admin/login')
       } else if (axiosErr.response?.status === 400) {
         setError(axiosErr.response.data?.message || 'Error en los datos enviados')
-      } else if (axiosErr.response?.status === 401 && axiosErr.response.data?.message === 'Token inválido') {
-        setError('Token de administración inválido')
       } else {
         setError('Error al crear administrador. Intenta nuevamente.')
       }
