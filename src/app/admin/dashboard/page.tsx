@@ -286,25 +286,36 @@ export default function AdminDashboard() {
       </div>
 
       {/* Navigation Buttons - Top Right */}
-      <div className="absolute top-6 right-6 z-50 flex items-center space-x-4">
-        <button
-          onClick={() => {
-            console.log('Botón Volver clickeado - redirigiendo a /login');
-            router.push('/login');
-          }}
-          className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium cursor-pointer transition-colors"
-        >
-          Volver
-        </button>
-        <button
-          onClick={() => {
-            console.log('Botón Cerrar sesión clickeado');
-            handleLogout();
-          }}
-          className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
-        >
-          Cerrar sesión
-        </button>
+      <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-2">
+        <div className="flex items-center space-x-4">
+          <button
+            onClick={() => {
+              console.log('Botón Volver clickeado - redirigiendo a /login');
+              router.push('/login');
+            }}
+            className="text-[#3488ab] hover:text-[#2a6c8a] text-sm font-medium cursor-pointer transition-colors"
+          >
+            Volver
+          </button>
+          <button
+            onClick={() => {
+              console.log('Botón Admi clickeado - redirigiendo a /admin/create');
+              router.push('/admin/create');
+            }}
+            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#3ea0c9] hover:bg-[#2a7ca1] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
+          >
+            Admi
+          </button>
+          <button
+            onClick={() => {
+              console.log('Botón Cerrar sesión clickeado');
+              handleLogout();
+            }}
+            className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
+          >
+            Cerrar sesión
+          </button>
+        </div>
       </div>
 
       {/* Main Content */}
