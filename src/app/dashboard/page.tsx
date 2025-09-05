@@ -775,4 +775,115 @@ export default function Dashboard() {
                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                </svg>
                                <svg className="w-5 h-5 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
-                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule
+                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                               </svg>
+                             </>
+                           )}
+                           {conversation.lastMessageStatus === 'read' && (
+                             <>
+                               <svg className="w-5 h-5 text-blue-500" fill="currentColor" viewBox="0 0 20 20">
+                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                               </svg>
+                               <svg className="w-5 h-5 text-blue-500 -ml-2" fill="currentColor" viewBox="0 0 20 20">
+                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                               </svg>
+                             </>
+                           )}
+                         </div>
+                       )}
+                     </div>
+                   </div>
+                 </div>
+               ))
+             )}
+           </div>
+         </div>
+
+         {/* Chat Area */}
+         <div className="flex-1 flex flex-col h-full">
+           {selectedConversation ? (
+             <div className="flex flex-col h-full">
+               {/* Chat Header */}
+               <div className="p-4 border-b border-[#012f78] bg-[#0b1e34] flex-shrink-0">
+                 <div className="flex items-center space-x-3">
+                   <div className="w-10 h-10 bg-[#0b1e34] border-2 border-[#3ea0c9] rounded-full flex items-center justify-center">
+                     <svg className="w-6 h-6 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                       <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                     </svg>
+                   </div>
+                   <div className="flex-1">
+                     <h3 className="text-lg font-semibold text-white">Chat</h3>
+                     <p className="text-sm text-[#B7C2D6]">Con {selectedConversation}</p>
+                   </div>
+                 </div>
+               </div>
+
+               {/* Messages Area */}
+               <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                 {chatLoading ? (
+                   <div className="flex justify-center items-center h-full">
+                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#90e2f8]"></div>
+                   </div>
+                 ) : messages.length === 0 ? (
+                   <div className="text-center text-[#B7C2D6] py-8">
+                     No hay mensajes en esta conversación
+                   </div>
+                 ) : (
+                   messages.map((message) => (
+                     <div
+                       key={message.messageId}
+                       className={`flex ${message.from === 'business' ? 'justify-end' : 'justify-start'}`}
+                     >
+                       <div
+                         className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                           message.from === 'business'
+                             ? 'bg-[#0073ba] text-white'
+                             : 'bg-[#0b1e34] border border-[#012f78] text-[#B7C2D6]'
+                         }`}
+                       >
+                         {message.content.body}
+                       </div>
+                     </div>
+                   ))
+                 )}
+                 <div ref={messagesEndRef} />
+               </div>
+
+               {/* Message Input */}
+               <div className="p-4 border-t border-[#012f78] bg-[#0b1e34] flex-shrink-0">
+                 <div className="flex items-center space-x-3">
+                   <input
+                     type="text"
+                     value={newMessage}
+                     onChange={(e) => setNewMessage(e.target.value)}
+                     onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                     placeholder="Escribe un mensaje..."
+                     className="flex-1 px-4 py-2 border-2 border-[#3ea0c9] rounded-md bg-[#000e24] text-white placeholder-[#B7C2D6] focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent"
+                   />
+                   <button
+                     onClick={sendMessage}
+                     disabled={!newMessage.trim()}
+                     className="px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-[#0073ba] hover:bg-[#005a92] focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                   >
+                     Enviar
+                   </button>
+                 </div>
+               </div>
+             </div>
+           ) : (
+             <div className="flex items-center justify-center h-full text-[#B7C2D6]">
+               <div className="text-center">
+                 <svg className="w-16 h-16 mx-auto mb-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                   <path fillRule="evenodd" d="M18 10c0 3.866-3.582 7-8 7a8.841 8.841 0 01-4.083-.98L2 17l1.338-3.123C2.493 12.767 2 11.434 2 10c0-3.866 3.582-7 8-7s8 3.134 8 7zM7 9H5v2h2V9zm8 0h-2v2h2V9zM9 9h2v2H9V9z" clipRule="evenodd" />
+                 </svg>
+                 <h3 className="text-xl font-semibold mb-2">Selecciona una conversación</h3>
+                 <p className="text-[#B7C2D6]">Elige una conversación de la lista para ver los mensajes</p>
+               </div>
+             </div>
+           )}
+         </div>
+       </div>
+     </div>
+   </div>
+ )
+}
