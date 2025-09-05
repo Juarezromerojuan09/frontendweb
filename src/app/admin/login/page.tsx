@@ -40,6 +40,7 @@ export default function AdminLoginPage() {
 
       if (response.data.token) {
         localStorage.setItem('adminToken', response.data.token)
+        localStorage.setItem('adminUsername', formData.username) // Store username
         window.location.href = '/admin/dashboard'
       } else {
         setError('Credenciales inválidas')

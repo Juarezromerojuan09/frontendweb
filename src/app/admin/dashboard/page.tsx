@@ -45,6 +45,7 @@ export default function AdminDashboard() {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
+  const [adminUsername, setAdminUsername] = useState('')
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -86,6 +87,11 @@ export default function AdminDashboard() {
   useEffect(() => {
     checkAuth()
     fetchUsers()
+    // Get admin username from localStorage
+    const username = localStorage.getItem('adminUsername')
+    if (username) {
+      setAdminUsername(username)
+    }
   }, [checkAuth, fetchUsers])
 
   useEffect(() => {
@@ -172,6 +178,7 @@ export default function AdminDashboard() {
 
   const handleLogout = () => {
     localStorage.removeItem('adminToken')
+    localStorage.removeItem('adminUsername')
     router.push('/admin/login')
   }
 
@@ -263,14 +270,21 @@ export default function AdminDashboard() {
 
       {/* JS SYNAPTECH Branding - Top Left */}
       <div className="absolute top-6 left-6 z-10">
-        <div className="flex items-center">
-          <Image 
-            src="/Logo.png" 
-            alt="JS SYNAPTECH" 
-            width={192} 
-            height={48}
-            className="h-12 w-auto"
-          />
+        <div className="flex flex-col items-start">
+          <div className="flex items-center">
+            <Image
+              src="/Logo.png"
+              alt="JS SYNAPTECH"
+              width={192}
+              height={48}
+              className="h-12 w-auto"
+            />
+          </div>
+          {adminUsername && (
+            <div className="mt-2 text-[#B7C2D6] text-sm font-medium">
+              Admin: {adminUsername}
+            </div>
+          )}
         </div>
       </div>
 
