@@ -56,7 +56,16 @@ export default function LoginPage() {
       localStorage.removeItem('userEmail')
       
       if (axios.isAxiosError(err)) {
-        const errorMessage = err.response?.data?.message || 'Error de autenticación'
+        const errorData = err.response?.data
+        let errorMessage = 'Error de autenticación'
+        
+        // Handle specific account status errors
+        if (errorData?.message === 'account_suspended' || errorData?.message === 'account_pending') {
+          errorMessage = errorData.message
+        } else {
+          errorMessage = errorData?.message || 'Error de autenticación'
+        }
+        
         setError(errorMessage)
         
         // Log detailed error for debugging
@@ -235,8 +244,19 @@ export default function LoginPage() {
             </div>
 
             {error && (
-              <div className="text-red-400 text-sm text-center">
-                {error}
+              <div className={`text-sm text-center px-4 py-3 rounded-lg ${
+                error === 'account_suspended'
+                  ? 'text-red-300 bg-red-900/30 border border-red-600 shadow-[0_0_15px_rgba(220,38,38,0.5)]'
+                  : error === 'account_pending'
+                  ? 'text-yellow-300 bg-yellow-900/30 border border-yellow-600 shadow-[0_0_15px_rgba(234,179,8,0.5)]'
+                  : 'text-red-400'
+              }`}>
+                {error === 'account_suspended'
+                  ? 'Tu cuenta ha sido suspendida, comunícate con nosotros'
+                  : error === 'account_pending'
+                  ? 'Tu cuenta está en revisión y obteniendo la información necesaria'
+                  : error
+                }
               </div>
             )}
 
