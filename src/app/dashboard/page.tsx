@@ -877,12 +877,12 @@ export default function Dashboard() {
                         key={message._id}
                         className={`flex ${message.from === 'business' ? 'justify-end' : 'justify-start'} mb-4`}
                       >
-                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg break-words ${
                           message.from === 'business'
                             ? 'bg-[#0073ba] text-white'
                             : 'bg-[#1e272a] text-white'
-                        }`}>
-                          <p className="text-sm">{message.content.body}</p>
+                        }`} style={{ wordBreak: 'break-word' }}>
+                          <p className="text-sm whitespace-pre-wrap break-words">{message.content.body}</p>
                           <div className="flex items-center justify-end mt-1">
                             <span className="text-xs opacity-70">
                               {new Date(message.timestamp).toLocaleTimeString('es-ES', {
