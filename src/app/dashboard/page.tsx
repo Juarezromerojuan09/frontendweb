@@ -72,7 +72,6 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
   const [chatLoading, setChatLoading] = useState(false)
   const [socket, setSocket] = useState<Socket | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -525,12 +524,6 @@ export default function Dashboard() {
     }
   }, [socket, user?.id])
 
-  // Auto-scroll al fondo del chat cuando cambian los mensajes
-  useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
-    }
-  }, [messages, selectedConversation])
 
   const handleLogout = () => {
     localStorage.removeItem('token')
@@ -796,7 +789,7 @@ export default function Dashboard() {
         {/* Chat Area */}
         <div className="flex-1 flex flex-col">
           {selectedConversation ? (
-            <>
+            <div className="flex flex-col h-full relative">
               {/* Chat Header */}
               <div className="bg-[#0b1e34] border-b border-[#012f78] px-6 py-3">
                 <div className="flex items-center space-x-3">
@@ -817,75 +810,77 @@ export default function Dashboard() {
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-white">
-                      {conversations.find(c => c.customerWaId === selectedConversation)?.customerName || 
+                      {conversations.find(c => c.customerWaId === selectedConversation)?.customerName ||
                        conversations.find(c => c.customerWaId === selectedConversation)?.customerPhone}
                     </h3>
                     <p className="text-xs text-[#B7C2D6]">
-                      {conversations.find(c => c.customerWaId === selectedConversation)?.pendingReply ? 
+                      {conversations.find(c => c.customerWaId === selectedConversation)?.pendingReply ?
                        'Esperando respuesta...' : 'En línea'}
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Messages Area */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-4">
-                {chatLoading ? (
-                  <div className="flex justify-center">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#90e2f8]"></div>
-                  </div>
-                ) : messages.length === 0 ? (
-                  <div className="text-center text-[#B7C2D6] py-8">
-                    No hay mensajes en esta conversación
-                  </div>
-                ) : (
-                  messages.map((message) => (
-                    <div
-                      key={message._id}
-                      className={`flex ${message.from === 'business' ? 'justify-end' : 'justify-start'}`}
-                    >
-                      <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-                        message.from === 'business' 
-                          ? 'bg-[#0073ba] text-white' 
-                          : 'bg-[#1e272a] text-white'
-                      }`}>
-                        <p className="text-sm">{message.content.body}</p>
-                        <div className="flex items-center justify-end mt-1">
-                          <span className="text-xs opacity-70">
-                            {new Date(message.timestamp).toLocaleTimeString('es-ES', {
-                              hour: '2-digit',
-                              minute: '2-digit'
-                            })}
-                          </span>
-                          {message.from === 'business' && message.status && (
-                            <div className="ml-1">
-                              {message.status === 'sent' && (
-                                <svg className="w-3 h-3 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {message.status === 'delivered' && (
-                                <svg className="w-3 h-3 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                              {message.status === 'read' && (
-                                <svg className="w-3 h-3 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
-                                  <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-                                </svg>
-                              )}
-                            </div>
-                          )}
+              {/* Messages Container - No scrolling, show all messages with bottom margin for input */}
+              <div className="flex-1 flex flex-col-reverse">
+                {/* Messages Area - Show all messages without scroll */}
+                <div className="p-4 mb-16">
+                  {chatLoading ? (
+                    <div className="flex justify-center">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-[#90e2f8]"></div>
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className="text-center text-[#B7C2D6] py-8">
+                      No hay mensajes en esta conversación
+                    </div>
+                  ) : (
+                    [...messages].reverse().map((message) => (
+                      <div
+                        key={message._id}
+                        className={`flex ${message.from === 'business' ? 'justify-end' : 'justify-start'} mb-4`}
+                      >
+                        <div className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
+                          message.from === 'business'
+                            ? 'bg-[#0073ba] text-white'
+                            : 'bg-[#1e272a] text-white'
+                        }`}>
+                          <p className="text-sm">{message.content.body}</p>
+                          <div className="flex items-center justify-end mt-1">
+                            <span className="text-xs opacity-70">
+                              {new Date(message.timestamp).toLocaleTimeString('es-ES', {
+                                hour: '2-digit',
+                                minute: '2-digit'
+                              })}
+                            </span>
+                            {message.from === 'business' && message.status && (
+                              <div className="ml-1">
+                                {message.status === 'sent' && (
+                                  <svg className="w-3 h-3 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                                {message.status === 'delivered' && (
+                                  <svg className="w-3 h-3 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                                {message.status === 'read' && (
+                                  <svg className="w-3 h-3 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  ))
-                )}
-                <div ref={messagesEndRef} />
+                    ))
+                  )}
+                </div>
               </div>
 
-              {/* Message Input */}
-              <div className="bg-[#0b1e34] border-t border-[#012f78] p-4">
+              {/* Message Input - Absolute positioned at bottom */}
+              <div className="absolute bottom-0 left-0 right-0 bg-[#0b1e34] border-t border-[#012f78] p-4">
                 <div className="flex items-center space-x-3">
                   <input
                     type="text"
@@ -910,7 +905,7 @@ export default function Dashboard() {
                   </button>
                 </div>
               </div>
-            </>
+            </div>
           ) : (
             <div className="flex-1 flex items-center justify-center">
               <div className="text-center text-[#B7C2D6]">
