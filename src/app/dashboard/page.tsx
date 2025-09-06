@@ -669,23 +669,31 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Selector de WhatsApp Numbers */}
+      {/* Selector de WhatsApp Numbers y Botón Configuración */}
       <div className="bg-[#0b1e34] border-b border-[#012f78] px-6 py-3 relative z-50">
-        <div className="flex items-center space-x-3">
-          <label className="text-sm font-medium text-[#B7C2D6]">
-            Número WhatsApp:
-          </label>
-          <select
-            value={selectedWhatsAppNumber || ''}
-            onChange={(e) => setSelectedWhatsAppNumber(e.target.value)}
-            className="flex-1 max-w-xs px-4 py-2 text-sm border-2 border-[#3ea0c9] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent bg-[#000e24] text-white cursor-pointer"
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-3">
+            <label className="text-sm font-medium text-[#B7C2D6]">
+              Número WhatsApp:
+            </label>
+            <select
+              value={selectedWhatsAppNumber || ''}
+              onChange={(e) => setSelectedWhatsAppNumber(e.target.value)}
+              className="flex-1 max-w-xs px-4 py-2 text-sm border-2 border-[#3ea0c9] rounded-md focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent bg-[#000e24] text-white cursor-pointer"
+            >
+              {whatsAppNumbers.map((wa) => (
+                <option key={wa._id} value={wa._id}>
+                  {wa.displayName} (+{wa.whatsappNumber.slice(-4)})
+                </option>
+              ))}
+            </select>
+          </div>
+          <button
+            onClick={() => router.push('/dashboard/configuracion')}
+            className="px-4 py-2 bg-[#0073ba] hover:bg-[#005a92] text-white rounded-md transition-colors cursor-pointer"
           >
-            {whatsAppNumbers.map((wa) => (
-              <option key={wa._id} value={wa._id}>
-                {wa.displayName} (+{wa.whatsappNumber.slice(-4)})
-              </option>
-            ))}
-          </select>
+            Configuración
+          </button>
         </div>
       </div>
 
