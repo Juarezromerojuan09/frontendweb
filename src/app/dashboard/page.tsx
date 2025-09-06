@@ -77,7 +77,7 @@ export default function Dashboard() {
   // Refs para valores actuales de estado en event handlers de Socket.IO
   const selectedConversationRef = useRef<string | null>(null)
   const selectedWhatsAppNumberRef = useRef<string | null>(null)
-  const messagesEndRef = useRef<HTMLDivElement>(null)
+  const messagesContainerRef = useRef<HTMLDivElement>(null)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -346,8 +346,11 @@ export default function Dashboard() {
 
   // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
-    if (messagesEndRef.current) {
-      messagesEndRef.current.scrollIntoView({ behavior: 'smooth' })
+    if (messagesContainerRef.current) {
+      messagesContainerRef.current.scrollTo({
+        top: messagesContainerRef.current.scrollHeight,
+        behavior: 'smooth'
+      })
     }
   }, [messages, selectedConversation])
 
@@ -845,12 +848,16 @@ export default function Dashboard() {
               {/* Messages Container - Show all messages with bottom margin for input */}
               <div className="flex-1 flex flex-col">
                 {/* Messages Area - Scrollable container with hidden scrollbar and fixed height */}
-                <div className="p-4 mb-16 overflow-y-auto" style={{
-                  scrollbarWidth: 'none',
-                  msOverflowStyle: 'none',
-                  maxHeight: 'calc(100vh - 200px)', // Fixed height for scrolling
-                  height: '100%'
-                }}>
+                <div
+                  ref={messagesContainerRef}
+                  className="p-4 mb-16 overflow-y-auto"
+                  style={{
+                    scrollbarWidth: 'none',
+                    msOverflowStyle: 'none',
+                    maxHeight: 'calc(100vh - 200px)', // Fixed height for scrolling
+                    height: '100%'
+                  }}
+                >
                   <style>{`
                     .overflow-y-auto::-webkit-scrollbar {
                       display: none;
@@ -907,8 +914,6 @@ export default function Dashboard() {
                       </div>
                     ))
                   )}
-                  {/* Invisible element at the end for auto-scrolling */}
-                  <div ref={messagesEndRef} />
                 </div>
               </div>
 
