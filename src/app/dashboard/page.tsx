@@ -73,6 +73,10 @@ export default function Dashboard() {
   const [chatLoading, setChatLoading] = useState(false)
   const [socket, setSocket] = useState<Socket | null>(null)
   const router = useRouter()
+  
+  // Refs para valores actuales de estado en event handlers de Socket.IO
+  const selectedConversationRef = useRef<string | null>(null)
+  const selectedWhatsAppNumberRef = useRef<string | null>(null)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -330,6 +334,15 @@ export default function Dashboard() {
     }
   }, [newMessage, selectedConversation, selectedWhatsAppNumber, apiUrl])
 
+  // Actualizar refs cuando el estado cambia
+  useEffect(() => {
+    selectedConversationRef.current = selectedConversation
+  }, [selectedConversation])
+
+  useEffect(() => {
+    selectedWhatsAppNumberRef.current = selectedWhatsAppNumber
+  }, [selectedWhatsAppNumber])
+
   useEffect(() => {
     fetchUserData()
   }, [fetchUserData])
@@ -340,7 +353,7 @@ export default function Dashboard() {
     }
   }, [selectedWhatsAppNumber, fetchConversations])
 
-  // Configuración de Socket.IO para mensajes en tiempo real
+  // Configuración de Socket.IO para mensajes en tiempo real - Conexión estable
   useEffect(() => {
     const newSocket = io(apiUrl, {
       transports: ['websocket', 'polling']
@@ -361,15 +374,15 @@ export default function Dashboard() {
             msg.from === 'business' &&
             msg.customerWaId === newMessage.customerWaId)
         )
-        // Solo agregar el mensaje si pertenece a la conversación actual
-        if (selectedConversation === newMessage.customerWaId &&
-            selectedWhatsAppNumber === newMessage.whatsAppNumberId) {
+        // Solo agregar el mensaje si pertenece a la conversación actual (usando refs para valores actuales)
+        if (selectedConversationRef.current === newMessage.customerWaId &&
+            selectedWhatsAppNumberRef.current === newMessage.whatsAppNumberId) {
           return [...filteredMessages, newMessage]
         }
         return filteredMessages
       })
 
-      if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumber) {
+      if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumberRef.current) {
         // Si es un mensaje de cliente en una conversación diferente, incrementar contador de no leídos
         setConversations(prevConversations => {
           return prevConversations.map(conv => {
@@ -489,7 +502,7 @@ export default function Dashboard() {
     return () => {
       newSocket.disconnect()
     }
-  }, [apiUrl, selectedConversation, selectedWhatsAppNumber])
+  }, [apiUrl]) // Solo depende de apiUrl, no recrear socket cuando selectedConversation/selectedWhatsAppNumber cambien
 
   // Unirse a la sala de conversación cuando se selecciona una conversación
   useEffect(() => {
