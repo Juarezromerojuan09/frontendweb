@@ -410,13 +410,13 @@ export default function Settings() {
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center space-x-3">
+            <div className="flex items-center space-x-4">
               <Image
                 src="/Logo.png"
                 alt="SYNAPBOT"
-                width={100}
-                height={25}
-                className="h-6 w-auto"
+                width={120}
+                height={30}
+                className="h-7 w-auto"
               />
               <h1 className="text-3xl font-bold text-[#B7C2D6]">Configuración</h1>
             </div>
@@ -433,21 +433,28 @@ export default function Settings() {
             <div className="w-80 flex-shrink-0">
               <div className="bg-[#0b1e34] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9] p-6">
                 <div className="text-center">
-                  <div className="relative mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-[#90e2f8] mb-4">
+                  <div className="relative mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-[#90e2f8] mb-4 bg-[#012f78]">
                     {user.profileImageUrl ? (
-                      <Image
+                      <img
                         src={user.profileImageUrl}
                         alt="Profile"
-                        fill
-                        className="object-cover"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          const target = e.target as HTMLImageElement;
+                          target.style.display = 'none';
+                          const parent = target.parentElement;
+                          if (parent) {
+                            const fallback = parent.querySelector('.profile-fallback') as HTMLElement;
+                            if (fallback) fallback.style.display = 'flex';
+                          }
+                        }}
                       />
-                    ) : (
-                      <div className="w-full h-full bg-[#012f78] flex items-center justify-center">
-                        <span className="text-4xl text-[#B7C2D6] font-bold">
-                          {user.fullName.charAt(0).toUpperCase()}
-                        </span>
-                      </div>
-                    )}
+                    ) : null}
+                    <div className={`w-full h-full flex items-center justify-center ${user.profileImageUrl ? 'profile-fallback hidden' : ''}`}>
+                      <span className="text-4xl text-[#B7C2D6] font-bold">
+                        {user.fullName.charAt(0).toUpperCase()}
+                      </span>
+                    </div>
                   </div>
                   
                   <h2 className="text-xl font-semibold text-[#B7C2D6] mb-2">{user.fullName}</h2>
