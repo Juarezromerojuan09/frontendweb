@@ -100,7 +100,9 @@ export default function SignupPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const registrationData = {
         ...formData,
-        profileImageUrl
+        profileImageUrl,
+        whatsappNumber: formData.whatsappNumber,
+        whatsappDisplayName: formData.whatsappDisplayName
       };
 
       const response = await axios.post(`${apiUrl}/api/auth/register`, registrationData);
