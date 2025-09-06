@@ -356,67 +356,91 @@ export default function Settings() {
   }
 
   return (
-    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
-      {/* Circuit Pattern Background with longer lines and hollow circles */}
-      <div className="absolute inset-0 opacity-40">
+    <div className="h-screen flex flex-col relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
+      {/* Circuit Pattern Background with longer lines and hollow circles - Behind everything */}
+      <div className="absolute inset-0 opacity-40 z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
           <defs>
             {/* Radial gradient for fading center */}
             <radialGradient id="fadeCenter" cx="50%" cy="50%" r="50%" fx="50%" fy="50%">
               <stop offset="0%" stopColor="#000e24" stopOpacity="0" />
-              <stop offset="40%" stopColor="#000e24" stopOpacity="1" />
+              <stop offset="40%" stopColor="#000e24" stopOpacity="0" />
+              <stop offset="100%" stopColor="#000e24" stopOpacity="1" />
             </radialGradient>
-            <pattern id="circuitPattern" x="0" y="0" width="100" height="100" patternUnits="userSpaceOnUse">
-              {/* Horizontal lines */}
-              <line x1="0" y1="20" x2="100" y2="20" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              <line x1="0" y1="40" x2="100" y2="40" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              <line x1="0" y1="60" x2="100" y2="60" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              <line x1="0" y1="80" x2="100" y2="80" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              
-              {/* Vertical lines */}
-              <line x1="20" y1="0" x2="20" y2="100" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              <line x1="40" y1="0" x2="40" y2="100" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              <line x1="60" y1="0" x2="60" y2="100" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              <line x1="80" y1="0" x2="80" y2="100" stroke="#3ea0c9" strokeWidth="0.5" strokeDasharray="2,4" />
-              
-              {/* Hollow circles at intersections */}
-              <circle cx="20" cy="20" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="40" cy="20" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="60" cy="20" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="80" cy="20" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              
-              <circle cx="20" cy="40" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="40" cy="40" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="60" cy="40" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="80" cy="40" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              
-              <circle cx="20" cy="60" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="40" cy="60" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="60" cy="60" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="80" cy="60" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              
-              <circle cx="20" cy="80" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="40" cy="80" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="60" cy="80" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
-              <circle cx="80" cy="80" r="2" fill="none" stroke="#90e2f8" strokeWidth="0.5" />
+            
+            <pattern id="circuitPattern" x="0" y="0" width="200" height="200" patternUnits="userSpaceOnUse">
+              {/* Longer lines with direction changes and hollow circles */}
+              <g stroke="#012f78" strokeWidth="0.8" fill="none" opacity="0.6">
+                {/* Line 1 - from left to center with angle */}
+                <path d="M0,40 L80,40 L100,60" />
+                <circle cx="100" cy="60" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 2 - from top to center with angle */}
+                <path d="M40,0 L40,80 L60,100" />
+                <circle cx="60" cy="100" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 3 - from right to center with angle */}
+                <path d="M200,60 L120,60 L100,80" />
+                <circle cx="100" cy="80" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 4 - from bottom to center with angle */}
+                <path d="M60,200 L60,120 L80,100" />
+                <circle cx="80" cy="100" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 5 - from top-left to center */}
+                <path d="M0,20 L60,20 L80,40" />
+                <circle cx="80" cy="40" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 6 - from top-right to center */}
+                <path d="M200,20 L140,20 L120,40" />
+                <circle cx="120" cy="40" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 7 - from bottom-left to center */}
+                <path d="M0,180 L60,180 L80,160" />
+                <circle cx="80" cy="160" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 8 - from bottom-right to center */}
+                <path d="M200,180 L140,180 L120,160" />
+                <circle cx="120" cy="160" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 9 - diagonal from left */}
+                <path d="M0,100 L50,100 L70,120" />
+                <circle cx="70" cy="120" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 10 - diagonal from right */}
+                <path d="M200,100 L150,100 L130,80" />
+                <circle cx="130" cy="80" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 11 - diagonal from top */}
+                <path d="M100,0 L100,50 L120,70" />
+                <circle cx="120" cy="70" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+                
+                {/* Line 12 - diagonal from bottom */}
+                <path d="M100,200 L100,150 L80,130" />
+                <circle cx="80" cy="130" r="1.5" stroke="#012f78" strokeWidth="0.8" fill="none" />
+              </g>
             </pattern>
           </defs>
+          
+          {/* Background with pattern */}
+          <rect width="100%" height="100%" fill="url(#circuitPattern)" />
+          
+          {/* Fade out center area */}
           <rect width="100%" height="100%" fill="url(#fadeCenter)" />
-          <rect width="100%" height="100%" fill="url(#circuitPattern)" opacity="0.3" />
         </svg>
       </div>
 
-      <div className="relative z-10 pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-50 pt-8 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
           <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center space-x-4">
+            <div className="flex items-center space-x-6">
               <Image
                 src="/Logo.png"
                 alt="SYNAPBOT"
-                width={120}
-                height={30}
-                className="h-7 w-auto"
+                width={150}
+                height={38}
+                className="h-9 w-auto"
               />
               <h1 className="text-3xl font-bold text-[#B7C2D6]">Configuración</h1>
             </div>
