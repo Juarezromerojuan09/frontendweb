@@ -850,11 +850,11 @@ export default function Dashboard() {
                 {/* Messages Area - Scrollable container with hidden scrollbar and fixed height */}
                 <div
                   ref={messagesContainerRef}
-                  className="p-4 mb-16 overflow-y-auto"
+                  className="p-4 mb-20 overflow-y-auto"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    maxHeight: 'calc(100vh - 200px)', // Fixed height for scrolling
+                    maxHeight: 'calc(100vh - 220px)', // Increased height to accommodate larger bottom margin
                     height: '100%'
                   }}
                 >
