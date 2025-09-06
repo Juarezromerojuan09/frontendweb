@@ -821,9 +821,9 @@ export default function Dashboard() {
                 </div>
               </div>
 
-              {/* Messages Container - No scrolling, show all messages with bottom margin for input */}
-              <div className="flex-1 flex flex-col-reverse">
-                {/* Messages Area - Show all messages without scroll */}
+              {/* Messages Container - Show all messages with bottom margin for input */}
+              <div className="flex-1 flex flex-col">
+                {/* Messages Area - Show all messages without scroll, natural order */}
                 <div className="p-4 mb-16">
                   {chatLoading ? (
                     <div className="flex justify-center">
@@ -834,7 +834,7 @@ export default function Dashboard() {
                       No hay mensajes en esta conversación
                     </div>
                   ) : (
-                    [...messages].reverse().map((message) => (
+                    messages.map((message) => (
                       <div
                         key={message._id}
                         className={`flex ${message.from === 'business' ? 'justify-end' : 'justify-start'} mb-4`}
