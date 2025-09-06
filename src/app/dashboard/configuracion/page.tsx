@@ -488,7 +488,7 @@ export default function ConfiguracionPage() {
                 {/* Navigation */}
                 <div className="mt-8 space-y-2">
                   <Link
-                    href="/dashboard/configuracion"
+                    href="/settings"
                     className="flex items-center space-x-3 bg-[#3ea0c9] text-[#000e24] font-medium px-4 py-3 rounded-lg"
                   >
                     <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">

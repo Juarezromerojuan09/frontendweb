@@ -689,7 +689,7 @@ export default function Dashboard() {
             </select>
           </div>
     <button
-      onClick={() => router.push('/dashboard/configuracion')}
+      onClick={() => router.push('/settings')}
       className="px-4 py-2 bg-[#0073ba] hover:bg-[#005a92] text-white rounded-md transition-colors cursor-pointer"
 
     >
