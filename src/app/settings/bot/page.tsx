@@ -173,17 +173,25 @@ export default function BotConfiguration() {
         setSuccess('Configuración guardada correctamente')
         setTimeout(() => setSuccess(''), 3000)
         
-        // Update local user state
-        if (user) {
-          setUser({
-            ...user,
-            botSettings: {
-              businessHours,
-              workingDays,
-              appointmentInterval,
-              autoConfirmAppointments
+        // Update local user state with data from response
+        if (response.data.user) {
+          setUser(response.data.user)
+          // Also update form values from response to ensure consistency
+          if (response.data.user.botSettings) {
+            const botSettings = response.data.user.botSettings
+            if (botSettings.businessHours) {
+              setBusinessHours(botSettings.businessHours)
             }
-          })
+            if (botSettings.workingDays) {
+              setWorkingDays(botSettings.workingDays)
+            }
+            if (botSettings.appointmentInterval) {
+              setAppointmentInterval(botSettings.appointmentInterval)
+            }
+            if (botSettings.autoConfirmAppointments !== undefined) {
+              setAutoConfirmAppointments(botSettings.autoConfirmAppointments)
+            }
+          }
         }
       } else {
         setError(response.data.message || 'Error al guardar la configuración')
