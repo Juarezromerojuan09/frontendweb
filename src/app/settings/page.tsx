@@ -356,7 +356,7 @@ export default function Settings() {
   }
 
   return (
-    <div className="h-screen flex flex-col relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
+    <div className="min-h-screen relative overflow-hidden" style={{ backgroundColor: '#000e24' }}>
       {/* Circuit Pattern Background with longer lines and hollow circles - Behind everything */}
       <div className="absolute inset-0 opacity-40 z-0">
         <svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice">
@@ -526,6 +526,24 @@ export default function Settings() {
                         </div>
                       </div>
                     )}
+                  </div>
+                </div>
+
+                {/* Navigation Menu */}
+                <div className="mt-6 bg-[#012f78] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9] p-4">
+                  <div className="space-y-2">
+                    <button
+                      onClick={() => router.push('/settings')}
+                      className="w-full bg-[#0073ba] hover:bg-[#005a92] text-white py-2 px-4 rounded-md transition-colors cursor-pointer text-left"
+                    >
+                      Perfil
+                    </button>
+                    <button
+                      onClick={() => router.push('/settings/bot')}
+                      className="w-full bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] py-2 px-4 rounded-md transition-colors cursor-pointer text-left"
+                    >
+                      Configuración Bot
+                    </button>
                   </div>
                 </div>
               </div>
