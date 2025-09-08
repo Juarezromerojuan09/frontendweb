@@ -4,6 +4,7 @@ import { useEffect, useState, useCallback, useRef } from 'react'
 import { useRouter } from 'next/navigation'
 import { io, Socket } from 'socket.io-client'
 import Image from 'next/image'
+import { ConversationsProvider, useConversations } from '@/contexts/ConversationsContext'
 
 interface User {
    name: string;
@@ -63,15 +64,14 @@ interface Message {
 
  type PresenceStatus = 'online' | 'typing' | 'offline'
 
-export default function Dashboard() {
+function DashboardContent() {
   const [user, setUser] = useState<User | null>(null)
   const [whatsAppNumbers, setWhatsAppNumbers] = useState<WhatsAppNumber[]>([])
   const [selectedWhatsAppNumber, setSelectedWhatsAppNumber] = useState<string | null>(null)
-  const [conversations, setConversations] = useState<Conversation[]>([])
+  const { state: { conversations, loading }, dispatch } = useConversations()
   const [selectedConversation, setSelectedConversation] = useState<string | null>(null)
   const [messages, setMessages] = useState<Message[]>([])
   const [newMessage, setNewMessage] = useState('')
-  const [loading, setLoading] = useState(true)
   const [chatLoading, setChatLoading] = useState(false)
   const [socket, setSocket] = useState<Socket | null>(null)
   const router = useRouter()
@@ -164,13 +164,13 @@ export default function Dashboard() {
      } catch (error) {
        console.error('Error fetching WhatsApp numbers:', error)
      } finally {
-       setLoading(false)
+       dispatch({ type: 'SET_LOADING', payload: false })
      }
    }, [apiUrl, router])
 
   const fetchConversations = useCallback(async (whatsAppNumberId: string) => {
      try {
-       setLoading(true)
+       dispatch({ type: 'SET_LOADING', payload: true })
        const token = localStorage.getItem('token')
        if (!token) return
 
@@ -189,7 +189,7 @@ export default function Dashboard() {
        if (response.ok) {
          const data = await response.json()
          if (data.success && data.conversations) {
-           setConversations(data.conversations)
+           dispatch({ type: 'SET_CONVERSATIONS', payload: data.conversations })
          }
        } else {
          if (response.status === 401) {
@@ -200,20 +200,20 @@ export default function Dashboard() {
            router.push('/login')
            return
          } else if (response.status === 304) {
-           setConversations([])
-           setLoading(false)
+           dispatch({ type: 'SET_CONVERSATIONS', payload: [] })
+           dispatch({ type: 'SET_LOADING', payload: false })
          } else {
            console.error('Error fetching conversations:', response.statusText)
-           setConversations([])
+           dispatch({ type: 'SET_CONVERSATIONS', payload: [] })
          }
        }
      } catch (error) {
        console.error('Error fetching conversations:', error)
-       setConversations([])
+       dispatch({ type: 'SET_CONVERSATIONS', payload: [] })
      } finally {
-       setLoading(false)
+       dispatch({ type: 'SET_LOADING', payload: false })
      }
-   }, [apiUrl])
+   }, [apiUrl, dispatch, router])
 
   const fetchMessages = useCallback(async (customerWaId: string, whatsAppNumberId: string) => {
     try {
@@ -285,21 +285,10 @@ export default function Dashboard() {
 
     setMessages(prevMessages => [...prevMessages, optimisticMessage])
     
-    setConversations(prevConversations => {
-      return prevConversations.map(conversation => {
-        if (conversation.customerWaId === selectedConversation) {
-          return {
-            ...conversation,
-            lastMessage: newMessage.trim(),
-            lastMessageTime: new Date().toISOString(),
-            lastMessageStatus: 'sent',
-            lastMessageFrom: 'business',
-            messageCount: conversation.messageCount + 1
-          }
-        }
-        return conversation
-      })
-    })
+    // Actualizar la conversación en el estado global con mensaje enviado
+    if (selectedConversation) {
+      dispatch({ type: 'UPDATE_CONVERSATION_STATUS', payload: { customerWaId: selectedConversation, status: 'sent' } })
+    }
 
     setNewMessage('')
 
@@ -411,21 +400,10 @@ export default function Dashboard() {
       })
 
       if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumberRef.current) {
-        setConversations(prevConversations => {
-          return prevConversations.map(conv => {
-            if (conv.customerWaId === newMessage.customerWaId) {
-              return {
-                ...conv,
-                unreadCount: (conv.unreadCount || 0) + 1,
-                lastMessage: newMessage.content.body,
-                lastMessageTime: newMessage.timestamp,
-                lastMessageFrom: 'customer',
-                lastMessageStatus: undefined
-              }
-            }
-            return conv
-          })
-        })
+        // Incrementar contador de no leídos para esta conversación
+        if (newMessage.customerWaId) {
+          dispatch({ type: 'INCREMENT_UNREAD_COUNT', payload: newMessage.customerWaId })
+        }
       }
     })
 
@@ -440,26 +418,14 @@ export default function Dashboard() {
           : message
       )))
 
-      // Siempre actualizar la lista de conversaciones cuando llegue un evento de cambio de estado
-      // Esto asegura que las palomitas se actualicen incluso cuando la conversación no está abierta
-      if (selectedWhatsAppNumberRef.current) {
-        fetchConversations(selectedWhatsAppNumberRef.current)
-      }
-
-      // También intentar actualización optimista si tenemos los datos específicos
-      if (statusData.customerWaId && statusData.whatsAppNumberId) {
-        setConversations(prevConversations => prevConversations.map(conversation => {
-          const isTargetConversation = conversation.customerWaId === statusData.customerWaId
-          
-          if (isTargetConversation) {
-            return {
-              ...conversation,
-              lastMessageStatus: statusData.status,
-              lastMessageFrom: 'business'
-            }
-          }
-          return conversation
-        }))
+      // Actualizar estado en la conversación usando el contexto global
+      if (statusData.customerWaId) {
+        dispatch({
+          type: 'UPDATE_CONVERSATION_STATUS',
+          payload: { customerWaId: statusData.customerWaId, status: statusData.status }
+        })
+      } else {
+        console.warn('Evento message-status-update sin customerWaId:', statusData)
       }
     })
 
@@ -710,9 +676,7 @@ export default function Dashboard() {
                       fetchMessages(conversation.customerWaId, selectedWhatsAppNumber)
                     }
                     if ((conversation.unreadCount || 0) > 0) {
-                      setConversations(prevConversations => prevConversations.map(conv => (
-                        conv.customerWaId === conversation.customerWaId ? { ...conv, unreadCount: 0 } : conv
-                      )))
+                      dispatch({ type: 'RESET_UNREAD_COUNT', payload: conversation.customerWaId })
                     }
                   }}
                   className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-50 border-b border-[#012f78] relative z-40 transition-colors ${
@@ -963,4 +927,12 @@ export default function Dashboard() {
       </div>
     </div>
   )
+}
+
+export default function Dashboard() {
+ return (
+   <ConversationsProvider>
+     <DashboardContent />
+   </ConversationsProvider>
+ )
 }
