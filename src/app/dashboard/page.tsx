@@ -86,39 +86,6 @@ function DashboardContent() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
-  const fetchUserData = useCallback(async () => {
-    const token = localStorage.getItem('token')
-    if (!token) {
-      router.push('/login')
-      return
-    }
-
-    try {
-      // Obtener datos del usuario desde localStorage
-      const userId = localStorage.getItem('userId')
-      const userName = localStorage.getItem('userName')
-      const userEmail = localStorage.getItem('userEmail')
-
-      if (userId && userName && userEmail) {
-        setUser({
-          name: userName,
-          email: userEmail,
-          id: userId
-        })
-      } else {
-        // Si no hay datos en localStorage, redirigir al login
-        router.push('/login')
-        return
-      }
-
-      // Obtener WhatsApp Numbers del usuario
-      fetchWhatsAppNumbers()
-    } catch (error) {
-      console.error('Error fetching user data:', error)
-      router.push('/login')
-    }
-  }, [router])
-
   const fetchWhatsAppNumbers = useCallback(async () => {
      try {
        const token = localStorage.getItem('token')
@@ -167,6 +134,40 @@ function DashboardContent() {
        dispatch({ type: 'SET_LOADING', payload: false })
      }
    }, [apiUrl, router])
+
+  const fetchUserData = useCallback(async () => {
+    try {
+      const token = localStorage.getItem('token')
+      if (!token) {
+        router.push('/login')
+        return
+      }
+
+      // Obtener datos del usuario desde localStorage
+      const userId = localStorage.getItem('userId')
+      const userName = localStorage.getItem('userName')
+      const userEmail = localStorage.getItem('userEmail')
+
+      if (userId && userName && userEmail) {
+        setUser({
+          name: userName,
+          email: userEmail,
+          id: userId
+        })
+        // Obtener WhatsApp Numbers del usuario
+        fetchWhatsAppNumbers()
+      } else {
+        // Si no hay datos en localStorage, redirigir al login
+        localStorage.removeItem('token')
+        router.push('/login')
+        return
+      }
+    } catch (error) {
+      console.error('Error fetching user data:', error)
+      localStorage.removeItem('token')
+      router.push('/login')
+    }
+  }, [router, fetchWhatsAppNumbers])
 
   const fetchConversations = useCallback(async (whatsAppNumberId: string) => {
      try {
@@ -236,7 +237,7 @@ function DashboardContent() {
         if (data.success && data.conversation) {
           setMessages(data.conversation)
         }
-        } else {
+      } else {
         if (response.status === 401) {
           localStorage.removeItem('token')
           localStorage.removeItem('userId')
@@ -343,11 +344,15 @@ function DashboardContent() {
 
   // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
-    if (messagesContainerRef.current) {
-      messagesContainerRef.current.scrollTo({
-        top: messagesContainerRef.current.scrollHeight,
-        behavior: 'smooth'
-      })
+    if (messagesContainerRef.current && messages.length > 0) {
+      try {
+        messagesContainerRef.current.scrollTo({
+          top: messagesContainerRef.current.scrollHeight,
+          behavior: 'smooth'
+        })
+      } catch (error) {
+        console.warn('Error al hacer scroll:', error)
+      }
     }
   }, [messages, selectedConversation])
 
@@ -376,6 +381,12 @@ function DashboardContent() {
     newSocket.on('new-message', (newMessage: Message) => {
       console.log('📨 Nuevo mensaje recibido via Socket.IO:', newMessage)
       
+      // Validar que el mensaje tenga los campos necesarios
+      if (!newMessage.customerWaId || !newMessage.whatsAppNumberId) {
+        console.warn('Mensaje recibido sin customerWaId o whatsAppNumberId:', newMessage)
+        return
+      }
+
       // Presencia: si el cliente envía un mensaje en la conversación seleccionada, marcar "En línea" temporalmente
       if (newMessage.from === 'customer' &&
           selectedConversationRef.current === newMessage.customerWaId &&
@@ -388,7 +399,7 @@ function DashboardContent() {
       // Remover mensajes optimistas para evitar duplicados
       setMessages(prevMessages => {
         const filteredMessages = prevMessages.filter(msg =>
-          !(msg.messageId.startsWith('optimistic-') &&
+          !(msg.messageId?.startsWith('optimistic-') &&
             msg.from === 'business' &&
             msg.customerWaId === newMessage.customerWaId)
         )
@@ -401,9 +412,7 @@ function DashboardContent() {
 
       if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumberRef.current) {
         // Incrementar contador de no leídos para esta conversación
-        if (newMessage.customerWaId) {
-          dispatch({ type: 'INCREMENT_UNREAD_COUNT', payload: newMessage.customerWaId })
-        }
+        dispatch({ type: 'INCREMENT_UNREAD_COUNT', payload: newMessage.customerWaId })
       }
     })
 
@@ -411,12 +420,18 @@ function DashboardContent() {
     newSocket.on('message-status-update', (statusData: { messageId: string; status: 'sent'|'delivered'|'read'|'failed'; timestamp: string; customerWaId?: string; whatsAppNumberId?: string }) => {
       console.log('📊 Estado de mensaje actualizado:', statusData)
       
+      // Validar datos del evento
+      if (!statusData.messageId) {
+        console.warn('Evento message-status-update sin messageId:', statusData)
+        return
+      }
+
       // Actualizar estado en mensajes del chat
-      setMessages(prevMessages => prevMessages.map(message => (
+      setMessages(prevMessages => prevMessages.map(message =>
         message.messageId === statusData.messageId
           ? { ...message, status: statusData.status }
           : message
-      )))
+      ))
 
       // Actualizar estado en la conversación usando el contexto global
       if (statusData.customerWaId) {
@@ -773,24 +788,29 @@ function DashboardContent() {
               <div className="bg-[#0b1e34] border-b border-[#012f78] px-6 py-3">
                 <div className="flex items-center space-x-3">
                   <div className="flex-shrink-0">
-                    {conversations.find(c => c.customerWaId === selectedConversation)?.customerProfilePic ? (
-                      <img
-                        src={conversations.find(c => c.customerWaId === selectedConversation)?.customerProfilePic}
-                        alt="Profile"
-                        className="w-10 h-10 rounded-full object-cover border-2 border-[#3ea0c9]"
-                      />
-                    ) : (
-                      <div className="w-10 h-10 bg-[#0b1e34] border-2 border-[#3ea0c9] rounded-full flex items-center justify-center">
-                        <svg className="w-6 h-6 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
-                        </svg>
-                      </div>
-                    )}
+                    {(() => {
+                      const selectedConv = conversations.find(c => c.customerWaId === selectedConversation)
+                      return selectedConv?.customerProfilePic ? (
+                        <img
+                          src={selectedConv.customerProfilePic}
+                          alt="Profile"
+                          className="w-10 h-10 rounded-full object-cover border-2 border-[#3ea0c9]"
+                        />
+                      ) : (
+                        <div className="w-10 h-10 bg-[#0b1e34] border-2 border-[#3ea0c9] rounded-full flex items-center justify-center">
+                          <svg className="w-6 h-6 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                            <path fillRule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clipRule="evenodd" />
+                          </svg>
+                        </div>
+                      )
+                    })()}
                   </div>
                   <div>
                     <h3 className="text-sm font-medium text-white">
-                      {conversations.find(c => c.customerWaId === selectedConversation)?.customerName ||
-                       conversations.find(c => c.customerWaId === selectedConversation)?.customerPhone}
+                      {(() => {
+                        const selectedConv = conversations.find(c => c.customerWaId === selectedConversation)
+                        return selectedConv?.customerName || selectedConv?.customerPhone || 'Cliente'
+                      })()}
                     </h3>
                     <p className="text-xs">
                       {renderPresence()}
