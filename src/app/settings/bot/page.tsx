@@ -440,7 +440,11 @@ export default function BotConfiguration() {
                         <option value={15}>15 minutos</option>
                         <option value={30}>30 minutos</option>
                         <option value={45}>45 minutos</option>
-                        <option value={60}>60 minutos</option>
+                        <option value={60}>60 minutos (1:00 hora)</option>
+                        <option value={75}>75 minutos (1:15 horas)</option>
+                        <option value={90}>90 minutos (1:30 horas)</option>
+                        <option value={105}>105 minutos (1:45 horas)</option>
+                        <option value={120}>120 minutos (2:00 horas)</option>
                       </select>
                     </div>
 
