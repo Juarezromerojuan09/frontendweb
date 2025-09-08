@@ -78,6 +78,7 @@ export default function Dashboard() {
   const selectedConversationRef = useRef<string | null>(null)
   const selectedWhatsAppNumberRef = useRef<string | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
+  const messagesRef = useRef<Message[]>([])
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -119,7 +120,12 @@ export default function Dashboard() {
        const token = localStorage.getItem('token')
        if (!token) return
 
-       const userId = localStorage.getItem('userId') || '1';
+       const userId = localStorage.getItem('userId')
+       if (!userId) {
+         router.push('/login')
+         return
+       }
+
        const response = await fetch(`${apiUrl}/api/auth/whatsapp-numbers/user/${userId}`, {
          headers: {
            'Authorization': `Bearer ${token}`,
@@ -158,7 +164,7 @@ export default function Dashboard() {
      } finally {
        setLoading(false)
      }
-   }, [apiUrl])
+   }, [apiUrl, router])
 
   const fetchConversations = useCallback(async (whatsAppNumberId: string) => {
      try {
@@ -344,6 +350,10 @@ export default function Dashboard() {
     selectedWhatsAppNumberRef.current = selectedWhatsAppNumber
   }, [selectedWhatsAppNumber])
 
+  useEffect(() => {
+    messagesRef.current = messages
+  }, [messages])
+
   // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
     if (messagesContainerRef.current) {
@@ -425,22 +435,24 @@ export default function Dashboard() {
         })
       })
 
-      // Actualizar estado en la lista de conversaciones si es el último mensaje
+      // Usar referencia de mensajes actual para evitar estado obsoleto
+      const currentMessages = messagesRef.current
+      const updatedMessages = currentMessages.map(msg =>
+        msg.messageId === statusData.messageId
+          ? { ...msg, status: statusData.status as 'sent' | 'delivered' | 'read' | 'failed' }
+          : msg
+      )
+
+      // Determinar el último mensaje de negocio tras la actualización
+      const lastBusinessMessage = updatedMessages
+        .filter(msg => msg.from === 'business')
+        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]
+
+      // Actualizar estado en la lista de conversaciones si corresponde a la conversación seleccionada
       setConversations(prevConversations => {
         return prevConversations.map(conversation => {
-          // Verificar si este mensaje es el último mensaje de la conversación
-          const updatedMessages = messages.map(msg =>
-            msg.messageId === statusData.messageId
-              ? { ...msg, status: statusData.status as 'sent' | 'delivered' | 'read' | 'failed' }
-              : msg
-          )
-          
-          // Encontrar el último mensaje de negocio en la conversación actualizada
-          const lastBusinessMessage = updatedMessages
-            .filter(msg => msg.from === 'business')
-            .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]
-
-          if (lastBusinessMessage && lastBusinessMessage.messageId === statusData.messageId) {
+          if (conversation.customerWaId === selectedConversationRef.current &&
+              lastBusinessMessage && lastBusinessMessage.messageId === statusData.messageId) {
             return {
               ...conversation,
               lastMessageStatus: statusData.status as 'sent' | 'delivered' | 'read' | 'failed'
@@ -913,7 +925,7 @@ export default function Dashboard() {
                                 )}
                                 {message.status === 'read' && (
                                   <svg className="w-3 h-3 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
                                 )}
                               </div>
