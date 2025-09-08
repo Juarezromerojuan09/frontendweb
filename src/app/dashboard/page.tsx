@@ -440,10 +440,15 @@ export default function Dashboard() {
           : message
       )))
 
-      // Actualizar lista de conversaciones usando customerWaId y whatsAppNumberId del evento
+      // Siempre actualizar la lista de conversaciones cuando llegue un evento de cambio de estado
+      // Esto asegura que las palomitas se actualicen incluso cuando la conversación no está abierta
+      if (selectedWhatsAppNumberRef.current) {
+        fetchConversations(selectedWhatsAppNumberRef.current)
+      }
+
+      // También intentar actualización optimista si tenemos los datos específicos
       if (statusData.customerWaId && statusData.whatsAppNumberId) {
         setConversations(prevConversations => prevConversations.map(conversation => {
-          // Verificar si esta conversación coincide con el evento
           const isTargetConversation = conversation.customerWaId === statusData.customerWaId
           
           if (isTargetConversation) {
