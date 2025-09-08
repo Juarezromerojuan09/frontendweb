@@ -544,6 +544,12 @@ export default function Settings() {
                     >
                       Configuración Bot
                     </button>
+                    <button
+                      onClick={() => router.push('/settings/bot-flow')}
+                      className="w-full bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] py-2 px-4 rounded-md transition-colors cursor-pointer text-left"
+                    >
+                      Flujo del Bot
+                    </button>
                   </div>
                 </div>
               </div>
