@@ -61,6 +61,8 @@ interface Message {
    unreadCount?: number;
  }
 
+ type PresenceStatus = 'online' | 'typing' | 'offline'
+
 export default function Dashboard() {
   const [user, setUser] = useState<User | null>(null)
   const [whatsAppNumbers, setWhatsAppNumbers] = useState<WhatsAppNumber[]>([])
@@ -73,12 +75,14 @@ export default function Dashboard() {
   const [chatLoading, setChatLoading] = useState(false)
   const [socket, setSocket] = useState<Socket | null>(null)
   const router = useRouter()
+  const [presence, setPresence] = useState<PresenceStatus>('offline')
   
   // Refs para valores actuales de estado en event handlers de Socket.IO
   const selectedConversationRef = useRef<string | null>(null)
   const selectedWhatsAppNumberRef = useRef<string | null>(null)
   const messagesContainerRef = useRef<HTMLDivElement>(null)
   const messagesRef = useRef<Message[]>([])
+  const presenceTimerRef = useRef<number | null>(null)
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
 
@@ -140,7 +144,6 @@ export default function Dashboard() {
 
            if (data.whatsAppNumbers.length > 0) {
              setSelectedWhatsAppNumber(data.whatsAppNumbers[0]._id)
-             // fetchConversations(data.whatsAppNumbers[0._id)
            }
          }
        } else {
@@ -153,7 +156,6 @@ export default function Dashboard() {
            router.push('/login')
            return
          } else if (response.status === 304) {
-           // Not Modified - usar datos en caché o array vacío
            setWhatsAppNumbers([])
          } else {
            console.error('Error fetching WhatsApp numbers:', response.statusText)
@@ -172,7 +174,6 @@ export default function Dashboard() {
        const token = localStorage.getItem('token')
        if (!token) return
 
-       // Obtener conversaciones filtradas por WhatsAppNumberId and userId
        const userId = localStorage.getItem('userId')
        if (!userId) {
          console.error('User ID not found')
@@ -192,7 +193,6 @@ export default function Dashboard() {
          }
        } else {
          if (response.status === 401) {
-           // Token inválido, redirigir al login
            localStorage.removeItem('token')
            localStorage.removeItem('userId')
            localStorage.removeItem('userName')
@@ -200,7 +200,6 @@ export default function Dashboard() {
            router.push('/login')
            return
          } else if (response.status === 304) {
-           // Not Modified - usar datos en caché o array vacío
            setConversations([])
            setLoading(false)
          } else {
@@ -219,7 +218,6 @@ export default function Dashboard() {
   const fetchMessages = useCallback(async (customerWaId: string, whatsAppNumberId: string) => {
     try {
       setChatLoading(true)
-      // Obtener mensajes de una conversación específica
       const token = localStorage.getItem('token')
       if (!token) {
         router.push('/login')
@@ -240,7 +238,6 @@ export default function Dashboard() {
         }
         } else {
         if (response.status === 401) {
-          // Token inválido, redirigir al login
           localStorage.removeItem('token')
           localStorage.removeItem('userId')
           localStorage.removeItem('userName')
@@ -248,7 +245,6 @@ export default function Dashboard() {
           router.push('/login')
           return
         } else if (response.status === 304) {
-          // Not Modified - usar datos en caché o array vacío
           setMessages([])
           setChatLoading(false)
         } else {
@@ -270,25 +266,25 @@ export default function Dashboard() {
     const token = localStorage.getItem('token')
     if (!token) return
 
+    const optimisticId = `optimistic-${Date.now()}`
+
     // Crear mensaje optimista
     const optimisticMessage: Message = {
-      _id: `optimistic-${Date.now()}`,
+      _id: optimisticId,
       content: {
         body: newMessage.trim()
       },
       timestamp: new Date().toISOString(),
       from: 'business',
       type: 'text',
-      messageId: `optimistic-${Date.now()}`,
+      messageId: optimisticId,
       customerWaId: selectedConversation,
       whatsAppNumberId: selectedWhatsAppNumber,
-      status: 'sent' // Estado inicial
+      status: 'sent'
     }
 
-    // Agregar mensaje optimista al estado local de mensajes
     setMessages(prevMessages => [...prevMessages, optimisticMessage])
     
-    // Actualizar la lista de conversaciones con el nuevo mensaje
     setConversations(prevConversations => {
       return prevConversations.map(conversation => {
         if (conversation.customerWaId === selectedConversation) {
@@ -305,7 +301,7 @@ export default function Dashboard() {
       })
     })
 
-    setNewMessage('') // Limpiar el campo de mensaje inmediatamente
+    setNewMessage('')
 
     try {
       const response = await fetch(`${apiUrl}/api/messages/send-manual`, {
@@ -317,27 +313,21 @@ export default function Dashboard() {
         body: JSON.stringify({
           whatsAppNumberId: selectedWhatsAppNumber,
           customerWaId: selectedConversation,
-          message: newMessage.trim()
+          message: optimisticMessage.content.body
         })
       })
 
       if (response.ok) {
         const data = await response.json()
-        if (data.success) {
-          // El mensaje real llegará via Socket.IO, así que no necesitamos hacer nada aquí
-          console.log('✅ Mensaje enviado exitosamente')
-        } else {
+        if (!data.success) {
           console.error('Error en respuesta:', data.message)
-          // Si hay error, podríamos mostrar una notificación al usuario
         }
       } else {
         const errorData = await response.json().catch(() => ({}))
         console.error('Error HTTP:', response.status, errorData.message || response.statusText)
-        // Podríamos mostrar un error al usuario aquí
       }
     } catch (error) {
       console.error('Error enviando mensaje:', error)
-      // Podríamos mostrar un error al usuario aquí
     }
   }, [newMessage, selectedConversation, selectedWhatsAppNumber, apiUrl])
 
@@ -353,6 +343,14 @@ export default function Dashboard() {
   useEffect(() => {
     messagesRef.current = messages
   }, [messages])
+
+  useEffect(() => {
+    return () => {
+      if (presenceTimerRef.current) {
+        clearTimeout(presenceTimerRef.current)
+      }
+    }
+  }, [])
 
   // Auto-scroll to bottom when messages change or conversation changes
   useEffect(() => {
@@ -388,6 +386,16 @@ export default function Dashboard() {
 
     newSocket.on('new-message', (newMessage: Message) => {
       console.log('📨 Nuevo mensaje recibido via Socket.IO:', newMessage)
+      
+      // Presencia: si el cliente envía un mensaje en la conversación seleccionada, marcar "En línea" temporalmente
+      if (newMessage.from === 'customer' &&
+          selectedConversationRef.current === newMessage.customerWaId &&
+          selectedWhatsAppNumberRef.current === newMessage.whatsAppNumberId) {
+        setPresence('online')
+        if (presenceTimerRef.current) clearTimeout(presenceTimerRef.current)
+        presenceTimerRef.current = window.setTimeout(() => setPresence('offline'), 20000)
+      }
+
       // Remover mensajes optimistas para evitar duplicados
       setMessages(prevMessages => {
         const filteredMessages = prevMessages.filter(msg =>
@@ -395,7 +403,6 @@ export default function Dashboard() {
             msg.from === 'business' &&
             msg.customerWaId === newMessage.customerWaId)
         )
-        // Solo agregar el mensaje si pertenece a la conversación actual (usando refs para valores actuales)
         if (selectedConversationRef.current === newMessage.customerWaId &&
             selectedWhatsAppNumberRef.current === newMessage.whatsAppNumberId) {
           return [...filteredMessages, newMessage]
@@ -404,7 +411,6 @@ export default function Dashboard() {
       })
 
       if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumberRef.current) {
-        // Si es un mensaje de cliente en una conversación diferente, incrementar contador de no leídos
         setConversations(prevConversations => {
           return prevConversations.map(conv => {
             if (conv.customerWaId === newMessage.customerWaId) {
@@ -412,7 +418,9 @@ export default function Dashboard() {
                 ...conv,
                 unreadCount: (conv.unreadCount || 0) + 1,
                 lastMessage: newMessage.content.body,
-                lastMessageTime: newMessage.timestamp
+                lastMessageTime: newMessage.timestamp,
+                lastMessageFrom: 'customer',
+                lastMessageStatus: undefined
               }
             }
             return conv
@@ -422,100 +430,46 @@ export default function Dashboard() {
     })
 
     // Escuchar eventos de cambio de estado de mensajes
-    newSocket.on('message-status-update', (statusData: { messageId: string; status: string; timestamp: string }) => {
+    newSocket.on('message-status-update', (statusData: { messageId: string; status: 'sent'|'delivered'|'read'|'failed'; timestamp: string; customerWaId?: string; whatsAppNumberId?: string }) => {
       console.log('📊 Estado de mensaje actualizado:', statusData)
       
       // Actualizar estado en mensajes del chat
-      setMessages(prevMessages => {
-        return prevMessages.map(message => {
-          if (message.messageId === statusData.messageId) {
-            return { ...message, status: statusData.status as 'sent' | 'delivered' | 'read' | 'failed' }
-          }
-          return message
-        })
-      })
+      setMessages(prevMessages => prevMessages.map(message => (
+        message.messageId === statusData.messageId
+          ? { ...message, status: statusData.status }
+          : message
+      )))
 
-      // Usar referencia de mensajes actual para evitar estado obsoleto
-      const currentMessages = messagesRef.current
-      const updatedMessages = currentMessages.map(msg =>
-        msg.messageId === statusData.messageId
-          ? { ...msg, status: statusData.status as 'sent' | 'delivered' | 'read' | 'failed' }
-          : msg
-      )
-
-      // Determinar el último mensaje de negocio tras la actualización
-      const lastBusinessMessage = updatedMessages
-        .filter(msg => msg.from === 'business')
-        .sort((a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime())[0]
-
-      // Actualizar estado en la lista de conversaciones si corresponde a la conversación seleccionada
-      setConversations(prevConversations => {
-        return prevConversations.map(conversation => {
-          if (conversation.customerWaId === selectedConversationRef.current &&
-              lastBusinessMessage && lastBusinessMessage.messageId === statusData.messageId) {
+      // Actualizar lista de conversaciones usando customerWaId y whatsAppNumberId del evento
+      if (statusData.customerWaId && statusData.whatsAppNumberId) {
+        setConversations(prevConversations => prevConversations.map(conversation => {
+          // Verificar si esta conversación coincide con el evento
+          const isTargetConversation = conversation.customerWaId === statusData.customerWaId
+          
+          if (isTargetConversation) {
             return {
               ...conversation,
-              lastMessageStatus: statusData.status as 'sent' | 'delivered' | 'read' | 'failed'
+              lastMessageStatus: statusData.status,
+              lastMessageFrom: 'business'
             }
           }
           return conversation
-        })
-      })
+        }))
+      }
     })
 
-    // Escuchar eventos de actualización de conversaciones
-    newSocket.on('conversation-updated', (updatedConversation: any) => {
-      console.log('🔄 Conversación actualizada:', updatedConversation)
-      setConversations(prevConversations => {
-        // Buscar si la conversación ya existe
-        const existingConvIndex = prevConversations.findIndex(
-          conv => conv.customerWaId === updatedConversation.customerWaId
-        )
-
-        if (existingConvIndex >= 0) {
-          // Actualizar conversación existente
-          const updatedConvs = [...prevConversations]
-          const currentUnreadCount = updatedConvs[existingConvIndex].unreadCount || 0
-          
-          // Determinar si debemos mostrar palomitas (solo para mensajes de negocio)
-          const shouldShowCheckmarks = updatedConversation.lastMessageFrom === 'business' &&
-                                     updatedConversation.lastMessageStatus;
-          
-          updatedConvs[existingConvIndex] = {
-            ...updatedConvs[existingConvIndex],
-            lastMessage: updatedConversation.lastMessage,
-            lastMessageTime: updatedConversation.lastMessageTime,
-            messageCount: updatedConvs[existingConvIndex].messageCount + 1,
-            pendingReply: updatedConversation.pendingReply,
-            unreadCount: updatedConversation.pendingReply ? currentUnreadCount + 1 : currentUnreadCount,
-            // Solo mantener lastMessageStatus y lastMessageFrom para mensajes de negocio
-            lastMessageStatus: shouldShowCheckmarks ? updatedConversation.lastMessageStatus : undefined,
-            lastMessageFrom: shouldShowCheckmarks ? updatedConversation.lastMessageFrom : undefined
-          }
-          return updatedConvs
+    // Opcional: escuchar evento de typing si se habilita en backend
+    newSocket.on('customer-typing', (data: { customerWaId: string; whatsAppNumberId: string; typing: boolean }) => {
+      if (data.customerWaId === selectedConversationRef.current &&
+          data.whatsAppNumberId === selectedWhatsAppNumberRef.current) {
+        if (data.typing) {
+          setPresence('typing')
         } else {
-          // Agregar nueva conversación si no existe
-          const shouldShowCheckmarks = updatedConversation.lastMessageFrom === 'business' &&
-                                     updatedConversation.lastMessageStatus;
-          
-          return [
-            {
-              customerWaId: updatedConversation.customerWaId,
-              customerName: updatedConversation.customerName,
-              customerPhone: updatedConversation.customerWaId,
-              displayName: 'Nueva Conversación',
-              lastMessage: updatedConversation.lastMessage,
-              lastMessageTime: updatedConversation.lastMessageTime,
-              lastMessageStatus: shouldShowCheckmarks ? updatedConversation.lastMessageStatus : undefined,
-              lastMessageFrom: shouldShowCheckmarks ? updatedConversation.lastMessageFrom : undefined,
-              messageCount: 1,
-              pendingReply: updatedConversation.pendingReply,
-              unreadCount: updatedConversation.pendingReply ? 1 : 0
-            },
-            ...prevConversations
-          ]
+          setPresence('online')
+          if (presenceTimerRef.current) clearTimeout(presenceTimerRef.current)
+          presenceTimerRef.current = window.setTimeout(() => setPresence('offline'), 15000)
         }
-      })
+      }
     })
 
     newSocket.on('disconnect', () => {
@@ -525,7 +479,7 @@ export default function Dashboard() {
     return () => {
       newSocket.disconnect()
     }
-  }, [apiUrl]) // Solo depende de apiUrl, no recrear socket cuando selectedConversation/selectedWhatsAppNumber cambien
+  }, [apiUrl])
 
   // Unirse a la sala de conversación cuando se selecciona una conversación
   useEffect(() => {
@@ -537,6 +491,7 @@ export default function Dashboard() {
       }
       socket.emit('join-conversation', roomData)
       console.log('👥 Uniéndose a sala:', roomData)
+      setPresence('offline')
     }
 
     return () => {
@@ -572,6 +527,12 @@ export default function Dashboard() {
         <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
       </div>
     )
+  }
+
+  const renderPresence = () => {
+    if (presence === 'typing') return <span className="text-xs text-[#90e2f8]">Escribiendo…</span>
+    if (presence === 'online') return <span className="text-xs text-[#90e2f8]">En línea</span>
+    return <span className="text-xs text-[#B7C2D6]">Esperando respuesta...</span>
   }
 
   return (
@@ -743,16 +704,10 @@ export default function Dashboard() {
                     if (selectedWhatsAppNumber) {
                       fetchMessages(conversation.customerWaId, selectedWhatsAppNumber)
                     }
-                    // Marcar mensajes como leídos
                     if ((conversation.unreadCount || 0) > 0) {
-                      setConversations(prevConversations => {
-                        return prevConversations.map(conv => {
-                          if (conv.customerWaId === conversation.customerWaId) {
-                            return { ...conv, unreadCount: 0 }
-                          }
-                          return conv
-                        })
-                      })
+                      setConversations(prevConversations => prevConversations.map(conv => (
+                        conv.customerWaId === conversation.customerWaId ? { ...conv, unreadCount: 0 } : conv
+                      )))
                     }
                   }}
                   className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-50 border-b border-[#012f78] relative z-40 transition-colors ${
@@ -801,23 +756,28 @@ export default function Dashboard() {
                         {conversation.lastMessageFrom === 'business' && conversation.lastMessageStatus && (
                           <div className="flex-shrink-0 flex items-center space-x-1">
                             {conversation.lastMessageStatus === 'sent' && (
-                              <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-6 h-6 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                               </svg>
                             )}
                             {conversation.lastMessageStatus === 'delivered' && (
                               <>
-                                <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-6 h-6 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
-                                <svg className="w-4 h-4 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
+                                <svg className="w-6 h-6 text-[#B7C2D6]" fill="currentColor" viewBox="0 0 20 20">
                                   <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                 </svg>
                               </>
                             )}
                             {conversation.lastMessageStatus === 'read' && (
-                              <svg className="w-4 h-4 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
+                              <svg className="w-6 h-6 text-[#007bff]" fill="currentColor" viewBox="0 0 20 20">
                                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                              </svg>
+                            )}
+                            {conversation.lastMessageStatus === 'failed' && (
+                              <svg className="w-6 h-6 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11h2v5h-2V7zm0 6h2v2h-2v-2z" clipRule="evenodd" />
                               </svg>
                             )}
                           </div>
@@ -858,9 +818,8 @@ export default function Dashboard() {
                       {conversations.find(c => c.customerWaId === selectedConversation)?.customerName ||
                        conversations.find(c => c.customerWaId === selectedConversation)?.customerPhone}
                     </h3>
-                    <p className="text-xs text-[#B7C2D6]">
-                      {conversations.find(c => c.customerWaId === selectedConversation)?.pendingReply ?
-                       'Esperando respuesta...' : 'En línea'}
+                    <p className="text-xs">
+                      {renderPresence()}
                     </p>
                   </div>
                 </div>
@@ -875,7 +834,7 @@ export default function Dashboard() {
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
-                    maxHeight: 'calc(100vh - 240px)', // Increased height to accommodate larger bottom margin
+                    maxHeight: 'calc(100vh - 240px)',
                     height: '100%'
                   }}
                 >
@@ -912,20 +871,25 @@ export default function Dashboard() {
                               })}
                             </span>
                             {message.from === 'business' && message.status && (
-                              <div className="ml-1">
+                              <div className="ml-1 flex items-center space-x-0.5">
                                 {message.status === 'sent' && (
-                                  <svg className="w-3 h-3 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-5 h-5 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
                                 )}
                                 {message.status === 'delivered' && (
-                                  <svg className="w-3 h-3 text-white opacity-70" fill="currentColor" viewBox="0 0 20 20">
+                                  <svg className="w-5 h-5 text-white opacity-80" fill="currentColor" viewBox="0 0 20 20">
                                     <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
                                   </svg>
                                 )}
                                 {message.status === 'read' && (
-                                  <svg className="w-3 h-3 text-[#90e2f8]" fill="currentColor" viewBox="0 0 20 20">
-                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  <svg className="w-5 h-5 text-[#007bff]" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
+                                  </svg>
+                                )}
+                                {message.status === 'failed' && (
+                                  <svg className="w-5 h-5 text-red-500" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm-1-11h2v5h-2V7zm0 6h2v2h-2v-2z" clipRule="evenodd" />
                                   </svg>
                                 )}
                               </div>
