@@ -113,7 +113,24 @@ export default function BotFlowSettings() {
   })
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
-  const [menuItemsEdit, setMenuItemsEdit] = useState<Array<{id: string, label: string, type: string, actionKey: string}>>([])
+  const [menuItemsEdit, setMenuItemsEdit] = useState<Array<{
+    id: string
+    label: string
+    type: string
+    actionKey: string
+    meta?: {
+      table?: {
+        columns: string[]
+        rows: string[][]
+      }
+      list?: {
+        options: string[]
+      }
+      location?: {
+        address: string
+      }
+    }
+  }>>([])
   const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
   const router = useRouter()
 
@@ -302,12 +319,30 @@ export default function BotFlowSettings() {
         return
       }
 
+      // Validar que todos los campos requeridos tengan valores
+      const validatedMenuItems = menuItemsEdit.map(item => ({
+        id: item.id || Date.now().toString(),
+        label: item.label || '',
+        type: item.type || 'action',
+        actionKey: item.actionKey || 'custom',
+        meta: item.meta || undefined
+      }))
+
+      const validatedFormFields = formFieldsEdit.map(field => ({
+        key: field.key || `field_${Date.now()}`,
+        label: field.label || '',
+        type: field.type || 'text',
+        required: field.required || false
+      }))
+
       const updatedSettings = {
         ...botSettings,
-        greeting: greetingEdit,
-        menuItems: menuItemsEdit,
-        formFields: formFieldsEdit
+        greeting: greetingEdit || 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
+        menuItems: validatedMenuItems,
+        formFields: validatedFormFields
       }
+
+      console.log('Enviando configuración:', JSON.stringify(updatedSettings, null, 2))
 
       const response = await axios.patch<ApiResponse>(
         `${apiUrl}/api/auth/user/${userId}`,
@@ -322,6 +357,10 @@ export default function BotFlowSettings() {
       if (response.data.success) {
         setSuccess('Configuración guardada exitosamente')
         setBotSettings(updatedSettings)
+        
+        // Actualizar también los estados de edición con los datos validados
+        setMenuItemsEdit(validatedMenuItems)
+        setFormFieldsEdit(validatedFormFields)
       } else {
         setError(response.data.message || 'Error al guardar la configuración')
       }
@@ -334,7 +373,8 @@ export default function BotFlowSettings() {
         localStorage.removeItem('userEmail')
         router.push('/login')
       } else {
-        setError('Error al guardar la configuración')
+        console.error('Error detallado:', axiosErr.response?.data || err)
+        setError(axiosErr.response?.data?.message || 'Error al guardar la configuración')
       }
     } finally {
       setSaving(false)
