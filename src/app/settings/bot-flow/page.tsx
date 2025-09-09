@@ -20,6 +20,41 @@ interface AxiosError {
   }
 }
 
+interface BotSettings {
+  template: string
+  greeting: string
+  menuItems: Array<{
+    id: string
+    title: string
+    description: string
+  }>
+  formFields: Array<{
+    id: string
+    type: string
+    label: string
+    placeholder: string
+    required: boolean
+  }>
+  messages: {
+    scheduleConfirmation: string
+    orderAcknowledgement: string
+    finalClose: string
+  }
+  reminders: {
+    enabled: boolean
+    time1Before: number
+    time2Before: number
+  }
+  version: number
+  businessHours?: {
+    start: string
+    end: string
+  }
+  workingDays?: string[]
+  appointmentInterval?: number
+  autoConfirmAppointments?: boolean
+}
+
 interface User {
   _id: string
   username: string
@@ -38,12 +73,36 @@ interface User {
   status: 'pending_verification' | 'active' | 'suspended'
   createdAt: string
   updatedAt?: string
+  botSettings?: BotSettings
 }
 
 export default function BotFlowSettings() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState('')
+  const [success, setSuccess] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [botSettings, setBotSettings] = useState<BotSettings>({
+    template: 'custom',
+    greeting: 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
+    menuItems: [],
+    formFields: [],
+    messages: {
+      scheduleConfirmation: 'Tu cita ha sido agendada.',
+      orderAcknowledgement: 'Gracias. En breve un encargado le responderá.',
+      finalClose: '✅ Su pedido se está preparando. Gracias por elegirnos.'
+    },
+    reminders: {
+      enabled: false,
+      time1Before: 3,
+      time2Before: 24
+    },
+    version: 1
+  })
+  const [activeTab, setActiveTab] = useState('template')
+  const [greetingEdit, setGreetingEdit] = useState('')
+  const [menuItemsEdit, setMenuItemsEdit] = useState<Array<{id: string, title: string, description: string}>>([])
+  const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{id: string, type: string, label: string, placeholder: string, required: boolean}>>([])
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -96,6 +155,179 @@ export default function BotFlowSettings() {
       fetchUser()
     }
   }, [checkAuth, fetchUser])
+
+  useEffect(() => {
+    if (user?.botSettings) {
+      setBotSettings(user.botSettings)
+      setGreetingEdit(user.botSettings.greeting || '')
+      setMenuItemsEdit(user.botSettings.menuItems || [])
+      setFormFieldsEdit(user.botSettings.formFields || [])
+    }
+  }, [user])
+
+  const handleTemplateSelect = (template: string) => {
+    const templates = {
+      consultorio: {
+        greeting: `Hola, soy el asistente virtual de ${user?.businessName}. ¿En qué puedo ayudarte hoy?`,
+        menuItems: [
+          { id: '1', title: 'Agendar cita', description: 'Reserva tu cita médica' },
+          { id: '2', title: 'Información de servicios', description: 'Conoce nuestros servicios' },
+          { id: '3', title: 'Ubicación y horarios', description: 'Cómo llegar y horarios de atención' }
+        ],
+        formFields: [
+          { id: '1', type: 'text', label: 'Nombre completo', placeholder: 'Ingresa tu nombre completo', required: true },
+          { id: '2', type: 'tel', label: 'Teléfono', placeholder: 'Ingresa tu teléfono', required: true },
+          { id: '3', type: 'date', label: 'Fecha preferida', placeholder: 'Selecciona la fecha', required: true }
+        ]
+      },
+      barberia: {
+        greeting: `¡Hola! Bienvenido a ${user?.businessName}. ¿Qué servicio necesitas hoy?`,
+        menuItems: [
+          { id: '1', title: 'Corte de cabello', description: 'Reserva tu corte' },
+          { id: '2', title: 'Barba y bigote', description: 'Servicios de barba' },
+          { id: '3', title: 'Paquetes completos', description: 'Corte + barba + tratamiento' }
+        ],
+        formFields: [
+          { id: '1', type: 'text', label: 'Nombre', placeholder: 'Tu nombre', required: true },
+          { id: '2', type: 'tel', label: 'Teléfono', placeholder: 'Tu teléfono', required: true },
+          { id: '3', type: 'select', label: 'Servicio', placeholder: 'Selecciona el servicio', required: true }
+        ]
+      },
+      servicios: {
+        greeting: `Hola, soy el asistente de ${user?.businessName}. ¿Cómo puedo ayudarte?`,
+        menuItems: [
+          { id: '1', title: 'Solicitar servicio', description: 'Solicita nuestro servicio' },
+          { id: '2', title: 'Cotización', description: 'Solicita una cotización' },
+          { id: '3', title: 'Soporte técnico', description: 'Ayuda y soporte' }
+        ],
+        formFields: [
+          { id: '1', type: 'text', label: 'Nombre', placeholder: 'Tu nombre', required: true },
+          { id: '2', type: 'tel', label: 'Teléfono', placeholder: 'Tu teléfono', required: true },
+          { id: '3', type: 'textarea', label: 'Descripción del servicio', placeholder: 'Describe lo que necesitas', required: true }
+        ]
+      },
+      custom: {
+        greeting: 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
+        menuItems: [],
+        formFields: []
+      }
+    }
+
+    const selectedTemplate = templates[template as keyof typeof templates] || templates.custom
+    setBotSettings(prev => ({
+      ...prev,
+      template,
+      greeting: selectedTemplate.greeting,
+      menuItems: selectedTemplate.menuItems,
+      formFields: selectedTemplate.formFields
+    }))
+    setGreetingEdit(selectedTemplate.greeting)
+    setMenuItemsEdit(selectedTemplate.menuItems)
+    setFormFieldsEdit(selectedTemplate.formFields)
+  }
+
+  const addMenuItem = () => {
+    if (menuItemsEdit.length >= 5) {
+      setError('Máximo 5 opciones de menú permitidas')
+      return
+    }
+    const newItem = {
+      id: Date.now().toString(),
+      title: '',
+      description: ''
+    }
+    setMenuItemsEdit([...menuItemsEdit, newItem])
+  }
+
+  const removeMenuItem = (id: string) => {
+    setMenuItemsEdit(menuItemsEdit.filter(item => item.id !== id))
+  }
+
+  const updateMenuItem = (id: string, field: string, value: string) => {
+    setMenuItemsEdit(menuItemsEdit.map(item =>
+      item.id === id ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const addFormField = () => {
+    if (formFieldsEdit.length >= 6) {
+      setError('Máximo 6 campos de formulario permitidos')
+      return
+    }
+    const newField = {
+      id: Date.now().toString(),
+      type: 'text',
+      label: '',
+      placeholder: '',
+      required: false
+    }
+    setFormFieldsEdit([...formFieldsEdit, newField])
+  }
+
+  const removeFormField = (id: string) => {
+    setFormFieldsEdit(formFieldsEdit.filter(field => field.id !== id))
+  }
+
+  const updateFormField = (id: string, field: string, value: string | boolean) => {
+    setFormFieldsEdit(formFieldsEdit.map(item =>
+      item.id === id ? { ...item, [field]: value } : item
+    ))
+  }
+
+  const saveBotSettings = async () => {
+    setSaving(true)
+    setError('')
+    setSuccess('')
+
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const token = localStorage.getItem('token')
+      const userId = localStorage.getItem('userId')
+
+      if (!userId) {
+        setError('ID de usuario no encontrado')
+        setSaving(false)
+        return
+      }
+
+      const updatedSettings = {
+        ...botSettings,
+        greeting: greetingEdit,
+        menuItems: menuItemsEdit,
+        formFields: formFieldsEdit
+      }
+
+      const response = await axios.patch<ApiResponse>(
+        `${apiUrl}/api/auth/user/${userId}`,
+        { botSettings: updatedSettings },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`
+          }
+        }
+      )
+
+      if (response.data.success) {
+        setSuccess('Configuración guardada exitosamente')
+        setBotSettings(updatedSettings)
+      } else {
+        setError(response.data.message || 'Error al guardar la configuración')
+      }
+    } catch (err) {
+      const axiosErr = err as AxiosError
+      if (axiosErr.response?.status === 401) {
+        localStorage.removeItem('token')
+        localStorage.removeItem('userId')
+        localStorage.removeItem('userName')
+        localStorage.removeItem('userEmail')
+        router.push('/login')
+      } else {
+        setError('Error al guardar la configuración')
+      }
+    } finally {
+      setSaving(false)
+    }
+  }
 
   if (loading) {
     return (
@@ -290,19 +522,319 @@ export default function BotFlowSettings() {
                     </div>
                   )}
 
-                  <div className="text-center py-12">
-                    <div className="text-[#90e2f8] text-6xl mb-4">🤖</div>
-                    <h3 className="text-xl font-semibold text-[#B7C2D6] mb-2">
-                      Configuración del Flujo del Bot
-                    </h3>
-                    <p className="text-[#B7C2D6] mb-6">
-                      Aquí podrás configurar el flujo de conversación de tu bot de WhatsApp.
-                    </p>
-                    <div className="bg-[#012f78] rounded-lg p-4 border border-[#3ea0c9]">
-                      <p className="text-[#90e2f8] text-sm">
-                        Próximamente: Editor visual de flujos, respuestas automáticas y lógica de conversación.
-                      </p>
+                  {/* Success Message */}
+                  {success && (
+                    <div className="bg-green-600 text-white px-4 py-2 rounded mb-4">
+                      {success}
                     </div>
+                  )}
+
+                  {/* Error Message */}
+                  {error && (
+                    <div className="bg-red-600 text-white px-4 py-2 rounded mb-4">
+                      {error}
+                    </div>
+                  )}
+
+                  {/* Tabs */}
+                  <div className="flex border-b border-[#3ea0c9] mb-6">
+                    {['template', 'saludo', 'menu', 'formulario', 'preview'].map((tab) => (
+                      <button
+                        key={tab}
+                        onClick={() => setActiveTab(tab)}
+                        className={`px-4 py-2 font-medium transition-colors ${
+                          activeTab === tab
+                            ? 'bg-[#0073ba] text-white border-b-2 border-[#90e2f8]'
+                            : 'bg-[#012f78] text-[#B7C2D6] hover:bg-[#005a92]'
+                        }`}
+                      >
+                        {tab === 'template' && 'Plantilla'}
+                        {tab === 'saludo' && 'Saludo'}
+                        {tab === 'menu' && 'Menú'}
+                        {tab === 'formulario' && 'Formulario'}
+                        {tab === 'preview' && 'Vista Previa'}
+                      </button>
+                    ))}
+                  </div>
+
+                  {/* Template Selection */}
+                  {activeTab === 'template' && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-[#B7C2D6]">Selecciona una plantilla</h3>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div
+                          onClick={() => handleTemplateSelect('consultorio')}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                            botSettings.template === 'consultorio'
+                              ? 'border-[#90e2f8] bg-[#012f78]'
+                              : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
+                          }`}
+                        >
+                          <h4 className="text-[#B7C2D6] font-semibold">Consultorio</h4>
+                          <p className="text-[#90e2f8] text-sm">Para salud, educación y finanzas</p>
+                        </div>
+                        <div
+                          onClick={() => handleTemplateSelect('barberia')}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                            botSettings.template === 'barberia'
+                              ? 'border-[#90e2f8] bg-[#012f78]'
+                              : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
+                          }`}
+                        >
+                          <h4 className="text-[#B7C2D6] font-semibold">Barbería/Estética</h4>
+                          <p className="text-[#90e2f8] text-sm">Para belleza y cuidado personal</p>
+                        </div>
+                        <div
+                          onClick={() => handleTemplateSelect('servicios')}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                            botSettings.template === 'servicios'
+                              ? 'border-[#90e2f8] bg-[#012f78]'
+                              : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
+                          }`}
+                        >
+                          <h4 className="text-[#B7C2D6] font-semibold">Servicios</h4>
+                          <p className="text-[#90e2f8] text-sm">Para servicios generales y negocios</p>
+                        </div>
+                        <div
+                          onClick={() => handleTemplateSelect('custom')}
+                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                            botSettings.template === 'custom'
+                              ? 'border-[#90e2f8] bg-[#012f78]'
+                              : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
+                          }`}
+                        >
+                          <h4 className="text-[#B7C2D6] font-semibold">Personalizado</h4>
+                          <p className="text-[#90e2f8] text-sm">Configuración manual completa</p>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Greeting Editor */}
+                  {activeTab === 'saludo' && (
+                    <div className="space-y-4">
+                      <h3 className="text-lg font-semibold text-[#B7C2D6]">Mensaje de Saludo</h3>
+                      <textarea
+                        value={greetingEdit}
+                        onChange={(e) => setGreetingEdit(e.target.value)}
+                        placeholder="Escribe el mensaje de saludo que enviará el bot"
+                        className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                        rows={4}
+                        maxLength={320}
+                      />
+                      <div className="text-sm text-[#90e2f8]">
+                        {greetingEdit.length}/320 caracteres
+                      </div>
+                      <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
+                        <h4 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h4>
+                        <p className="text-[#90e2f8]">{greetingEdit}</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Menu Editor */}
+                  {activeTab === 'menu' && (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-[#B7C2D6]">Opciones de Menú</h3>
+                        <button
+                          onClick={addMenuItem}
+                          disabled={menuItemsEdit.length >= 5}
+                          className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          + Añadir Opción
+                        </button>
+                      </div>
+                      <p className="text-sm text-[#90e2f8]">Máximo 5 opciones de menú</p>
+                      
+                      {menuItemsEdit.length === 0 ? (
+                        <p className="text-[#B7C2D6]">No hay opciones de menú configuradas.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {menuItemsEdit.map((item, index) => (
+                            <div key={item.id} className="bg-[#0b1e34] p-4 rounded border border-[#3ea0c9]">
+                              <div className="flex justify-between items-start mb-3">
+                                <span className="text-[#90e2f8]">Opción {index + 1}</span>
+                                <button
+                                  onClick={() => removeMenuItem(item.id)}
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              <div className="space-y-2">
+                                <input
+                                  type="text"
+                                  value={item.title}
+                                  onChange={(e) => updateMenuItem(item.id, 'title', e.target.value)}
+                                  placeholder="Título de la opción"
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                />
+                                <textarea
+                                  value={item.description}
+                                  onChange={(e) => updateMenuItem(item.id, 'description', e.target.value)}
+                                  placeholder="Descripción de la opción"
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  rows={2}
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Form Editor */}
+                  {activeTab === 'formulario' && (
+                    <div className="space-y-4">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-[#B7C2D6]">Campos del Formulario</h3>
+                        <button
+                          onClick={addFormField}
+                          disabled={formFieldsEdit.length >= 6}
+                          className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                        >
+                          + Añadir Campo
+                        </button>
+                      </div>
+                      <p className="text-sm text-[#90e2f8]">Máximo 6 campos de formulario</p>
+                      
+                      {formFieldsEdit.length === 0 ? (
+                        <p className="text-[#B7C2D6]">No hay campos de formulario configurados.</p>
+                      ) : (
+                        <div className="space-y-3">
+                          {formFieldsEdit.map((field, index) => (
+                            <div key={field.id} className="bg-[#0b1e34] p-4 rounded border border-[#3ea0c9]">
+                              <div className="flex justify-between items-start mb-3">
+                                <span className="text-[#90e2f8]">Campo {index + 1}</span>
+                                <button
+                                  onClick={() => removeFormField(field.id)}
+                                  className="text-red-400 hover:text-red-300"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <select
+                                  value={field.type}
+                                  onChange={(e) => updateFormField(field.id, 'type', e.target.value)}
+                                  className="p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                >
+                                  <option value="text">Texto</option>
+                                  <option value="tel">Teléfono</option>
+                                  <option value="email">Email</option>
+                                  <option value="date">Fecha</option>
+                                  <option value="select">Selección</option>
+                                  <option value="textarea">Texto Largo</option>
+                                </select>
+                                <div className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={field.required}
+                                    onChange={(e) => updateFormField(field.id, 'required', e.target.checked)}
+                                    className="mr-2"
+                                  />
+                                  <span className="text-[#B7C2D6]">Requerido</span>
+                                </div>
+                              </div>
+                              <div className="space-y-2 mt-3">
+                                <input
+                                  type="text"
+                                  value={field.label}
+                                  onChange={(e) => updateFormField(field.id, 'label', e.target.value)}
+                                  placeholder="Etiqueta del campo"
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                />
+                                <input
+                                  type="text"
+                                  value={field.placeholder}
+                                  onChange={(e) => updateFormField(field.id, 'placeholder', e.target.value)}
+                                  placeholder="Texto de ayuda"
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                />
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  )}
+
+                  {/* Preview */}
+                  {activeTab === 'preview' && (
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-[#B7C2D6]">Vista Previa del Bot</h3>
+                      
+                      {/* Chat Simulation */}
+                      <div className="bg-[#0b1e34] rounded-lg border border-[#3ea0c9] p-4">
+                        <div className="flex items-center space-x-3 mb-4">
+                          <div className="w-10 h-10 bg-[#012f78] rounded-full flex items-center justify-center">
+                            <span className="text-[#90e2f8]">🤖</span>
+                          </div>
+                          <div>
+                            <h4 className="text-[#B7C2D6] font-semibold">Bot de WhatsApp</h4>
+                            <p className="text-[#90e2f8] text-sm">En línea</p>
+                          </div>
+                        </div>
+
+                        {/* Greeting Message */}
+                        <div className="bg-[#012f78] rounded-lg p-3 mb-3 max-w-xs">
+                          <p className="text-[#B7C2D6]">{greetingEdit}</p>
+                        </div>
+
+                        {/* Menu Options */}
+                        {menuItemsEdit.length > 0 && (
+                          <div className="bg-[#012f78] rounded-lg p-3 mb-3 max-w-xs">
+                            <p className="text-[#B7C2D6] font-semibold mb-2">Opciones:</p>
+                            {menuItemsEdit.map((item) => (
+                              <div key={item.id} className="mb-2 last:mb-0">
+                                <p className="text-[#90e2f8] font-medium">• {item.title}</p>
+                                <p className="text-[#B7C2D6] text-sm">{item.description}</p>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+
+                        {/* Form Preview */}
+                        {formFieldsEdit.length > 0 && (
+                          <div className="bg-[#012f78] rounded-lg p-3 mb-3 max-w-xs">
+                            <p className="text-[#B7C2D6] font-semibold mb-2">Por favor completa:</p>
+                            {formFieldsEdit.map((field) => (
+                              <div key={field.id} className="mb-3 last:mb-0">
+                                <label className="block text-[#90e2f8] text-sm mb-1">
+                                  {field.label} {field.required && '*'}
+                                </label>
+                                {field.type === 'textarea' ? (
+                                  <textarea
+                                    placeholder={field.placeholder}
+                                    className="w-full p-2 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                    rows={3}
+                                  />
+                                ) : (
+                                  <input
+                                    type={field.type}
+                                    placeholder={field.placeholder}
+                                    className="w-full p-2 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  />
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Save Button */}
+                  <div className="mt-8 flex justify-end">
+                    <button
+                      onClick={saveBotSettings}
+                      disabled={saving}
+                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {saving ? 'Guardando...' : 'Guardar Configuración'}
+                    </button>
                   </div>
                 </div>
               </div>
