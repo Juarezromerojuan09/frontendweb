@@ -25,14 +25,26 @@ interface BotSettings {
   greeting: string
   menuItems: Array<{
     id: string
-    title: string
-    description: string
+    label: string
+    type: string
+    actionKey: string
+    meta?: {
+      table?: {
+        columns: string[]
+        rows: string[][]
+      }
+      list?: {
+        options: string[]
+      }
+      location?: {
+        address: string
+      }
+    }
   }>
   formFields: Array<{
-    id: string
-    type: string
+    key: string
     label: string
-    placeholder: string
+    type: string
     required: boolean
   }>
   messages: {
@@ -101,8 +113,8 @@ export default function BotFlowSettings() {
   })
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
-  const [menuItemsEdit, setMenuItemsEdit] = useState<Array<{id: string, title: string, description: string}>>([])
-  const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{id: string, type: string, label: string, placeholder: string, required: boolean}>>([])
+  const [menuItemsEdit, setMenuItemsEdit] = useState<Array<{id: string, label: string, type: string, actionKey: string}>>([])
+  const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -170,40 +182,40 @@ export default function BotFlowSettings() {
       consultorio: {
         greeting: `Hola, soy el asistente virtual de ${user?.businessName}. ¿En qué puedo ayudarte hoy?`,
         menuItems: [
-          { id: '1', title: 'Agendar cita', description: 'Reserva tu cita médica' },
-          { id: '2', title: 'Información de servicios', description: 'Conoce nuestros servicios' },
-          { id: '3', title: 'Ubicación y horarios', description: 'Cómo llegar y horarios de atención' }
+          { id: '1', label: 'Agendar cita', type: 'action', actionKey: 'schedule' },
+          { id: '2', label: 'Información de servicios', type: 'action', actionKey: 'info' },
+          { id: '3', label: 'Ubicación y horarios', type: 'action', actionKey: 'location' }
         ],
         formFields: [
-          { id: '1', type: 'text', label: 'Nombre completo', placeholder: 'Ingresa tu nombre completo', required: true },
-          { id: '2', type: 'tel', label: 'Teléfono', placeholder: 'Ingresa tu teléfono', required: true },
-          { id: '3', type: 'date', label: 'Fecha preferida', placeholder: 'Selecciona la fecha', required: true }
+          { key: 'name', label: 'Nombre completo', type: 'text', required: true },
+          { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
+          { key: 'date', label: 'Fecha preferida', type: 'date', required: true }
         ]
       },
       barberia: {
         greeting: `¡Hola! Bienvenido a ${user?.businessName}. ¿Qué servicio necesitas hoy?`,
         menuItems: [
-          { id: '1', title: 'Corte de cabello', description: 'Reserva tu corte' },
-          { id: '2', title: 'Barba y bigote', description: 'Servicios de barba' },
-          { id: '3', title: 'Paquetes completos', description: 'Corte + barba + tratamiento' }
+          { id: '1', label: 'Corte de cabello', type: 'action', actionKey: 'haircut' },
+          { id: '2', label: 'Barba y bigote', type: 'action', actionKey: 'beard' },
+          { id: '3', label: 'Paquetes completos', type: 'action', actionKey: 'package' }
         ],
         formFields: [
-          { id: '1', type: 'text', label: 'Nombre', placeholder: 'Tu nombre', required: true },
-          { id: '2', type: 'tel', label: 'Teléfono', placeholder: 'Tu teléfono', required: true },
-          { id: '3', type: 'select', label: 'Servicio', placeholder: 'Selecciona el servicio', required: true }
+          { key: 'name', label: 'Nombre', type: 'text', required: true },
+          { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
+          { key: 'service', label: 'Servicio', type: 'select', required: true }
         ]
       },
       servicios: {
         greeting: `Hola, soy el asistente de ${user?.businessName}. ¿Cómo puedo ayudarte?`,
         menuItems: [
-          { id: '1', title: 'Solicitar servicio', description: 'Solicita nuestro servicio' },
-          { id: '2', title: 'Cotización', description: 'Solicita una cotización' },
-          { id: '3', title: 'Soporte técnico', description: 'Ayuda y soporte' }
+          { id: '1', label: 'Solicitar servicio', type: 'action', actionKey: 'request' },
+          { id: '2', label: 'Cotización', type: 'action', actionKey: 'quote' },
+          { id: '3', label: 'Soporte técnico', type: 'action', actionKey: 'support' }
         ],
         formFields: [
-          { id: '1', type: 'text', label: 'Nombre', placeholder: 'Tu nombre', required: true },
-          { id: '2', type: 'tel', label: 'Teléfono', placeholder: 'Tu teléfono', required: true },
-          { id: '3', type: 'textarea', label: 'Descripción del servicio', placeholder: 'Describe lo que necesitas', required: true }
+          { key: 'name', label: 'Nombre', type: 'text', required: true },
+          { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
+          { key: 'description', label: 'Descripción del servicio', type: 'textarea', required: true }
         ]
       },
       custom: {
@@ -233,8 +245,9 @@ export default function BotFlowSettings() {
     }
     const newItem = {
       id: Date.now().toString(),
-      title: '',
-      description: ''
+      label: '',
+      type: 'action',
+      actionKey: 'custom'
     }
     setMenuItemsEdit([...menuItemsEdit, newItem])
   }
@@ -255,22 +268,21 @@ export default function BotFlowSettings() {
       return
     }
     const newField = {
-      id: Date.now().toString(),
-      type: 'text',
+      key: Date.now().toString(),
       label: '',
-      placeholder: '',
+      type: 'text',
       required: false
     }
     setFormFieldsEdit([...formFieldsEdit, newField])
   }
 
-  const removeFormField = (id: string) => {
-    setFormFieldsEdit(formFieldsEdit.filter(field => field.id !== id))
+  const removeFormField = (key: string) => {
+    setFormFieldsEdit(formFieldsEdit.filter(field => field.key !== key))
   }
 
-  const updateFormField = (id: string, field: string, value: string | boolean) => {
+  const updateFormField = (key: string, field: string, value: string | boolean) => {
     setFormFieldsEdit(formFieldsEdit.map(item =>
-      item.id === id ? { ...item, [field]: value } : item
+      item.key === key ? { ...item, [field]: value } : item
     ))
   }
 
@@ -665,18 +677,33 @@ export default function BotFlowSettings() {
                               <div className="space-y-2">
                                 <input
                                   type="text"
-                                  value={item.title}
-                                  onChange={(e) => updateMenuItem(item.id, 'title', e.target.value)}
-                                  placeholder="Título de la opción"
+                                  value={item.label}
+                                  onChange={(e) => updateMenuItem(item.id, 'label', e.target.value)}
+                                  placeholder="Etiqueta de la opción"
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
                                 />
-                                <textarea
-                                  value={item.description}
-                                  onChange={(e) => updateMenuItem(item.id, 'description', e.target.value)}
-                                  placeholder="Descripción de la opción"
+                                <select
+                                  value={item.type}
+                                  onChange={(e) => updateMenuItem(item.id, 'type', e.target.value)}
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
-                                  rows={2}
-                                />
+                                >
+                                  <option value="action">Acción</option>
+                                  <option value="table">Tabla</option>
+                                  <option value="list">Lista</option>
+                                  <option value="location">Ubicación</option>
+                                  <option value="handoff">Transferencia</option>
+                                </select>
+                                <select
+                                  value={item.actionKey}
+                                  onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.value)}
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                >
+                                  <option value="schedule">Agendar</option>
+                                  <option value="modify">Modificar</option>
+                                  <option value="prices">Precios</option>
+                                  <option value="location">Ubicación</option>
+                                  <option value="custom">Personalizado</option>
+                                </select>
                               </div>
                             </div>
                           ))}
@@ -705,11 +732,11 @@ export default function BotFlowSettings() {
                       ) : (
                         <div className="space-y-3">
                           {formFieldsEdit.map((field, index) => (
-                            <div key={field.id} className="bg-[#0b1e34] p-4 rounded border border-[#3ea0c9]">
+                            <div key={field.key} className="bg-[#0b1e34] p-4 rounded border border-[#3ea0c9]">
                               <div className="flex justify-between items-start mb-3">
                                 <span className="text-[#90e2f8]">Campo {index + 1}</span>
                                 <button
-                                  onClick={() => removeFormField(field.id)}
+                                  onClick={() => removeFormField(field.key)}
                                   className="text-red-400 hover:text-red-300"
                                 >
                                   ×
@@ -718,7 +745,7 @@ export default function BotFlowSettings() {
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                                 <select
                                   value={field.type}
-                                  onChange={(e) => updateFormField(field.id, 'type', e.target.value)}
+                                  onChange={(e) => updateFormField(field.key, 'type', e.target.value)}
                                   className="p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
                                 >
                                   <option value="text">Texto</option>
@@ -732,7 +759,7 @@ export default function BotFlowSettings() {
                                   <input
                                     type="checkbox"
                                     checked={field.required}
-                                    onChange={(e) => updateFormField(field.id, 'required', e.target.checked)}
+                                    onChange={(e) => updateFormField(field.key, 'required', e.target.checked)}
                                     className="mr-2"
                                   />
                                   <span className="text-[#B7C2D6]">Requerido</span>
@@ -742,16 +769,17 @@ export default function BotFlowSettings() {
                                 <input
                                   type="text"
                                   value={field.label}
-                                  onChange={(e) => updateFormField(field.id, 'label', e.target.value)}
+                                  onChange={(e) => updateFormField(field.key, 'label', e.target.value)}
                                   placeholder="Etiqueta del campo"
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
                                 />
                                 <input
                                   type="text"
-                                  value={field.placeholder}
-                                  onChange={(e) => updateFormField(field.id, 'placeholder', e.target.value)}
-                                  placeholder="Texto de ayuda"
+                                  value={field.key}
+                                  onChange={(e) => updateFormField(field.key, 'key', e.target.value)}
+                                  placeholder="Identificador único"
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  disabled
                                 />
                               </div>
                             </div>
@@ -789,8 +817,8 @@ export default function BotFlowSettings() {
                             <p className="text-[#B7C2D6] font-semibold mb-2">Opciones:</p>
                             {menuItemsEdit.map((item) => (
                               <div key={item.id} className="mb-2 last:mb-0">
-                                <p className="text-[#90e2f8] font-medium">• {item.title}</p>
-                                <p className="text-[#B7C2D6] text-sm">{item.description}</p>
+                                <p className="text-[#90e2f8] font-medium">• {item.label}</p>
+                                <p className="text-[#B7C2D6] text-sm">Tipo: {item.type} | Acción: {item.actionKey}</p>
                               </div>
                             ))}
                           </div>
@@ -801,20 +829,20 @@ export default function BotFlowSettings() {
                           <div className="bg-[#012f78] rounded-lg p-3 mb-3 max-w-xs">
                             <p className="text-[#B7C2D6] font-semibold mb-2">Por favor completa:</p>
                             {formFieldsEdit.map((field) => (
-                              <div key={field.id} className="mb-3 last:mb-0">
+                              <div key={field.key} className="mb-3 last:mb-0">
                                 <label className="block text-[#90e2f8] text-sm mb-1">
                                   {field.label} {field.required && '*'}
                                 </label>
                                 {field.type === 'textarea' ? (
                                   <textarea
-                                    placeholder={field.placeholder}
+                                    placeholder={`Ingrese ${field.label.toLowerCase()}`}
                                     className="w-full p-2 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
                                     rows={3}
                                   />
                                 ) : (
                                   <input
                                     type={field.type}
-                                    placeholder={field.placeholder}
+                                    placeholder={`Ingrese ${field.label.toLowerCase()}`}
                                     className="w-full p-2 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
                                   />
                                 )}
