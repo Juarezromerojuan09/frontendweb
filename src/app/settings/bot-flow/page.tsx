@@ -183,7 +183,7 @@ export default function BotFlowSettings() {
         greeting: `Hola, soy el asistente virtual de ${user?.businessName}. ¿En qué puedo ayudarte hoy?`,
         menuItems: [
           { id: '1', label: 'Agendar cita', type: 'action', actionKey: 'schedule' },
-          { id: '2', label: 'Información de servicios', type: 'action', actionKey: 'info' },
+          { id: '2', label: 'Información de servicios', type: 'action', actionKey: 'prices' },
           { id: '3', label: 'Ubicación y horarios', type: 'action', actionKey: 'location' }
         ],
         formFields: [
@@ -195,9 +195,9 @@ export default function BotFlowSettings() {
       barberia: {
         greeting: `¡Hola! Bienvenido a ${user?.businessName}. ¿Qué servicio necesitas hoy?`,
         menuItems: [
-          { id: '1', label: 'Corte de cabello', type: 'action', actionKey: 'haircut' },
-          { id: '2', label: 'Barba y bigote', type: 'action', actionKey: 'beard' },
-          { id: '3', label: 'Paquetes completos', type: 'action', actionKey: 'package' }
+          { id: '1', label: 'Corte de cabello', type: 'action', actionKey: 'schedule' },
+          { id: '2', label: 'Barba y bigote', type: 'action', actionKey: 'schedule' },
+          { id: '3', label: 'Paquetes completos', type: 'action', actionKey: 'prices' }
         ],
         formFields: [
           { key: 'name', label: 'Nombre', type: 'text', required: true },
@@ -208,9 +208,9 @@ export default function BotFlowSettings() {
       servicios: {
         greeting: `Hola, soy el asistente de ${user?.businessName}. ¿Cómo puedo ayudarte?`,
         menuItems: [
-          { id: '1', label: 'Solicitar servicio', type: 'action', actionKey: 'request' },
-          { id: '2', label: 'Cotización', type: 'action', actionKey: 'quote' },
-          { id: '3', label: 'Soporte técnico', type: 'action', actionKey: 'support' }
+          { id: '1', label: 'Solicitar servicio', type: 'action', actionKey: 'schedule' },
+          { id: '2', label: 'Cotización', type: 'action', actionKey: 'prices' },
+          { id: '3', label: 'Soporte técnico', type: 'action', actionKey: 'custom' }
         ],
         formFields: [
           { key: 'name', label: 'Nombre', type: 'text', required: true },
@@ -700,7 +700,7 @@ export default function BotFlowSettings() {
                                 >
                                   <option value="schedule">Agendar</option>
                                   <option value="modify">Modificar</option>
-                                  <option value="prices">Precios</option>
+                                  <option value="prices">Precios/Información</option>
                                   <option value="location">Ubicación</option>
                                   <option value="custom">Personalizado</option>
                                 </select>
@@ -773,14 +773,9 @@ export default function BotFlowSettings() {
                                   placeholder="Etiqueta del campo"
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
                                 />
-                                <input
-                                  type="text"
-                                  value={field.key}
-                                  onChange={(e) => updateFormField(field.key, 'key', e.target.value)}
-                                  placeholder="Identificador único"
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
-                                  disabled
-                                />
+                                <div className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#90e2f8] text-sm">
+                                  Key: {field.key}
+                                </div>
                               </div>
                             </div>
                           ))}
