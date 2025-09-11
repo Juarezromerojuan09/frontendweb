@@ -28,6 +28,7 @@ interface BotSettings {
     label: string
     type: string
     actionKey: string
+    fixed?: boolean
     meta?: {
       table?: {
         columns: string[]
@@ -65,6 +66,7 @@ interface BotSettings {
   workingDays?: string[]
   appointmentInterval?: number
   autoConfirmAppointments?: boolean
+  scheduleMessage?: string
 }
 
 interface User {
@@ -116,15 +118,18 @@ export default function BotFlowSettings() {
     },
     workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
     appointmentInterval: 30,
-    autoConfirmAppointments: false
+    autoConfirmAppointments: false,
+    scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
   })
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
+  const [scheduleMessageEdit, setScheduleMessageEdit] = useState("Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
   const [menuItemsEdit, setMenuItemsEdit] = useState<Array<{
     id: string
     label: string
     type: string
     actionKey: string
+    fixed?: boolean
     meta?: {
       table?: {
         columns: string[]
@@ -196,6 +201,7 @@ export default function BotFlowSettings() {
     if (user?.botSettings) {
       setBotSettings(user.botSettings)
       setGreetingEdit(user.botSettings.greeting || '')
+      setScheduleMessageEdit(user.botSettings.scheduleMessage || "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
       setMenuItemsEdit(user.botSettings.menuItems || [])
       setFormFieldsEdit(user.botSettings.formFields || [])
     }
@@ -206,28 +212,57 @@ export default function BotFlowSettings() {
       consultorio: {
         greeting: `Hola, soy el asistente virtual de ${user?.businessName}. ¿En qué puedo ayudarte hoy?`,
         menuItems: [
-          { id: '1', label: 'Agendar cita', type: 'action', actionKey: 'schedule' },
-          { id: '2', label: 'Información de servicios', type: 'action', actionKey: 'prices' },
-          { id: '3', label: 'Ubicación y horarios', type: 'action', actionKey: 'location' }
+          {
+            id: 'agendar-cita-fixed',
+            label: 'Agendar cita',
+            type: 'action',
+            actionKey: 'schedule',
+            fixed: true
+          },
+          {
+            id: 'modificar-cita-fixed',
+            label: 'Modificar/cancelar cita',
+            type: 'action',
+            actionKey: 'modify',
+            fixed: true
+          },
+          { id: '3', label: 'Información de servicios', type: 'action', actionKey: 'prices' },
+          { id: '4', label: 'Ubicación y horarios', type: 'action', actionKey: 'location' }
         ],
         formFields: [
           { key: 'name', label: 'Nombre completo', type: 'text', required: true },
           { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
           { key: 'date', label: 'Fecha preferida', type: 'date', required: true }
-        ]
+        ],
+        scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
       },
       barberia: {
         greeting: `¡Hola! Bienvenido a ${user?.businessName}. ¿Qué servicio necesitas hoy?`,
         menuItems: [
-          { id: '1', label: 'Corte de cabello', type: 'action', actionKey: 'schedule' },
-          { id: '2', label: 'Barba y bigote', type: 'action', actionKey: 'schedule' },
-          { id: '3', label: 'Paquetes completos', type: 'action', actionKey: 'prices' }
+          {
+            id: 'agendar-cita-fixed',
+            label: 'Agendar cita',
+            type: 'action',
+            actionKey: 'schedule',
+            fixed: true
+          },
+          {
+            id: 'modificar-cita-fixed',
+            label: 'Modificar/cancelar cita',
+            type: 'action',
+            actionKey: 'modify',
+            fixed: true
+          },
+          { id: '3', label: 'Corte de cabello', type: 'action', actionKey: 'schedule' },
+          { id: '4', label: 'Barba y bigote', type: 'action', actionKey: 'schedule' },
+          { id: '5', label: 'Paquetes completos', type: 'action', actionKey: 'prices' }
         ],
         formFields: [
           { key: 'name', label: 'Nombre', type: 'text', required: true },
           { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
           { key: 'service', label: 'Servicio', type: 'select', required: true }
-        ]
+        ],
+        scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
       },
       servicios: {
         greeting: `Hola, soy el asistente de ${user?.businessName}. ¿Cómo puedo ayudarte?`,
@@ -240,12 +275,14 @@ export default function BotFlowSettings() {
           { key: 'name', label: 'Nombre', type: 'text', required: true },
           { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
           { key: 'description', label: 'Descripción del servicio', type: 'textarea', required: true }
-        ]
+        ],
+        scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
       },
       custom: {
         greeting: 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
         menuItems: [],
-        formFields: []
+        formFields: [],
+        scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
       }
     }
 
@@ -255,9 +292,11 @@ export default function BotFlowSettings() {
       template,
       greeting: selectedTemplate.greeting,
       menuItems: selectedTemplate.menuItems,
-      formFields: selectedTemplate.formFields
+      formFields: selectedTemplate.formFields,
+      scheduleMessage: selectedTemplate.scheduleMessage
     }))
     setGreetingEdit(selectedTemplate.greeting)
+    setScheduleMessageEdit(selectedTemplate.scheduleMessage)
     setMenuItemsEdit(selectedTemplate.menuItems)
     setFormFieldsEdit(selectedTemplate.formFields)
   }
@@ -277,10 +316,18 @@ export default function BotFlowSettings() {
   }
 
   const removeMenuItem = (id: string) => {
+    const item = menuItemsEdit.find(item => item.id === id)
+    if (item?.fixed) {
+      return // Don't remove fixed items
+    }
     setMenuItemsEdit(menuItemsEdit.filter(item => item.id !== id))
   }
 
   const updateMenuItem = (id: string, field: string, value: string) => {
+    const item = menuItemsEdit.find(item => item.id === id)
+    if (item?.fixed) {
+      return // Don't update fixed items
+    }
     setMenuItemsEdit(menuItemsEdit.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ))
@@ -345,6 +392,7 @@ export default function BotFlowSettings() {
       const updatedSettings = {
         ...botSettings,
         greeting: greetingEdit || 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
+        scheduleMessage: scheduleMessageEdit || "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')",
         menuItems: validatedMenuItems,
         formFields: validatedFormFields
       }
@@ -713,13 +761,18 @@ export default function BotFlowSettings() {
                           {menuItemsEdit.map((item, index) => (
                             <div key={item.id} className="bg-[#0b1e34] p-4 rounded border border-[#3ea0c9]">
                               <div className="flex justify-between items-start mb-3">
-                                <span className="text-[#90e2f8]">Opción {index + 1}</span>
-                                <button
-                                  onClick={() => removeMenuItem(item.id)}
-                                  className="text-red-400 hover:text-red-300"
-                                >
-                                  ×
-                                </button>
+                                <div>
+                                  <span className="text-[#90e2f8]">Opción {index + 1}</span>
+                                  {item.fixed && <span className="ml-2 text-green-400 text-sm">Fijo</span>}
+                                </div>
+                                {!item.fixed && (
+                                  <button
+                                    onClick={() => removeMenuItem(item.id)}
+                                    className="text-red-400 hover:text-red-300"
+                                  >
+                                    ×
+                                  </button>
+                                )}
                               </div>
                               <div className="space-y-2">
                                 <input
@@ -727,12 +780,14 @@ export default function BotFlowSettings() {
                                   value={item.label}
                                   onChange={(e) => updateMenuItem(item.id, 'label', e.target.value)}
                                   placeholder="Etiqueta de la opción"
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                  disabled={item.fixed}
                                 />
                                 <select
                                   value={item.type}
                                   onChange={(e) => updateMenuItem(item.id, 'type', e.target.value)}
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                  disabled={item.fixed}
                                 >
                                   <option value="action">Acción</option>
                                   <option value="table">Tabla</option>
@@ -743,7 +798,8 @@ export default function BotFlowSettings() {
                                 <select
                                   value={item.actionKey}
                                   onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.value)}
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                  disabled={item.fixed}
                                 >
                                   <option value="schedule">Agendar</option>
                                   <option value="modify">Modificar</option>
