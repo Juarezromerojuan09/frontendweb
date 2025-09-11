@@ -109,7 +109,14 @@ export default function BotFlowSettings() {
       time1Before: 3,
       time2Before: 24
     },
-    version: 1
+    version: 1,
+    businessHours: {
+      start: '09:00',
+      end: '18:00'
+    },
+    workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
+    appointmentInterval: 30,
+    autoConfirmAppointments: false
   })
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
