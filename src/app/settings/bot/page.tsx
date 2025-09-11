@@ -19,6 +19,17 @@ interface User {
     workingDays?: string[]
     appointmentInterval?: number
     autoConfirmAppointments?: boolean
+    reminders?: {
+      enabled?: boolean
+      time1Before?: {
+        value: number
+        unit: string
+      }
+      time2Before?: {
+        value: number
+        unit: string
+      }
+    }
   }
 }
 
@@ -59,6 +70,11 @@ export default function BotConfiguration() {
   const [workingDays, setWorkingDays] = useState<string[]>(['monday', 'tuesday', 'wednesday', 'thursday', 'friday'])
   const [appointmentInterval, setAppointmentInterval] = useState(30)
   const [autoConfirmAppointments, setAutoConfirmAppointments] = useState(false)
+  const [remindersEnabled, setRemindersEnabled] = useState(false)
+  const [reminder1Value, setReminder1Value] = useState(0)
+  const [reminder1Unit, setReminder1Unit] = useState<'hours' | 'minutes'>('hours')
+  const [reminder2Value, setReminder2Value] = useState(24)
+  const [reminder2Unit, setReminder2Unit] = useState<'hours' | 'minutes'>('hours')
 
   const checkAuth = useCallback(() => {
     const token = localStorage.getItem('token')
@@ -103,6 +119,20 @@ export default function BotConfiguration() {
           }
           if (userData.botSettings.autoConfirmAppointments !== undefined) {
             setAutoConfirmAppointments(userData.botSettings.autoConfirmAppointments)
+          }
+          // Initialize reminders settings
+          if (userData.botSettings.reminders) {
+            setRemindersEnabled(userData.botSettings.reminders.enabled || false)
+            if (userData.botSettings.reminders.time1Before) {
+              setReminder1Value(userData.botSettings.reminders.time1Before.value || 0)
+              const unit1 = userData.botSettings.reminders.time1Before.unit
+              setReminder1Unit(unit1 === 'hours' || unit1 === 'minutes' ? unit1 : 'hours')
+            }
+            if (userData.botSettings.reminders.time2Before) {
+              setReminder2Value(userData.botSettings.reminders.time2Before.value || 24)
+              const unit2 = userData.botSettings.reminders.time2Before.unit
+              setReminder2Unit(unit2 === 'hours' || unit2 === 'minutes' ? unit2 : 'hours')
+            }
           }
         }
       }
@@ -156,7 +186,12 @@ export default function BotConfiguration() {
         'botSettings.businessHours.end': businessHours.end,
         'botSettings.workingDays': workingDays,
         'botSettings.appointmentInterval': appointmentInterval,
-        'botSettings.autoConfirmAppointments': autoConfirmAppointments
+        'botSettings.autoConfirmAppointments': autoConfirmAppointments,
+        'botSettings.reminders.enabled': remindersEnabled,
+        'botSettings.reminders.time1Before.value': reminder1Value,
+        'botSettings.reminders.time1Before.unit': reminder1Unit,
+        'botSettings.reminders.time2Before.value': reminder2Value,
+        'botSettings.reminders.time2Before.unit': reminder2Unit
       }
 
       const response = await axios.patch<UpdateResponse>(
@@ -351,6 +386,12 @@ export default function BotConfiguration() {
                     >
                       Configuración Bot
                     </button>
+                    <button
+                      onClick={() => router.push('/settings/bot-flow')}
+                      className="w-full bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] py-2 px-4 rounded-md transition-colors cursor-pointer text-left"
+                    >
+                      Flujo del Bot
+                    </button>
                   </div>
                 </div>
               </div>
@@ -452,7 +493,7 @@ export default function BotConfiguration() {
                     <div className="bg-[#012f78] p-4 rounded-lg">
                       <h3 className="text-lg font-semibold text-[#B7C2D6] mb-3">Confirmación Automática de Citas</h3>
                       <p className="text-[#90e2f8] text-sm mb-4">
-                        {autoConfirmAppointments 
+                        {autoConfirmAppointments
                           ? 'El bot confirmará automáticamente las citas sin intervención del usuario'
                           : 'El bot enviará un mensaje de solicitud de confirmación al cliente'
                         }
@@ -470,6 +511,89 @@ export default function BotConfiguration() {
                           {autoConfirmAppointments ? 'Activado' : 'Desactivado'}
                         </span>
                       </label>
+                    </div>
+
+                    {/* Automatic Reminders */}
+                    <div className="bg-[#012f78] p-4 rounded-lg">
+                      <h3 className="text-lg font-semibold text-[#B7C2D6] mb-3">Recordatorios Automáticos</h3>
+                      <p className="text-[#90e2f8] text-sm mb-4">
+                        {remindersEnabled
+                          ? 'El bot enviará recordatorios automáticos antes de las citas'
+                          : 'Los recordatorios automáticos están desactivados'
+                        }
+                      </p>
+                      
+                      <div className="space-y-4">
+                        {/* Enable/Disable Toggle */}
+                        <label className="flex items-center space-x-3 mb-4">
+                          <div className="relative inline-flex items-center cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={remindersEnabled}
+                              onChange={(e) => setRemindersEnabled(e.target.checked)}
+                              className="sr-only peer"
+                            />
+                            <div className="w-11 h-6 bg-[#0b1e34] peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-[#90e2f8]"></div>
+                          </div>
+                          <span className="text-sm font-medium text-[#B7C2D6]">
+                            {remindersEnabled ? 'Activado' : 'Desactivado'}
+                          </span>
+                        </label>
+
+                        {remindersEnabled && (
+                          <>
+                            {/* First Reminder */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-[#B7C2D6] mb-2">Primer recordatorio</label>
+                                <div className="flex space-x-2">
+                                  <input
+                                    type="number"
+                                    value={reminder1Value}
+                                    onChange={(e) => setReminder1Value(Number(e.target.value))}
+                                    min="0"
+                                    max="60"
+                                    className="w-20 bg-[#0b1e34] border border-[#3ea0c9] text-[#B7C2D6] px-3 py-2 rounded"
+                                  />
+                                  <select
+                                    value={reminder1Unit}
+                                    onChange={(e) => setReminder1Unit(e.target.value as 'hours' | 'minutes')}
+                                    className="bg-[#0b1e34] border border-[#3ea0c9] text-[#B7C2D6] px-3 py-2 rounded"
+                                  >
+                                    <option value="hours">horas antes</option>
+                                    <option value="minutes">minutos antes</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Second Reminder */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                              <div>
+                                <label className="block text-sm font-medium text-[#B7C2D6] mb-2">Segundo recordatorio</label>
+                                <div className="flex space-x-2">
+                                  <input
+                                    type="number"
+                                    value={reminder2Value}
+                                    onChange={(e) => setReminder2Value(Number(e.target.value))}
+                                    min="0"
+                                    max="60"
+                                    className="w-20 bg-[#0b1e34] border border-[#3ea0c9] text-[#B7C2D6] px-3 py-2 rounded"
+                                  />
+                                  <select
+                                    value={reminder2Unit}
+                                    onChange={(e) => setReminder2Unit(e.target.value as 'hours' | 'minutes')}
+                                    className="bg-[#0b1e34] border border-[#3ea0c9] text-[#B7C2D6] px-3 py-2 rounded"
+                                  >
+                                    <option value="hours">horas antes</option>
+                                    <option value="minutes">minutos antes</option>
+                                  </select>
+                                </div>
+                              </div>
+                            </div>
+                          </>
+                        )}
+                      </div>
                     </div>
 
                     {/* Save Button */}
