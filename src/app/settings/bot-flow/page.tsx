@@ -202,7 +202,23 @@ export default function BotFlowSettings() {
       setBotSettings(user.botSettings)
       setGreetingEdit(user.botSettings.greeting || '')
       setScheduleMessageEdit(user.botSettings.scheduleMessage || "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
-      setMenuItemsEdit(user.botSettings.menuItems || [])
+      
+      // Asegurar que los elementos fijos tengan la propiedad fixed al cargar
+      let menuItems = user.botSettings.menuItems || []
+      if (user.botSettings.template === 'consultorio' || user.botSettings.template === 'barberia') {
+        menuItems = menuItems.map((item, index) => {
+          // Para las dos primeras opciones en consultorio/barberia, forzar fixed: true
+          if (index === 0 && (item.label === 'Agendar cita' || item.id === 'agendar-cita-fixed')) {
+            return { ...item, fixed: true, label: 'Agendar cita' }
+          }
+          if (index === 1 && (item.label.includes('Modificar') || item.label.includes('cancelar') || item.id === 'modificar-cita-fixed')) {
+            return { ...item, fixed: true, label: 'Modificar/cancelar cita' }
+          }
+          return item
+        })
+      }
+      
+      setMenuItemsEdit(menuItems)
       setFormFieldsEdit(user.botSettings.formFields || [])
     }
   }, [user])
@@ -315,9 +331,20 @@ export default function BotFlowSettings() {
     setMenuItemsEdit([...menuItemsEdit, newItem])
   }
 
+  const isItemFixed = (item: any) => {
+    if (!item) return false
+    if (item.fixed) return true
+    if (botSettings.template === 'consultorio' || botSettings.template === 'barberia') {
+      if (item.label === 'Agendar cita' || item.label === 'Modificar/cancelar cita') {
+        return true
+      }
+    }
+    return false
+  }
+
   const removeMenuItem = (id: string) => {
     const item = menuItemsEdit.find(item => item.id === id)
-    if (item?.fixed) {
+    if (isItemFixed(item)) {
       return // Don't remove fixed items
     }
     setMenuItemsEdit(menuItemsEdit.filter(item => item.id !== id))
@@ -325,7 +352,7 @@ export default function BotFlowSettings() {
 
   const updateMenuItem = (id: string, field: string, value: string) => {
     const item = menuItemsEdit.find(item => item.id === id)
-    if (item?.fixed) {
+    if (isItemFixed(item)) {
       return // Don't update fixed items
     }
     setMenuItemsEdit(menuItemsEdit.map(item =>
@@ -379,7 +406,8 @@ export default function BotFlowSettings() {
         label: item.label || '',
         type: item.type || 'action',
         actionKey: item.actionKey || 'custom',
-        meta: item.meta || undefined
+        meta: item.meta || undefined,
+        fixed: item.fixed // Preservar la propiedad fixed
       }))
 
       const validatedFormFields = formFieldsEdit.map(field => ({
@@ -781,13 +809,13 @@ export default function BotFlowSettings() {
                                   onChange={(e) => updateMenuItem(item.id, 'label', e.target.value)}
                                   placeholder="Etiqueta de la opción"
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                  disabled={item.fixed}
+                                  disabled={isItemFixed(item)}
                                 />
                                 <select
                                   value={item.type}
                                   onChange={(e) => updateMenuItem(item.id, 'type', e.target.value)}
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                  disabled={item.fixed}
+                                  disabled={isItemFixed(item)}
                                 >
                                   <option value="action">Acción</option>
                                   <option value="table">Tabla</option>
@@ -799,7 +827,7 @@ export default function BotFlowSettings() {
                                   value={item.actionKey}
                                   onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.value)}
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                  disabled={item.fixed}
+                                  disabled={isItemFixed(item)}
                                 >
                                   <option value="schedule">Agendar</option>
                                   <option value="modify">Modificar</option>
