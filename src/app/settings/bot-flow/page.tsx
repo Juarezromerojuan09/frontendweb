@@ -647,7 +647,7 @@ export default function BotFlowSettings() {
         return
       }
 
-      // Validar y limpiar los items del menú
+      // Validar y limpiar los items del menú - Solo incluir meta con datos válidos
       const validatedMenuItems = menuItemsEdit.map(item => {
         const cleanedItem: MenuItem = {
           id: item.id || Date.now().toString(),
@@ -656,63 +656,57 @@ export default function BotFlowSettings() {
           actionKey: item.actionKey,
           fixed: item.fixed,
           meta: undefined
+        };
+
+        const meta: any = {};
+
+        // Incluir servicios solo si hay datos
+        if (item.meta?.services && item.meta.services.length > 0) {
+          meta.services = item.meta.services;
         }
 
-        // Solo incluir metadata si no es un item fijo y el tipo lo requiere
+        // Incluir formFields solo si hay datos
+        if (item.meta?.formFields && item.meta.formFields.length > 0) {
+          meta.formFields = item.meta.formFields;
+        }
+
+        // Para items no fijos, incluir table, list, location solo si tienen datos válidos
         if (!item.fixed) {
-          const meta: any = {}
-          let hasMetaData = false
-
-          // Incluir servicios de agendamiento si existen
-          if (item.meta?.services && item.meta.services.length > 0) {
-            meta.services = item.meta.services
-            hasMetaData = true
-          }
-
-          // Incluir campos de formulario si existen
-          if (item.meta?.formFields && item.meta.formFields.length > 0) {
-            meta.formFields = item.meta.formFields
-            hasMetaData = true
-          }
-
-          // Incluir tabla solo si tiene contenido válido
+          // Tabla - solo si tiene contenido válido
           if (item.type === 'table' && item.meta?.table) {
             const tableData = {
               columns: item.meta.table.columns || [],
               rows: item.meta.table.rows || []
-            }
+            };
             // Validar que tenga al menos 2 columnas y 1 fila
             if (tableData.columns.length >= 2 && tableData.rows.length >= 1) {
-              meta.table = tableData
-              hasMetaData = true
+              meta.table = tableData;
             }
           }
 
-          // Incluir lista solo si tiene al menos 2 opciones
+          // Lista - solo si tiene al menos 2 opciones
           if (item.type === 'list' && item.meta?.list) {
-            const options = item.meta.list.options || []
+            const options = item.meta.list.options || [];
             if (options.length >= 2) {
-              meta.list = { options }
-              hasMetaData = true
+              meta.list = { options };
             }
           }
 
-          // Incluir ubicación solo si tiene dirección
+          // Ubicación - solo si tiene dirección
           if (item.type === 'location' && item.meta?.location?.address) {
             meta.location = {
               address: item.meta.location.address || user?.address || ''
-            }
-            hasMetaData = true
-          }
-
-          // Solo asignar meta si hay datos válidos
-          if (hasMetaData) {
-            cleanedItem.meta = meta
+            };
           }
         }
 
-        return cleanedItem
-      })
+        // Solo asignar meta si hay datos válidos
+        if (Object.keys(meta).length > 0) {
+          cleanedItem.meta = meta;
+        }
+
+        return cleanedItem;
+      });
 
       const validatedFormFields = formFieldsEdit.map(field => ({
         key: field.key || `field_${Date.now()}`,
