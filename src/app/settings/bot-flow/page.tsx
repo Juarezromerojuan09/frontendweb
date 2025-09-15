@@ -1,5 +1,5 @@
 'use client'
-
+//si
 import { useState, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
 import axios from 'axios'
@@ -1442,60 +1442,317 @@ export default function BotFlowSettings() {
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-[#B7C2D6]">Vista Previa del Bot</h3>
                       
-                      {/* Chat Simulation */}
+                      {/* WhatsApp Chat Simulation */}
+                      <div className="bg-[#111b21] rounded-lg border border-[#3ea0c9] p-4 max-w-md mx-auto">
+                        {/* WhatsApp Header */}
+                        <div className="flex items-center space-x-3 mb-4 pb-3 border-b border-[#3a4046]">
+                          <div className="w-12 h-12 bg-[#25d366] rounded-full flex items-center justify-center">
+                            <span className="text-white text-xl">🤖</span>
+                          </div>
+                          <div className="flex-1">
+                            <h4 className="text-white font-semibold">{user.businessName}</h4>
+                            <p className="text-[#8696a0] text-sm">Bot de WhatsApp • En línea</p>
+                          </div>
+                          <div className="text-[#8696a0]">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M12 20.664a9.163 9.163 0 0 1-6.521-2.702.977.977 0 0 1 0-1.381.977.977 0 0 1 1.381 0 7.269 7.269 0 0 0 10.28 0 .977.977 0 0 1 1.381 0 .977.977 0 0 1 0 1.381A9.163 9.163 0 0 1 12 20.664zm7.965-6.112a.977.977 0 0 1-.69-1.67 5.689 5.689 0 0 0 0-8.055.977.977 0 0 1 0-1.382.977.977 0 0 1 1.381 0 7.644 7.644 0 0 1 0 10.82.977.977 0 0 1-.691.287zm-15.93 0a.977.977 0 0 1-.691-.287 7.644 7.644 0 0 1 0-10.82.977.977 0 0 1 1.381 0 .977.977 0 0 1 0 1.382 5.689 5.689 0 0 0 0 8.055.977.977 0 0 1 0 1.381.977.977 0 0 1-.69.287z"/>
+                            </svg>
+                          </div>
+                        </div>
+
+                        {/* Chat Messages Container */}
+                        <div className="space-y-3 max-h-96 overflow-y-auto">
+                          {/* Greeting Message */}
+                          <div className="flex justify-start">
+                            <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                              <p className="text-white text-sm">{greetingEdit}</p>
+                              <p className="text-[#8696a0] text-xs mt-1 text-right">12:00 PM</p>
+                            </div>
+                          </div>
+
+                          {/* Menu Options as Quick Reply Buttons */}
+                          {menuItemsEdit.length > 0 && (
+                            <div className="flex justify-start">
+                              <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                                <p className="text-white text-sm mb-2">Selecciona una opción:</p>
+                                <div className="space-y-2">
+                                  {menuItemsEdit.map((item) => (
+                                    <div key={item.id} className="bg-[#2a3942] rounded p-2 cursor-pointer hover:bg-[#34444d] transition-colors">
+                                      <p className="text-white text-sm font-medium">📌 {item.label}</p>
+                                      {item.type !== 'action' && (
+                                        <p className="text-[#8696a0] text-xs">({item.type})</p>
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                <p className="text-[#8696a0] text-xs mt-2 text-right">12:00 PM</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* Preview of different content types */}
+                          {menuItemsEdit.map((item) => {
+                            if (item.type === 'table' && item.meta?.table) {
+                              return (
+                                <div key={item.id} className="flex justify-start">
+                                  <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                                    <p className="text-white text-sm font-medium mb-2">{item.label}</p>
+                                    <div className="bg-[#2a3942] rounded p-2">
+                                      <table className="w-full text-white text-xs">
+                                        <thead>
+                                          <tr className="border-b border-[#3a4046]">
+                                            {item.meta.table.columns.map((col, index) => (
+                                              <th key={index} className="text-left p-1 font-medium">{col}</th>
+                                            ))}
+                                          </tr>
+                                        </thead>
+                                        <tbody>
+                                          {item.meta.table.rows.slice(0, 3).map((row, rowIndex) => (
+                                            <tr key={rowIndex} className="border-b border-[#3a4046] last:border-b-0">
+                                              {row.map((cell, cellIndex) => (
+                                                <td key={cellIndex} className="p-1 text-[#8696a0]">{cell}</td>
+                                              ))}
+                                            </tr>
+                                          ))}
+                                          {item.meta.table.rows.length > 3 && (
+                                            <tr>
+                                              <td colSpan={item.meta.table.columns.length} className="p-1 text-[#8696a0] text-center">
+                                                +{item.meta.table.rows.length - 3} más...
+                                              </td>
+                                            </tr>
+                                          )}
+                                        </tbody>
+                                      </table>
+                                    </div>
+                                    <p className="text-[#8696a0] text-xs mt-2 text-right">12:00 PM</p>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            if (item.type === 'list' && item.meta?.list) {
+                              return (
+                                <div key={item.id} className="flex justify-start">
+                                  <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                                    <p className="text-white text-sm font-medium mb-2">{item.label}</p>
+                                    <div className="space-y-1">
+                                      {item.meta.list.options.slice(0, 5).map((option, index) => (
+                                        <div key={index} className="bg-[#2a3942] rounded p-2 cursor-pointer hover:bg-[#34444d] transition-colors">
+                                          <p className="text-white text-sm">{(index + 1)}. {option}</p>
+                                        </div>
+                                      ))}
+                                      {item.meta.list.options.length > 5 && (
+                                        <p className="text-[#8696a0] text-xs text-center">
+                                          +{item.meta.list.options.length - 5} opciones más...
+                                        </p>
+                                      )}
+                                    </div>
+                                    <p className="text-[#8696a0] text-xs mt-2 text-right">12:00 PM</p>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            if (item.type === 'location' && item.meta?.location) {
+                              return (
+                                <div key={item.id} className="flex justify-start">
+                                  <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                                    <p className="text-white text-sm font-medium mb-2">{item.label}</p>
+                                    <div className="bg-[#2a3942] rounded p-2">
+                                      <div className="flex items-start space-x-2">
+                                        <span className="text-red-500">📍</span>
+                                        <div>
+                                          <p className="text-white text-sm">{item.meta.location.address}</p>
+                                          <p className="text-[#8696a0] text-xs">Abrir en Google Maps</p>
+                                        </div>
+                                      </div>
+                                    </div>
+                                    <p className="text-[#8696a0] text-xs mt-2 text-right">12:00 PM</p>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            if (item.type === 'action' && item.actionKey === 'schedule' && item.meta?.services) {
+                              const services = item.meta.services;
+                              return (
+                                <div key={item.id} className="flex justify-start">
+                                  <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                                    <p className="text-white text-sm font-medium mb-2">{item.label}</p>
+                                    {services.length === 1 ? (
+                                      <div className="bg-[#2a3942] rounded p-3">
+                                        <p className="text-white text-sm font-medium">{services[0].serviceType}</p>
+                                        {services[0].price && (
+                                          <p className="text-green-400 text-sm">Precio: {services[0].price}</p>
+                                        )}
+                                        {services[0].recommendations && services[0].recommendations.length > 0 && (
+                                          <div className="mt-2">
+                                            <p className="text-[#8696a0] text-xs font-medium">Recomendaciones:</p>
+                                            {services[0].recommendations.map((rec, recIndex) => (
+                                              <p key={recIndex} className="text-[#8696a0] text-xs">• {rec}</p>
+                                            ))}
+                                          </div>
+                                        )}
+                                      </div>
+                                    ) : (
+                                      <div className="space-y-2">
+                                        <p className="text-white text-sm">Selecciona un servicio:</p>
+                                        {services.slice(0, 3).map((service, serviceIndex) => (
+                                          <div key={serviceIndex} className="bg-[#2a3942] rounded p-2 cursor-pointer hover:bg-[#34444d] transition-colors">
+                                            <p className="text-white text-sm font-medium">{service.serviceType}</p>
+                                            {service.price && (
+                                              <p className="text-green-400 text-xs">Precio: {service.price}</p>
+                                            )}
+                                          </div>
+                                        ))}
+                                        {services.length > 3 && (
+                                          <p className="text-[#8696a0] text-xs text-center">
+                                            +{services.length - 3} servicios más...
+                                          </p>
+                                        )}
+                                      </div>
+                                    )}
+                                    <p className="text-[#8696a0] text-xs mt-2 text-right">12:00 PM</p>
+                                  </div>
+                                </div>
+                              );
+                            }
+
+                            return null;
+                          })}
+
+                          {/* Form Preview */}
+                          {formFieldsEdit.length > 0 && (
+                            <div className="flex justify-start">
+                              <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                                <p className="text-white text-sm font-medium mb-2">Por favor completa la información:</p>
+                                <div className="space-y-3">
+                                  {formFieldsEdit.map((field) => (
+                                    <div key={field.key} className="bg-[#2a3942] rounded p-2">
+                                      <label className="block text-white text-sm mb-1">
+                                        {field.label} {field.required && <span className="text-red-400">*</span>}
+                                      </label>
+                                      {field.type === 'textarea' ? (
+                                        <textarea
+                                          placeholder={`Ingrese ${field.label.toLowerCase()}`}
+                                          className="w-full p-2 bg-[#111b21] border border-[#3a4046] rounded text-white text-sm focus:outline-none focus:border-[#25d366]"
+                                          rows={2}
+                                        />
+                                      ) : field.type === 'select' ? (
+                                        <select className="w-full p-2 bg-[#111b21] border border-[#3a4046] rounded text-white text-sm focus:outline-none focus:border-[#25d366]">
+                                          <option>Seleccione una opción</option>
+                                          <option>Opción 1</option>
+                                          <option>Opción 2</option>
+                                        </select>
+                                      ) : (
+                                        <input
+                                          type={field.type}
+                                          placeholder={`Ingrese ${field.label.toLowerCase()}`}
+                                          className="w-full p-2 bg-[#111b21] border border-[#3a4046] rounded text-white text-sm focus:outline-none focus:border-[#25d366]"
+                                        />
+                                      )}
+                                    </div>
+                                  ))}
+                                </div>
+                                <div className="mt-3 flex justify-end">
+                                  <button className="bg-[#25d366] text-white px-4 py-1 rounded text-sm hover:bg-[#20bd5a] transition-colors">
+                                    Enviar
+                                  </button>
+                                </div>
+                                <p className="text-[#8696a0] text-xs mt-2 text-right">12:00 PM</p>
+                              </div>
+                            </div>
+                          )}
+
+                          {/* User message example */}
+                          <div className="flex justify-end">
+                            <div className="bg-[#005c4b] rounded-lg p-3 max-w-xs">
+                              <p className="text-white text-sm">Hola, me interesa agendar una cita</p>
+                              <p className="text-[#8696a0] text-xs mt-1 text-right">12:01 PM</p>
+                            </div>
+                          </div>
+
+                          {/* Confirmation message */}
+                          <div className="flex justify-start">
+                            <div className="bg-[#202c33] rounded-lg p-3 max-w-xs">
+                              <p className="text-white text-sm">¡Perfecto! Tu cita ha sido confirmada.</p>
+                              <p className="text-[#8696a0] text-xs mt-2 text-right">12:02 PM</p>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Input area */}
+                        <div className="mt-4 flex items-center space-x-2 pt-3 border-t border-[#3a4046]">
+                          <div className="flex-1 bg-[#2a3942] rounded-full p-2">
+                            <input
+                              type="text"
+                              placeholder="Escribe un mensaje..."
+                              className="w-full bg-transparent text-white text-sm outline-none px-2"
+                            />
+                          </div>
+                          <button className="bg-[#25d366] p-2 rounded-full">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                              <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/>
+                            </svg>
+                          </button>
+                        </div>
+                      </div>
+
+                      {/* Configuration Summary */}
                       <div className="bg-[#0b1e34] rounded-lg border border-[#3ea0c9] p-4">
-                        <div className="flex items-center space-x-3 mb-4">
-                          <div className="w-10 h-10 bg-[#012f78] rounded-full flex items-center justify-center">
-                            <span className="text-[#90e2f8]">🤖</span>
-                          </div>
+                        <h4 className="text-[#B7C2D6] font-semibold mb-3">Resumen de Configuración</h4>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                           <div>
-                            <h4 className="text-[#B7C2D6] font-semibold">Bot de WhatsApp</h4>
-                            <p className="text-[#90e2f8] text-sm">En línea</p>
+                            <h5 className="text-[#90e2f8] text-sm font-medium mb-2">Opciones del Menú</h5>
+                            <div className="space-y-1">
+                              {menuItemsEdit.map((item, index) => (
+                                <div key={item.id} className="text-[#B7C2D6] text-sm">
+                                  <span className="font-medium">{index + 1}. {item.label}</span>
+                                  <span className="text-[#90e2f8] ml-2">({item.type})</span>
+                                  {item.meta && Object.keys(item.meta).length > 0 && (
+                                    <span className="text-green-400 ml-2">✓ Configurado</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                          
+                          <div>
+                            <h5 className="text-[#90e2f8] text-sm font-medium mb-2">Campos del Formulario</h5>
+                            <div className="space-y-1">
+                              {formFieldsEdit.map((field, index) => (
+                                <div key={field.key} className="text-[#B7C2D6] text-sm">
+                                  <span className="font-medium">{index + 1}. {field.label}</span>
+                                  <span className="text-[#90e2f8] ml-2">({field.type})</span>
+                                  {field.required && (
+                                    <span className="text-red-400 ml-2">Requerido</span>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         </div>
 
-                        {/* Greeting Message */}
-                        <div className="bg-[#012f78] rounded-lg p-3 mb-3 max-w-xs">
-                          <p className="text-[#B7C2D6]">{greetingEdit}</p>
-                        </div>
-
-                        {/* Menu Options */}
-                        {menuItemsEdit.length > 0 && (
-                          <div className="bg-[#012f78] rounded-lg p-3 mb-3 max-w-xs">
-                            <p className="text-[#B7C2D6] font-semibold mb-2">Opciones:</p>
-                            {menuItemsEdit.map((item) => (
-                              <div key={item.id} className="mb-2 last:mb-0">
-                                <p className="text-[#90e2f8] font-medium">• {item.label}</p>
-                                <p className="text-[#B7C2D6] text-sm">Tipo: {item.type} | Acción: {item.actionKey}</p>
-                              </div>
-                            ))}
-                          </div>
-                        )}
-
-                        {/* Form Preview */}
-                        {formFieldsEdit.length > 0 && (
-                          <div className="bg-[#012f78] rounded-lg p-3 mb-3 max-w-xs">
-                            <p className="text-[#B7C2D6] font-semibold mb-2">Por favor completa:</p>
-                            {formFieldsEdit.map((field) => (
-                              <div key={field.key} className="mb-3 last:mb-0">
-                                <label className="block text-[#90e2f8] text-sm mb-1">
-                                  {field.label} {field.required && '*'}
-                                </label>
-                                {field.type === 'textarea' ? (
-                                  <textarea
-                                    placeholder={`Ingrese ${field.label.toLowerCase()}`}
-                                    className="w-full p-2 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
-                                    rows={3}
-                                  />
-                                ) : (
-                                  <input
-                                    type={field.type}
-                                    placeholder={`Ingrese ${field.label.toLowerCase()}`}
-                                    className="w-full p-2 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
-                                  />
-                                )}
-                              </div>
-                            ))}
+                        {/* Services Summary */}
+                        {getScheduleServices().length > 0 && (
+                          <div className="mt-4">
+                            <h5 className="text-[#90e2f8] text-sm font-medium mb-2">Servicios de Agendamiento</h5>
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                              {getScheduleServices().map((service, index) => (
+                                <div key={index} className="bg-[#012f78] p-2 rounded text-sm">
+                                  <p className="text-[#B7C2D6] font-medium">{service.serviceType}</p>
+                                  {service.price && (
+                                    <p className="text-green-400">Precio: {service.price}</p>
+                                  )}
+                                  {service.recommendations && service.recommendations.length > 0 && (
+                                    <p className="text-[#90e2f8] text-xs">
+                                      {service.recommendations.length} recomendación(es)
+                                    </p>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
                           </div>
                         )}
                       </div>
