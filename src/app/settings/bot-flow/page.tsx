@@ -465,12 +465,13 @@ export default function BotFlowSettings() {
 
       // Validar y limpiar los items del menú
       const validatedMenuItems = menuItemsEdit.map(item => {
-        const cleanedItem = {
+        const cleanedItem: MenuItem = {
           id: item.id || Date.now().toString(),
           label: item.label || '',
           type: item.type || 'action',
           actionKey: item.actionKey || 'custom',
-          fixed: item.fixed
+          fixed: item.fixed,
+          meta: undefined
         }
 
         // Solo incluir metadata si no es un item fijo y el tipo lo requiere
@@ -483,7 +484,8 @@ export default function BotFlowSettings() {
               }
             }
             // Validar que tenga al menos 2 columnas y 1 fila
-            if (cleanedItem.meta.table.columns.length < 2 || cleanedItem.meta.table.rows.length < 1) {
+            if (cleanedItem.meta && cleanedItem.meta.table &&
+                (cleanedItem.meta.table.columns.length < 2 || cleanedItem.meta.table.rows.length < 1)) {
               throw new Error(`La tabla "${item.label}" debe tener al menos 2 columnas y 1 fila`)
             }
           } else if (item.type === 'list') {
@@ -493,7 +495,7 @@ export default function BotFlowSettings() {
               }
             }
             // Validar que tenga al menos 2 opciones
-            if (cleanedItem.meta.list.options.length < 2) {
+            if (cleanedItem.meta && cleanedItem.meta.list && cleanedItem.meta.list.options.length < 2) {
               throw new Error(`La lista "${item.label}" debe tener al menos 2 opciones`)
             }
           } else if (item.type === 'location') {
@@ -967,7 +969,7 @@ export default function BotFlowSettings() {
                                               key={cellIndex}
                                               type="text"
                                               value={cell}
-                                              onChange={(e) => handleTableChange(item.id, 'updateCell', rowIndex, cellIndex, e.target.value)}
+                                              onChange={(e) => handleTableChange(item.id, 'updateCell', rowIndex, e.target.value, cellIndex)}
                                               placeholder={`Fila ${rowIndex + 1}, Col ${cellIndex + 1}`}
                                               className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
                                             />
