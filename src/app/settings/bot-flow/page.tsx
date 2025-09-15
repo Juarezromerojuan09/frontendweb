@@ -37,14 +37,20 @@ interface MenuItem {
     location?: {
       address: string
     }
+    services?: Array<{
+      serviceType: string
+      price?: string
+      recommendations?: string[]
+    }>
+    formFields?: Array<{
+      key: string
+      label: string
+      type: string
+      required: boolean
+    }>
   }
 }
 
-interface SchedulingService {
-  serviceType: string
-  price?: string
-  recommendations?: string[]
-}
 
 interface BotSettings {
   template: string
@@ -75,7 +81,6 @@ interface BotSettings {
   appointmentInterval?: number
   autoConfirmAppointments?: boolean
   scheduleMessage?: string
-  schedulingServices?: SchedulingService[]
 }
 
 interface User {
@@ -128,15 +133,13 @@ export default function BotFlowSettings() {
     workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
     appointmentInterval: 30,
     autoConfirmAppointments: false,
-    scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')",
-    schedulingServices: []
+    scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
   })
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
   const [scheduleMessageEdit, setScheduleMessageEdit] = useState("Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
   const [menuItemsEdit, setMenuItemsEdit] = useState<MenuItem[]>([])
   const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
-  const [schedulingServicesEdit, setSchedulingServicesEdit] = useState<SchedulingService[]>([])
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -213,7 +216,6 @@ export default function BotFlowSettings() {
       
       setMenuItemsEdit(menuItems)
       setFormFieldsEdit(user.botSettings.formFields || [])
-      setSchedulingServicesEdit(user.botSettings.schedulingServices || [])
     }
   }, [user])
 
@@ -309,7 +311,6 @@ export default function BotFlowSettings() {
     setScheduleMessageEdit(selectedTemplate.scheduleMessage)
     setMenuItemsEdit(selectedTemplate.menuItems)
     setFormFieldsEdit(selectedTemplate.formFields)
-    setSchedulingServicesEdit([])
   }
 
   const addMenuItem = () => {
@@ -475,48 +476,138 @@ export default function BotFlowSettings() {
     ))
   }
 
-  // Funciones para manejar servicios de agendamiento
+  // Funciones para manejar servicios de agendamiento dentro del primer menuItem
+  const getScheduleItem = () => {
+    return menuItemsEdit.find(item => item.label === 'Agendar cita' || item.actionKey === 'schedule') || menuItemsEdit[0];
+  }
+
+  const getScheduleServices = () => {
+    const scheduleItem = getScheduleItem();
+    return scheduleItem?.meta?.services || [];
+  }
+
   const addSchedulingService = () => {
+    const scheduleItem = getScheduleItem();
+    if (!scheduleItem) return;
+
     const newService = {
       serviceType: '',
       price: '',
       recommendations: ['']
     }
-    setSchedulingServicesEdit([...schedulingServicesEdit, newService])
+
+    const updatedServices = [...getScheduleServices(), newService];
+    
+    setMenuItemsEdit(menuItemsEdit.map(item =>
+      item.id === scheduleItem.id
+        ? {
+            ...item,
+            meta: {
+              ...item.meta,
+              services: updatedServices
+            }
+          }
+        : item
+    ));
   }
 
   const removeSchedulingService = (index: number) => {
-    if (schedulingServicesEdit.length <= 1) return
-    setSchedulingServicesEdit(schedulingServicesEdit.filter((_, i) => i !== index))
+    const scheduleItem = getScheduleItem();
+    if (!scheduleItem || getScheduleServices().length <= 1) return;
+
+    const updatedServices = getScheduleServices().filter((_, i) => i !== index);
+    
+    setMenuItemsEdit(menuItemsEdit.map(item =>
+      item.id === scheduleItem.id
+        ? {
+            ...item,
+            meta: {
+              ...item.meta,
+              services: updatedServices
+            }
+          }
+        : item
+    ));
   }
 
   const updateSchedulingService = (index: number, field: string, value: string | string[]) => {
-    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+    const scheduleItem = getScheduleItem();
+    if (!scheduleItem) return;
+
+    const updatedServices = getScheduleServices().map((service, i) =>
       i === index ? { ...service, [field]: value } : service
-    ))
+    );
+    
+    setMenuItemsEdit(menuItemsEdit.map(item =>
+      item.id === scheduleItem.id
+        ? {
+            ...item,
+            meta: {
+              ...item.meta,
+              services: updatedServices
+            }
+          }
+        : item
+    ));
   }
 
   const addRecommendation = (serviceIndex: number) => {
-    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+    const scheduleItem = getScheduleItem();
+    if (!scheduleItem) return;
+
+    const updatedServices = getScheduleServices().map((service, i) =>
       i === serviceIndex
-        ? { ...service, recommendations: [...(service.recommendations || []), ''] }
+        ? {
+            ...service,
+            recommendations: [...(service.recommendations || []), '']
+          }
         : service
-    ))
+    );
+    
+    setMenuItemsEdit(menuItemsEdit.map(item =>
+      item.id === scheduleItem.id
+        ? {
+            ...item,
+            meta: {
+              ...item.meta,
+              services: updatedServices
+            }
+          }
+        : item
+    ));
   }
 
   const removeRecommendation = (serviceIndex: number, recIndex: number) => {
-    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+    const scheduleItem = getScheduleItem();
+    if (!scheduleItem) return;
+
+    const updatedServices = getScheduleServices().map((service, i) =>
       i === serviceIndex
         ? {
             ...service,
             recommendations: (service.recommendations || []).filter((_, j) => j !== recIndex)
           }
         : service
-    ))
+    );
+    
+    setMenuItemsEdit(menuItemsEdit.map(item =>
+      item.id === scheduleItem.id
+        ? {
+            ...item,
+            meta: {
+              ...item.meta,
+              services: updatedServices
+            }
+          }
+        : item
+    ));
   }
 
   const updateRecommendation = (serviceIndex: number, recIndex: number, value: string) => {
-    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+    const scheduleItem = getScheduleItem();
+    if (!scheduleItem) return;
+
+    const updatedServices = getScheduleServices().map((service, i) =>
       i === serviceIndex
         ? {
             ...service,
@@ -525,7 +616,19 @@ export default function BotFlowSettings() {
             )
           }
         : service
-    ))
+    );
+    
+    setMenuItemsEdit(menuItemsEdit.map(item =>
+      item.id === scheduleItem.id
+        ? {
+            ...item,
+            meta: {
+              ...item.meta,
+              services: updatedServices
+            }
+          }
+        : item
+    ));
   }
 
   const saveBotSettings = async () => {
@@ -557,34 +660,54 @@ export default function BotFlowSettings() {
 
         // Solo incluir metadata si no es un item fijo y el tipo lo requiere
         if (!item.fixed) {
-          if (item.type === 'table') {
-            cleanedItem.meta = {
-              table: {
-                columns: item.meta?.table?.columns || [],
-                rows: item.meta?.table?.rows || []
-              }
+          const meta: any = {}
+          let hasMetaData = false
+
+          // Incluir servicios de agendamiento si existen
+          if (item.meta?.services && item.meta.services.length > 0) {
+            meta.services = item.meta.services
+            hasMetaData = true
+          }
+
+          // Incluir campos de formulario si existen
+          if (item.meta?.formFields && item.meta.formFields.length > 0) {
+            meta.formFields = item.meta.formFields
+            hasMetaData = true
+          }
+
+          // Incluir tabla solo si tiene contenido válido
+          if (item.type === 'table' && item.meta?.table) {
+            const tableData = {
+              columns: item.meta.table.columns || [],
+              rows: item.meta.table.rows || []
             }
             // Validar que tenga al menos 2 columnas y 1 fila
-            if (cleanedItem.meta && cleanedItem.meta.table &&
-                (cleanedItem.meta.table.columns.length < 2 || cleanedItem.meta.table.rows.length < 1)) {
-              throw new Error(`La tabla "${item.label}" debe tener al menos 2 columnas y 1 fila`)
+            if (tableData.columns.length >= 2 && tableData.rows.length >= 1) {
+              meta.table = tableData
+              hasMetaData = true
             }
-          } else if (item.type === 'list') {
-            cleanedItem.meta = {
-              list: {
-                options: item.meta?.list?.options || []
-              }
+          }
+
+          // Incluir lista solo si tiene al menos 2 opciones
+          if (item.type === 'list' && item.meta?.list) {
+            const options = item.meta.list.options || []
+            if (options.length >= 2) {
+              meta.list = { options }
+              hasMetaData = true
             }
-            // Validar que tenga al menos 2 opciones
-            if (cleanedItem.meta && cleanedItem.meta.list && cleanedItem.meta.list.options.length < 2) {
-              throw new Error(`La lista "${item.label}" debe tener al menos 2 opciones`)
+          }
+
+          // Incluir ubicación solo si tiene dirección
+          if (item.type === 'location' && item.meta?.location?.address) {
+            meta.location = {
+              address: item.meta.location.address || user?.address || ''
             }
-          } else if (item.type === 'location') {
-            cleanedItem.meta = {
-              location: {
-                address: user?.address || ''
-              }
-            }
+            hasMetaData = true
+          }
+
+          // Solo asignar meta si hay datos válidos
+          if (hasMetaData) {
+            cleanedItem.meta = meta
           }
         }
 
@@ -598,24 +721,14 @@ export default function BotFlowSettings() {
         required: field.required || false
       }))
 
-      // Validar servicios de agendamiento
-      const validatedSchedulingServices = schedulingServicesEdit
-        .filter(service => service.serviceType.trim() !== '')
-        .map(service => ({
-          serviceType: service.serviceType.trim(),
-          price: service.price?.trim() || '',
-          recommendations: (service.recommendations || [])
-            .filter(rec => rec.trim() !== '')
-            .map(rec => rec.trim())
-        }))
-
+      // Validar servicios de agendamiento (ahora dentro del meta del primer menuItem)
+      // Los servicios ya están incluidos en validatedMenuItems a través del meta
       const updatedSettings = {
         ...botSettings,
         greeting: greetingEdit || 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
         scheduleMessage: scheduleMessageEdit || "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')",
         menuItems: validatedMenuItems,
-        formFields: validatedFormFields,
-        schedulingServices: validatedSchedulingServices
+        formFields: validatedFormFields
       }
 
       console.log('Enviando configuración:', JSON.stringify(updatedSettings, null, 2))
@@ -637,7 +750,6 @@ export default function BotFlowSettings() {
         // Actualizar también los estados de edición con los datos validados
         setMenuItemsEdit(validatedMenuItems)
         setFormFieldsEdit(validatedFormFields)
-        setSchedulingServicesEdit(validatedSchedulingServices)
       } else {
         setError(response.data.message || 'Error al guardar la configuración')
       }
@@ -1150,15 +1262,15 @@ export default function BotFlowSettings() {
                                       Configura los servicios que se pueden agendar
                                     </p>
                                     
-                                    {schedulingServicesEdit.length === 0 ? (
+                                    {getScheduleServices().length === 0 ? (
                                       <p className="text-[#B7C2D6] text-sm">No hay servicios configurados.</p>
                                     ) : (
-                                      schedulingServicesEdit.map((service, serviceIndex) => (
+                                      getScheduleServices().map((service, serviceIndex) => (
                                         <div key={serviceIndex} className="space-y-2 p-2 bg-[#0b1e34] rounded relative">
                                           <button
                                             onClick={() => removeSchedulingService(serviceIndex)}
                                             className="absolute top-2 right-2 text-red-400 hover:text-red-300"
-                                            disabled={schedulingServicesEdit.length <= 1}
+                                            disabled={getScheduleServices().length <= 1}
                                             title="Eliminar servicio"
                                           >
                                             ×
