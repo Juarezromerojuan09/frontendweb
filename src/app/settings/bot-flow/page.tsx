@@ -138,6 +138,9 @@ export default function BotFlowSettings() {
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
   const [scheduleMessageEdit, setScheduleMessageEdit] = useState("Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
+  const [scheduleConfirmationEdit, setScheduleConfirmationEdit] = useState('Tu cita para {date} a las {time} ha sido agendada.')
+  const [orderAcknowledgementEdit, setOrderAcknowledgementEdit] = useState('Gracias. En breve un encargado le responderá.')
+  const [finalCloseEdit, setFinalCloseEdit] = useState('✅ Su pedido se está preparando. Gracias por elegirnos.')
   const [menuItemsEdit, setMenuItemsEdit] = useState<MenuItem[]>([])
   const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
   const router = useRouter()
@@ -198,6 +201,9 @@ export default function BotFlowSettings() {
       setBotSettings(user.botSettings)
       setGreetingEdit(user.botSettings.greeting || '')
       setScheduleMessageEdit(user.botSettings.scheduleMessage || "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
+      setScheduleConfirmationEdit(user.botSettings.messages?.scheduleConfirmation || 'Tu cita para {date} a las {time} ha sido agendada.')
+      setOrderAcknowledgementEdit(user.botSettings.messages?.orderAcknowledgement || 'Gracias. En breve un encargado le responderá.')
+      setFinalCloseEdit(user.botSettings.messages?.finalClose || '✅ Su pedido se está preparando. Gracias por elegirnos.')
       
       // Asegurar que los elementos fijos tengan la propiedad fixed al cargar
       let menuItems = user.botSettings.menuItems || []
@@ -803,6 +809,11 @@ export default function BotFlowSettings() {
         ...botSettings,
         greeting: greetingEdit || 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
         scheduleMessage: scheduleMessageEdit || "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')",
+        messages: {
+          scheduleConfirmation: scheduleConfirmationEdit,
+          orderAcknowledgement: orderAcknowledgementEdit,
+          finalClose: finalCloseEdit
+        },
         menuItems: validatedMenuItems,
         formFields: validatedFormFields
       }
@@ -1132,22 +1143,87 @@ export default function BotFlowSettings() {
 
                   {/* Greeting Editor */}
                   {activeTab === 'saludo' && (
-                    <div className="space-y-4">
-                      <h3 className="text-lg font-semibold text-[#B7C2D6]">Mensaje de Saludo</h3>
-                      <textarea
-                        value={greetingEdit}
-                        onChange={(e) => setGreetingEdit(e.target.value)}
-                        placeholder="Escribe el mensaje de saludo que enviará el bot"
-                        className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
-                        rows={4}
-                        maxLength={320}
-                      />
-                      <div className="text-sm text-[#90e2f8]">
-                        {greetingEdit.length}/320 caracteres
+                    <div className="space-y-6">
+                      <h3 className="text-lg font-semibold text-[#B7C2D6]">Mensajes del Bot</h3>
+                      
+                      {/* Greeting Message */}
+                      <div className="space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium">Mensaje de Saludo</h4>
+                        <textarea
+                          value={greetingEdit}
+                          onChange={(e) => setGreetingEdit(e.target.value)}
+                          placeholder="Escribe el mensaje de saludo que enviará el bot"
+                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          rows={3}
+                          maxLength={320}
+                        />
+                        <div className="text-sm text-[#90e2f8]">
+                          {greetingEdit.length}/320 caracteres
+                        </div>
+                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8]">{greetingEdit}</p>
+                        </div>
                       </div>
-                      <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
-                        <h4 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h4>
-                        <p className="text-[#90e2f8]">{greetingEdit}</p>
+
+                      {/* Schedule Confirmation Message */}
+                      <div className="space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium">Confirmación de Cita</h4>
+                        <textarea
+                          value={scheduleConfirmationEdit}
+                          onChange={(e) => setScheduleConfirmationEdit(e.target.value)}
+                          placeholder="Mensaje de confirmación de cita (usa {date} y {time} para variables)"
+                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          rows={3}
+                          maxLength={320}
+                        />
+                        <div className="text-sm text-[#90e2f8]">
+                          {scheduleConfirmationEdit.length}/320 caracteres
+                        </div>
+                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8]">{scheduleConfirmationEdit}</p>
+                        </div>
+                      </div>
+
+                      {/* Order Acknowledgement Message */}
+                      <div className="space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium">Atención por Humano</h4>
+                        <textarea
+                          value={orderAcknowledgementEdit}
+                          onChange={(e) => setOrderAcknowledgementEdit(e.target.value)}
+                          placeholder="Mensaje cuando el usuario será atendido por un humano"
+                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          rows={3}
+                          maxLength={320}
+                        />
+                        <div className="text-sm text-[#90e2f8]">
+                          {orderAcknowledgementEdit.length}/320 caracteres
+                        </div>
+                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8]">{orderAcknowledgementEdit}</p>
+                        </div>
+                      </div>
+
+                      {/* Final Close Message */}
+                      <div className="space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium">Mensaje de Cierre Final</h4>
+                        <textarea
+                          value={finalCloseEdit}
+                          onChange={(e) => setFinalCloseEdit(e.target.value)}
+                          placeholder="Mensaje final de cierre de conversación"
+                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          rows={3}
+                          maxLength={320}
+                        />
+                        <div className="text-sm text-[#90e2f8]">
+                          {finalCloseEdit.length}/320 caracteres
+                        </div>
+                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8]">{finalCloseEdit}</p>
+                        </div>
                       </div>
                     </div>
                   )}
