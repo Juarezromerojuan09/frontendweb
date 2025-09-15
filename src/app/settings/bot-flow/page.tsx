@@ -1097,6 +1097,11 @@ export default function BotFlowSettings() {
                   {activeTab === 'template' && (
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-[#B7C2D6]">Selecciona una plantilla</h3>
+                      <p className="text-sm text-[#90e2f8] mb-4">
+                        Selecciona una plantilla predeterminada que se acople a las necesidades de tu negocio.
+                        Cada plantilla incluye un flujo de conversación preconfigurado con opciones de menú y
+                        campos de formulario adecuados para tu tipo de negocio.
+                      </p>
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div
                           onClick={() => handleTemplateSelect('consultorio')}
@@ -1108,6 +1113,7 @@ export default function BotFlowSettings() {
                         >
                           <h4 className="text-[#B7C2D6] font-semibold">Consultorio</h4>
                           <p className="text-[#90e2f8] text-sm">Para salud, educación y finanzas</p>
+                          <p className="text-[#B7C2D6] text-xs mt-1">Ideal para clínicas, consultorios médicos, asesorías financieras y servicios educativos. Incluye opciones para agendar citas, modificar citas y información de servicios.</p>
                         </div>
                         <div
                           onClick={() => handleTemplateSelect('barberia')}
@@ -1119,6 +1125,7 @@ export default function BotFlowSettings() {
                         >
                           <h4 className="text-[#B7C2D6] font-semibold">Barbería/Estética</h4>
                           <p className="text-[#90e2f8] text-sm">Para belleza y cuidado personal</p>
+                          <p className="text-[#B7C2D6] text-xs mt-1">Perfecta para barberías, salones de belleza, spas y servicios de estética. Incluye opciones para agendar citas de diferentes servicios como cortes, barba, tratamientos faciales, etc.</p>
                         </div>
                         <div
                           onClick={() => handleTemplateSelect('servicios')}
@@ -1130,6 +1137,7 @@ export default function BotFlowSettings() {
                         >
                           <h4 className="text-[#B7C2D6] font-semibold">Servicios</h4>
                           <p className="text-[#90e2f8] text-sm">Para servicios generales y negocios</p>
+                          <p className="text-[#B7C2D6] text-xs mt-1">Diseñada para servicios técnicos, reparaciones, mantenimiento y negocios generales. Incluye opciones para solicitar servicios, cotizaciones y soporte técnico.</p>
                         </div>
                         <div
                           onClick={() => handleTemplateSelect('custom')}
@@ -1141,6 +1149,7 @@ export default function BotFlowSettings() {
                         >
                           <h4 className="text-[#B7C2D6] font-semibold">Personalizado</h4>
                           <p className="text-[#90e2f8] text-sm">Configuración manual completa</p>
+                          <p className="text-[#B7C2D6] text-xs mt-1">Para crear el flujo completo tú mismo. Diseña cada aspecto del bot desde cero, incluyendo menús, formularios y mensajes personalizados según tus necesidades específicas.</p>
                         </div>
                       </div>
                     </div>
@@ -1150,10 +1159,17 @@ export default function BotFlowSettings() {
                   {activeTab === 'saludo' && (
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-[#B7C2D6]">Mensajes del Bot</h3>
+                      <p className="text-sm text-[#90e2f8] mb-4">
+                        Configura los mensajes que enviará el bot en diferentes situaciones.
+                        Estos mensajes se mostrarán a los usuarios durante la conversación.
+                      </p>
                       
                       {/* Greeting Message */}
                       <div className="space-y-4">
                         <h4 className="text-[#90e2f8] font-medium">Mensaje de Saludo</h4>
+                        <p className="text-sm text-[#B7C2D6] mb-2">
+                          Este es el primer mensaje que recibirán los usuarios al iniciar una conversación con tu bot.
+                        </p>
                         <textarea
                           value={greetingEdit}
                           onChange={(e) => setGreetingEdit(e.target.value)}
@@ -1174,6 +1190,10 @@ export default function BotFlowSettings() {
                       {/* Schedule Confirmation Message */}
                       <div className="space-y-4">
                         <h4 className="text-[#90e2f8] font-medium">Confirmación de Cita</h4>
+                        <p className="text-sm text-[#B7C2D6] mb-2">
+                          Mensaje que se enviará cuando un usuario agende una cita exitosamente.
+                          Usa <code className="bg-[#012f78] px-1 rounded">{"{date}"}</code> y <code className="bg-[#012f78] px-1 rounded">{"{time}"}</code> para insertar la fecha y hora automáticamente.
+                        </p>
                         <textarea
                           value={scheduleConfirmationEdit}
                           onChange={(e) => setScheduleConfirmationEdit(e.target.value)}
@@ -1194,6 +1214,9 @@ export default function BotFlowSettings() {
                       {/* Modification Confirmation Message */}
                       <div className="space-y-4">
                         <h4 className="text-[#90e2f8] font-medium">Modificación de Cita</h4>
+                        <p className="text-sm text-[#B7C2D6] mb-2">
+                          Mensaje que se enviará cuando un usuario modifique una cita exitosamente.
+                        </p>
                         <textarea
                           value={modificationConfirmationEdit}
                           onChange={(e) => setModificationConfirmationEdit(e.target.value)}
@@ -1214,6 +1237,9 @@ export default function BotFlowSettings() {
                       {/* Cancellation Confirmation Message */}
                       <div className="space-y-4">
                         <h4 className="text-[#90e2f8] font-medium">Cancelación de Cita</h4>
+                        <p className="text-sm text-[#B7C2D6] mb-2">
+                          Mensaje que se enviará cuando un usuario cancele una cita exitosamente.
+                        </p>
                         <textarea
                           value={cancellationConfirmationEdit}
                           onChange={(e) => setCancellationConfirmationEdit(e.target.value)}
@@ -1234,6 +1260,9 @@ export default function BotFlowSettings() {
                       {/* Order Acknowledgement Message */}
                       <div className="space-y-4">
                         <h4 className="text-[#90e2f8] font-medium">Atención por Humano</h4>
+                        <p className="text-sm text-[#B7C2D6] mb-2">
+                          Mensaje que se enviará cuando el usuario sea transferido a un agente humano para atención personalizada.
+                        </p>
                         <textarea
                           value={orderAcknowledgementEdit}
                           onChange={(e) => setOrderAcknowledgementEdit(e.target.value)}
@@ -1267,6 +1296,23 @@ export default function BotFlowSettings() {
                         </button>
                       </div>
                       <p className="text-sm text-[#90e2f8]">Máximo 5 opciones de menú</p>
+                      <p className="text-sm text-[#B7C2D6]">
+                        Configura las opciones que aparecerán en el menú principal del bot.
+                        Cada opción puede tener diferentes tipos de contenido que se mostrarán al usuario.
+                      </p>
+                      <p className="text-sm text-[#B7C2D6]">
+                        Tipos de opciones disponibles:
+                      </p>
+                      <ul className="text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
+                        <li><strong>Acción</strong>: Ejecuta una acción específica (como agendar citas)</li>
+                        <li><strong>Tabla</strong>: Muestra información en formato de tabla</li>
+                        <li><strong>Lista</strong>: Presenta opciones en formato de lista numerada</li>
+                        <li><strong>Ubicación</strong>: Muestra la dirección del negocio</li>
+                        <li><strong>Transferencia</strong>: Transfiere la conversación a un agente humano</li>
+                      </ul>
+                      <p className="text-sm text-[#90e2f8]">
+                        Las opciones marcadas como "Fijo" no pueden ser modificadas o eliminadas ya que son esenciales para el funcionamiento del bot.
+                      </p>
                       
                       {menuItemsEdit.length === 0 ? (
                         <p className="text-[#B7C2D6]">No hay opciones de menú configuradas.</p>
@@ -1439,8 +1485,18 @@ export default function BotFlowSettings() {
                                   <div className="space-y-3 mt-3 p-3 bg-[#012f78] rounded border border-[#3ea0c9]">
                                     <h4 className="text-[#90e2f8] font-semibold">Servicios de Agendamiento</h4>
                                     <p className="text-sm text-[#B7C2D6]">
-                                      Configura los servicios que se pueden agendar
+                                      Configura los servicios que se pueden agendar.
+                                      Si solo defines un servicio, el usuario no verá una lista de selección.
+                                      Si defines múltiples servicios, el usuario podrá elegir entre ellos.
                                     </p>
+                                    <p className="text-sm text-[#B7C2D6]">
+                                      <strong>Tipos de servicio comunes:</strong>
+                                    </p>
+                                    <ul className="text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
+                                      <li>Barbería: "Corte caballero", "Barba y bigote", "Paquete completo"</li>
+                                      <li>Consultorio: "Cita básica", "Apertura de expediente", "Consulta especializada"</li>
+                                      <li>Servicios generales: "Mantenimiento", "Reparación", "Instalación"</li>
+                                    </ul>
                                     
                                     {getScheduleServices().length === 0 ? (
                                       <p className="text-[#B7C2D6] text-sm">No hay servicios configurados.</p>
@@ -1536,6 +1592,21 @@ export default function BotFlowSettings() {
                         </button>
                       </div>
                       <p className="text-sm text-[#90e2f8]">Máximo 6 campos de formulario</p>
+                      <p className="text-sm text-[#B7C2D6]">
+                        Configura los campos que aparecerán en los formularios que completarán los usuarios.
+                        Los campos se generan automáticamente con keys basadas en su tipo y etiqueta.
+                      </p>
+                      <p className="text-sm text-[#B7C2D6]">
+                        Tipos de campos disponibles:
+                      </p>
+                      <ul className="text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
+                        <li><strong>Texto</strong>: Para nombres, descripciones y texto libre</li>
+                        <li><strong>Teléfono</strong>: Optimizado para números telefónicos</li>
+                        <li><strong>Email</strong>: Validación automática de correos electrónicos</li>
+                        <li><strong>Fecha</strong>: Selector de fechas con formato adecuado</li>
+                        <li><strong>Selección</strong>: Lista desplegable de opciones</li>
+                        <li><strong>Texto Largo</strong>: Para mensajes extensos o comentarios</li>
+                      </ul>
                       
                       {formFieldsEdit.length === 0 ? (
                         <p className="text-[#B7C2D6]">No hay campos de formulario configurados.</p>
@@ -1598,6 +1669,19 @@ export default function BotFlowSettings() {
                   {activeTab === 'preview' && (
                     <div className="space-y-6">
                       <h3 className="text-lg font-semibold text-[#B7C2D6]">Vista Previa del Bot</h3>
+                      <p className="text-sm text-[#B7C2D6]">
+                        Esta es una simulación de cómo se verá tu bot en WhatsApp. La vista previa muestra:
+                      </p>
+                      <ul className="text-sm text-[#B7C2D6] list-disc list-inside space-y-1 mb-4">
+                        <li>El mensaje de saludo inicial</li>
+                        <li>Las opciones del menú como botones de respuesta rápida</li>
+                        <li>Previsualizaciones de tablas, listas y ubicaciones</li>
+                        <li>Formularios con los campos configurados</li>
+                        <li>Confirmaciones de citas y otros mensajes</li>
+                      </ul>
+                      <p className="text-sm text-[#90e2f8]">
+                        Nota: Esta es solo una simulación visual. El comportamiento real puede variar ligeramente en WhatsApp.
+                      </p>
                       
                       {/* WhatsApp Chat Simulation */}
                       <div className="bg-[#111b21] rounded-lg border border-[#3ea0c9] p-4 max-w-md mx-auto">
