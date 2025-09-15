@@ -355,15 +355,30 @@ export default function BotFlowSettings() {
     ))
   }
 
+  const generateUniqueKey = (baseKey: string, existingKeys: string[], excludeKey?: string): string => {
+    let newKey = baseKey;
+    let counter = 1;
+    const keysToCheck = existingKeys.filter(key => key !== excludeKey);
+    while (keysToCheck.includes(newKey)) {
+      newKey = `${baseKey}${counter}`;
+      counter++;
+    }
+    return newKey;
+  }
+
   const addFormField = () => {
     if (formFieldsEdit.length >= 6) {
       setError('Máximo 6 campos de formulario permitidos')
       return
     }
+    const defaultType = 'text';
+    const existingKeys = formFieldsEdit.map(field => field.key);
+    const newKey = generateUniqueKey(defaultType, existingKeys);
+    
     const newField = {
-      key: Date.now().toString(),
+      key: newKey,
       label: '',
-      type: 'text',
+      type: defaultType,
       required: false
     }
     setFormFieldsEdit([...formFieldsEdit, newField])
@@ -471,9 +486,50 @@ export default function BotFlowSettings() {
   }
 
   const updateFormField = (key: string, field: string, value: string | boolean) => {
-    setFormFieldsEdit(formFieldsEdit.map(item =>
-      item.key === key ? { ...item, [field]: value } : item
-    ))
+    setFormFieldsEdit(formFieldsEdit.map(item => {
+      if (item.key !== key) return item;
+      
+      const updatedItem = { ...item, [field]: value };
+      
+      // If type changes, update the key to match the new type
+      if (field === 'type' && typeof value === 'string') {
+        const existingKeys = formFieldsEdit.map(f => f.key).filter(k => k !== key);
+        updatedItem.key = generateUniqueKey(value, existingKeys);
+      }
+      
+      // If label changes to a common field name, update the key accordingly
+      if (field === 'label' && typeof value === 'string') {
+        const commonFieldNames: { [key: string]: string } = {
+          'nombre': 'name',
+          'teléfono': 'phone',
+          'email': 'email',
+          'correo': 'email',
+          'fecha': 'date',
+          'fecha de nacimiento': 'birthdate',
+          'dirección': 'address',
+          'ciudad': 'city',
+          'país': 'country',
+          'código postal': 'zipcode',
+          'mensaje': 'message',
+          'comentario': 'comment',
+          'descripción': 'description',
+          'servicio': 'service',
+          'producto': 'product',
+          'cantidad': 'quantity',
+          'precio': 'price'
+        };
+        
+        const normalizedLabel = value.toLowerCase().trim();
+        const commonKey = commonFieldNames[normalizedLabel];
+        
+        if (commonKey) {
+          const existingKeys = formFieldsEdit.map(f => f.key).filter(k => k !== key);
+          updatedItem.key = generateUniqueKey(commonKey, existingKeys);
+        }
+      }
+      
+      return updatedItem;
+    }))
   }
 
   // Funciones para manejar servicios de agendamiento dentro del primer menuItem
