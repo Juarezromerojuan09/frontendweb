@@ -111,6 +111,7 @@ export default function BotFlowSettings() {
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [saving, setSaving] = useState(false)
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [botSettings, setBotSettings] = useState<BotSettings>({
     template: 'custom',
     greeting: 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
@@ -959,34 +960,63 @@ export default function BotFlowSettings() {
         </svg>
       </div>
 
-      <div className="relative z-50 pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-50 pt-4 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center space-x-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 lg:mb-8">
+            <div className="flex items-center space-x-3 lg:space-x-6">
               <Image
                 src="/Logo.png"
                 alt="SYNAPBOT"
                 width={150}
                 height={38}
-                className="h-9 w-auto"
+                className="h-7 sm:h-8 lg:h-9 w-auto"
+                priority
               />
-              <h1 className="text-3xl font-bold text-[#B7C2D6]">Configuración</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#B7C2D6]">Configuración</h1>
             </div>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="bg-[#012f78] hover:bg-[#3ea0c9] text-[#B7C2D6] px-4 py-2 rounded-lg transition-colors"
-            >
-              Volver al Dashboard
-            </button>
+            <div className="flex items-center space-x-3 self-end sm:self-auto">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden hamburger-menu p-2"
+              >
+                <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-transform ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+                <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-opacity ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+                <div className={`w-5 h-0.5 bg-[#B7C2D6] transition-transform ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="bg-[#012f78] hover:bg-[#3ea0c9] text-[#B7C2D6] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm lg:text-base whitespace-nowrap"
+              >
+                Volver al Dashboard
+              </button>
+            </div>
           </div>
 
-          <div className="flex gap-8">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+            {/* Mobile Menu Overlay */}
+            {mobileMenuOpen && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+            )}
+            
             {/* Sidebar */}
-            <div className="w-80 flex-shrink-0">
-              <div className="bg-[#0b1e34] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9] p-6">
+            <div className={`
+              ${mobileMenuOpen ? 'fixed left-0 top-0 h-full w-72 sm:w-80 z-50 transform translate-x-0' : 'fixed -translate-x-full lg:translate-x-0'}
+              lg:static lg:w-72 xl:w-80 flex-shrink-0 bg-[#0b1e34] shadow-xl rounded-xl border-2 border-[#3ea0c9] p-4 sm:p-6 transition-transform duration-300 ease-in-out
+            `}>
+              {/* Close button for mobile */}
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="lg:hidden absolute top-3 right-3 sm:top-4 sm:right-4 text-[#B7C2D6] hover:text-[#90e2f8] text-xl"
+              >
+                ×
+              </button>
+              <div className="bg-[#0b1e34] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9] p-4 sm:p-6">
                 <div className="text-center">
-                  <div className="relative mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-[#90e2f8] mb-4 bg-[#012f78]">
+                  <div className="relative mx-auto w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-[#90e2f8] mb-3 sm:mb-4 bg-[#012f78]">
                     {user.profileImageUrl ? (
                       <img
                         src={user.profileImageUrl}
@@ -1004,34 +1034,34 @@ export default function BotFlowSettings() {
                       />
                     ) : null}
                     <div className={`w-full h-full flex items-center justify-center ${user.profileImageUrl ? 'profile-fallback hidden' : ''}`}>
-                      <span className="text-4xl text-[#B7C2D6] font-bold">
+                      <span className="text-2xl sm:text-4xl text-[#B7C2D6] font-bold">
                         {user.fullName.charAt(0).toUpperCase()}
                       </span>
                     </div>
                   </div>
                   
-                  <h2 className="text-xl font-semibold text-[#B7C2D6] mb-2">{user.fullName}</h2>
-                  <p className="text-[#90e2f8] text-sm mb-6">{user.businessName}</p>
+                  <h2 className="text-lg sm:text-xl font-semibold text-[#B7C2D6] mb-1 sm:mb-2">{user.fullName}</h2>
+                  <p className="text-[#90e2f8] text-xs sm:text-sm mb-4 sm:mb-6">{user.businessName}</p>
                 </div>
 
                 {/* Navigation Menu */}
-                <div className="mt-6 bg-[#012f78] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9] p-4">
-                  <div className="space-y-2">
+                <div className="mt-4 sm:mt-6 bg-[#012f78] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9] p-3 sm:p-4">
+                  <div className="space-y-1 sm:space-y-2">
                     <button
                       onClick={() => router.push('/settings')}
-                      className="w-full bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] py-2 px-4 rounded-md transition-colors cursor-pointer text-left"
+                      className="w-full bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] py-1.5 sm:py-2 px-3 sm:px-4 rounded-md transition-colors cursor-pointer text-left text-sm sm:text-base"
                     >
                       Perfil
                     </button>
                     <button
                       onClick={() => router.push('/settings/bot')}
-                      className="w-full bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] py-2 px-4 rounded-md transition-colors cursor-pointer text-left"
+                      className="w-full bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] py-1.5 sm:py-2 px-3 sm:px-4 rounded-md transition-colors cursor-pointer text-left text-sm sm:text-base"
                     >
                       Configuración Bot
                     </button>
                     <button
                       onClick={() => router.push('/settings/bot-flow')}
-                      className="w-full bg-[#0073ba] hover:bg-[#005a92] text-white py-2 px-4 rounded-md transition-colors cursor-pointer text-left"
+                      className="w-full bg-[#0073ba] hover:bg-[#005a92] text-white py-1.5 sm:py-2 px-3 sm:px-4 rounded-md transition-colors cursor-pointer text-left text-sm sm:text-base"
                     >
                       Flujo del Bot
                     </button>
@@ -1041,26 +1071,26 @@ export default function BotFlowSettings() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="bg-[#0b1e34] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9]">
                 {/* Header */}
-                <div className="bg-[#012f78] px-6 py-4 border-b border-[#3ea0c9]">
-                  <h2 className="text-xl font-semibold text-[#B7C2D6]">Flujo del Bot</h2>
-                  <p className="text-[#90e2f8] text-sm">Configura el flujo de conversación de tu bot</p>
+                <div className="bg-[#012f78] px-4 sm:px-6 py-3 sm:py-4 border-b border-[#3ea0c9]">
+                  <h2 className="text-lg sm:text-xl font-semibold text-[#B7C2D6]">Flujo del Bot</h2>
+                  <p className="text-[#90e2f8] text-xs sm:text-sm">Configura el flujo de conversación de tu bot</p>
                 </div>
 
                 {/* Content */}
-                <div className="p-6">
+                <div className="p-4 sm:p-6">
                   {/* Error Message */}
                   {error && (
-                    <div className="bg-red-600 text-white px-4 py-2 rounded mb-4">
+                    <div className="bg-red-600 text-white px-3 py-2 rounded mb-3 text-sm sm:text-base">
                       {error}
                     </div>
                   )}
 
                   {/* Success Message */}
                   {success && (
-                    <div className="bg-green-600 text-white px-4 py-2 rounded mb-4">
+                    <div className="bg-green-600 text-white px-3 py-2 rounded mb-3 text-sm sm:text-base">
                       {success}
                     </div>
                   )}
@@ -1073,12 +1103,12 @@ export default function BotFlowSettings() {
                   )}
 
                   {/* Tabs */}
-                  <div className="flex border-b border-[#3ea0c9] mb-6">
+                  <div className="flex border-b border-[#3ea0c9] mb-4 sm:mb-6 overflow-x-auto">
                     {['template', 'saludo', 'menu', 'formulario', 'preview'].map((tab) => (
                       <button
                         key={tab}
                         onClick={() => setActiveTab(tab)}
-                        className={`px-4 py-2 font-medium transition-colors ${
+                        className={`px-2 py-1.5 sm:px-3 sm:py-2 font-medium transition-colors text-xs sm:text-sm whitespace-nowrap min-w-max ${
                           activeTab === tab
                             ? 'bg-[#0073ba] text-white border-b-2 border-[#90e2f8]'
                             : 'bg-[#012f78] text-[#B7C2D6] hover:bg-[#005a92]'
@@ -1095,60 +1125,60 @@ export default function BotFlowSettings() {
 
                   {/* Template Selection */}
                   {activeTab === 'template' && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold text-[#B7C2D6]">Selecciona una plantilla</h3>
-                      <p className="text-sm text-[#90e2f8] mb-4">
+                    <div className="space-y-4 sm:space-y-6">
+                      <h3 className="text-lg sm:text-xl font-semibold text-[#B7C2D6]">Selecciona una plantilla</h3>
+                      <p className="text-xs sm:text-sm text-[#90e2f8] mb-3 sm:mb-4">
                         Selecciona una plantilla predeterminada que se acople a las necesidades de tu negocio.
                         Cada plantilla incluye un flujo de conversación preconfigurado con opciones de menú y
                         campos de formulario adecuados para tu tipo de negocio.
                       </p>
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="grid grid-cols-1 gap-3 sm:gap-4">
                         <div
                           onClick={() => handleTemplateSelect('consultorio')}
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                          className={`p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                             botSettings.template === 'consultorio'
                               ? 'border-[#90e2f8] bg-[#012f78]'
                               : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
                           }`}
                         >
-                          <h4 className="text-[#B7C2D6] font-semibold">Consultorio</h4>
-                          <p className="text-[#90e2f8] text-sm">Para salud, educación y finanzas</p>
+                          <h4 className="text-[#B7C2D6] font-semibold text-base sm:text-lg">Consultorio</h4>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">Para salud, educación y finanzas</p>
                           <p className="text-[#B7C2D6] text-xs mt-1">Ideal para clínicas, consultorios médicos, asesorías financieras y servicios educativos. Incluye opciones para agendar citas, modificar citas y información de servicios.</p>
                         </div>
                         <div
                           onClick={() => handleTemplateSelect('barberia')}
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                          className={`p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                             botSettings.template === 'barberia'
                               ? 'border-[#90e2f8] bg-[#012f78]'
                               : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
                           }`}
                         >
-                          <h4 className="text-[#B7C2D6] font-semibold">Barbería/Estética</h4>
-                          <p className="text-[#90e2f8] text-sm">Para belleza y cuidado personal</p>
+                          <h4 className="text-[#B7C2D6] font-semibold text-base sm:text-lg">Barbería/Estética</h4>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">Para belleza y cuidado personal</p>
                           <p className="text-[#B7C2D6] text-xs mt-1">Perfecta para barberías, salones de belleza, spas y servicios de estética. Incluye opciones para agendar citas de diferentes servicios como cortes, barba, tratamientos faciales, etc.</p>
                         </div>
                         <div
                           onClick={() => handleTemplateSelect('servicios')}
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                          className={`p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                             botSettings.template === 'servicios'
                               ? 'border-[#90e2f8] bg-[#012f78]'
                               : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
                           }`}
                         >
-                          <h4 className="text-[#B7C2D6] font-semibold">Servicios</h4>
-                          <p className="text-[#90e2f8] text-sm">Para servicios generales y negocios</p>
+                          <h4 className="text-[#B7C2D6] font-semibold text-base sm:text-lg">Servicios</h4>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">Para servicios generales y negocios</p>
                           <p className="text-[#B7C2D6] text-xs mt-1">Diseñada para servicios técnicos, reparaciones, mantenimiento y negocios generales. Incluye opciones para solicitar servicios, cotizaciones y soporte técnico.</p>
                         </div>
                         <div
                           onClick={() => handleTemplateSelect('custom')}
-                          className={`p-4 rounded-lg border-2 cursor-pointer transition-colors ${
+                          className={`p-3 sm:p-4 rounded-lg border-2 cursor-pointer transition-colors ${
                             botSettings.template === 'custom'
                               ? 'border-[#90e2f8] bg-[#012f78]'
                               : 'border-[#3ea0c9] bg-[#0b1e34] hover:bg-[#012f78]'
                           }`}
                         >
-                          <h4 className="text-[#B7C2D6] font-semibold">Personalizado</h4>
-                          <p className="text-[#90e2f8] text-sm">Configuración manual completa</p>
+                          <h4 className="text-[#B7C2D6] font-semibold text-base sm:text-lg">Personalizado</h4>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">Configuración manual completa</p>
                           <p className="text-[#B7C2D6] text-xs mt-1">Para crear el flujo completo tú mismo. Diseña cada aspecto del bot desde cero, incluyendo menús, formularios y mensajes personalizados según tus necesidades específicas.</p>
                         </div>
                       </div>
@@ -1157,126 +1187,126 @@ export default function BotFlowSettings() {
 
                   {/* Greeting Editor */}
                   {activeTab === 'saludo' && (
-                    <div className="space-y-6">
-                      <h3 className="text-lg font-semibold text-[#B7C2D6]">Mensajes del Bot</h3>
-                      <p className="text-sm text-[#90e2f8] mb-4">
+                    <div className="space-y-4 sm:space-y-6">
+                      <h3 className="text-lg sm:text-xl font-semibold text-[#B7C2D6]">Mensajes del Bot</h3>
+                      <p className="text-xs sm:text-sm text-[#90e2f8] mb-3 sm:mb-4">
                         Configura los mensajes que enviará el bot en diferentes situaciones.
                         Estos mensajes se mostrarán a los usuarios durante la conversación.
                       </p>
                       
                       {/* Greeting Message */}
-                      <div className="space-y-4">
-                        <h4 className="text-[#90e2f8] font-medium">Mensaje de Saludo</h4>
-                        <p className="text-sm text-[#B7C2D6] mb-2">
+                      <div className="space-y-3 sm:space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium text-sm sm:text-base">Mensaje de Saludo</h4>
+                        <p className="text-xs sm:text-sm text-[#B7C2D6] mb-1 sm:mb-2">
                           Este es el primer mensaje que recibirán los usuarios al iniciar una conversación con tu bot.
                         </p>
                         <textarea
                           value={greetingEdit}
                           onChange={(e) => setGreetingEdit(e.target.value)}
                           placeholder="Escribe el mensaje de saludo que enviará el bot"
-                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          className="w-full p-2 sm:p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
                           rows={3}
                           maxLength={320}
                         />
-                        <div className="text-sm text-[#90e2f8]">
+                        <div className="text-xs sm:text-sm text-[#90e2f8]">
                           {greetingEdit.length}/320 caracteres
                         </div>
-                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
-                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
-                          <p className="text-[#90e2f8]">{greetingEdit}</p>
+                        <div className="bg-[#012f78] p-3 sm:p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold text-sm sm:text-base mb-1 sm:mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">{greetingEdit}</p>
                         </div>
                       </div>
 
                       {/* Schedule Confirmation Message */}
-                      <div className="space-y-4">
-                        <h4 className="text-[#90e2f8] font-medium">Confirmación de Cita</h4>
-                        <p className="text-sm text-[#B7C2D6] mb-2">
+                      <div className="space-y-3 sm:space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium text-sm sm:text-base">Confirmación de Cita</h4>
+                        <p className="text-xs sm:text-sm text-[#B7C2D6] mb-1 sm:mb-2">
                           Mensaje que se enviará cuando un usuario agende una cita exitosamente.
-                          Usa <code className="bg-[#012f78] px-1 rounded">{"{date}"}</code> y <code className="bg-[#012f78] px-1 rounded">{"{time}"}</code> para insertar la fecha y hora automáticamente.
+                          Usa <code className="bg-[#012f78] px-1 rounded text-xs">{"{date}"}</code> y <code className="bg-[#012f78] px-1 rounded text-xs">{"{time}"}</code> para insertar la fecha y hora automáticamente.
                         </p>
                         <textarea
                           value={scheduleConfirmationEdit}
                           onChange={(e) => setScheduleConfirmationEdit(e.target.value)}
                           placeholder="Mensaje de confirmación de cita (usa {date} y {time} para variables)"
-                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          className="w-full p-2 sm:p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
                           rows={3}
                           maxLength={320}
                         />
-                        <div className="text-sm text-[#90e2f8]">
+                        <div className="text-xs sm:text-sm text-[#90e2f8]">
                           {scheduleConfirmationEdit.length}/320 caracteres
                         </div>
-                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
-                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
-                          <p className="text-[#90e2f8]">{scheduleConfirmationEdit}</p>
+                        <div className="bg-[#012f78] p-3 sm:p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold text-sm sm:text-base mb-1 sm:mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">{scheduleConfirmationEdit}</p>
                         </div>
                       </div>
 
                       {/* Modification Confirmation Message */}
-                      <div className="space-y-4">
-                        <h4 className="text-[#90e2f8] font-medium">Modificación de Cita</h4>
-                        <p className="text-sm text-[#B7C2D6] mb-2">
+                      <div className="space-y-3 sm:space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium text-sm sm:text-base">Modificación de Cita</h4>
+                        <p className="text-xs sm:text-sm text-[#B7C2D6] mb-1 sm:mb-2">
                           Mensaje que se enviará cuando un usuario modifique una cita exitosamente.
                         </p>
                         <textarea
                           value={modificationConfirmationEdit}
                           onChange={(e) => setModificationConfirmationEdit(e.target.value)}
                           placeholder="Mensaje de confirmación de modificación de cita"
-                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          className="w-full p-2 sm:p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
                           rows={3}
                           maxLength={320}
                         />
-                        <div className="text-sm text-[#90e2f8]">
+                        <div className="text-xs sm:text-sm text-[#90e2f8]">
                           {modificationConfirmationEdit.length}/320 caracteres
                         </div>
-                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
-                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
-                          <p className="text-[#90e2f8]">{modificationConfirmationEdit}</p>
+                        <div className="bg-[#012f78] p-3 sm:p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold text-sm sm:text-base mb-1 sm:mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">{modificationConfirmationEdit}</p>
                         </div>
                       </div>
 
                       {/* Cancellation Confirmation Message */}
-                      <div className="space-y-4">
-                        <h4 className="text-[#90e2f8] font-medium">Cancelación de Cita</h4>
-                        <p className="text-sm text-[#B7C2D6] mb-2">
+                      <div className="space-y-3 sm:space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium text-sm sm:text-base">Cancelación de Cita</h4>
+                        <p className="text-xs sm:text-sm text-[#B7C2D6] mb-1 sm:mb-2">
                           Mensaje que se enviará cuando un usuario cancele una cita exitosamente.
                         </p>
                         <textarea
                           value={cancellationConfirmationEdit}
                           onChange={(e) => setCancellationConfirmationEdit(e.target.value)}
                           placeholder="Mensaje de confirmación de cancelación de cita"
-                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          className="w-full p-2 sm:p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
                           rows={3}
                           maxLength={320}
                         />
-                        <div className="text-sm text-[#90e2f8]">
+                        <div className="text-xs sm:text-sm text-[#90e2f8]">
                           {cancellationConfirmationEdit.length}/320 caracteres
                         </div>
-                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
-                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
-                          <p className="text-[#90e2f8]">{cancellationConfirmationEdit}</p>
+                        <div className="bg-[#012f78] p-3 sm:p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold text-sm sm:text-base mb-1 sm:mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">{cancellationConfirmationEdit}</p>
                         </div>
                       </div>
 
                       {/* Order Acknowledgement Message */}
-                      <div className="space-y-4">
-                        <h4 className="text-[#90e2f8] font-medium">Atención por Humano</h4>
-                        <p className="text-sm text-[#B7C2D6] mb-2">
+                      <div className="space-y-3 sm:space-y-4">
+                        <h4 className="text-[#90e2f8] font-medium text-sm sm:text-base">Atención por Humano</h4>
+                        <p className="text-xs sm:text-sm text-[#B7C2D6] mb-1 sm:mb-2">
                           Mensaje que se enviará cuando el usuario sea transferido a un agente humano para atención personalizada.
                         </p>
                         <textarea
                           value={orderAcknowledgementEdit}
                           onChange={(e) => setOrderAcknowledgementEdit(e.target.value)}
                           placeholder="Mensaje cuando el usuario será atendido por un humano"
-                          className="w-full p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                          className="w-full p-2 sm:p-3 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
                           rows={3}
                           maxLength={320}
                         />
-                        <div className="text-sm text-[#90e2f8]">
+                        <div className="text-xs sm:text-sm text-[#90e2f8]">
                           {orderAcknowledgementEdit.length}/320 caracteres
                         </div>
-                        <div className="bg-[#012f78] p-4 rounded border border-[#3ea0c9]">
-                          <h5 className="text-[#B7C2D6] font-semibold mb-2">Vista previa:</h5>
-                          <p className="text-[#90e2f8]">{orderAcknowledgementEdit}</p>
+                        <div className="bg-[#012f78] p-3 sm:p-4 rounded border border-[#3ea0c9]">
+                          <h5 className="text-[#B7C2D6] font-semibold text-sm sm:text-base mb-1 sm:mb-2">Vista previa:</h5>
+                          <p className="text-[#90e2f8] text-xs sm:text-sm">{orderAcknowledgementEdit}</p>
                         </div>
                       </div>
                     </div>
@@ -1284,51 +1314,51 @@ export default function BotFlowSettings() {
 
                   {/* Menu Editor */}
                   {activeTab === 'menu' && (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-[#B7C2D6]">Opciones de Menú</h3>
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <h3 className="text-lg sm:text-xl font-semibold text-[#B7C2D6]">Opciones de Menú</h3>
                         <button
                           onClick={addMenuItem}
                           disabled={menuItemsEdit.length >= 5}
-                          className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 sm:px-3 sm:py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                         >
                           + Añadir Opción
                         </button>
                       </div>
-                      <p className="text-sm text-[#90e2f8]">Máximo 5 opciones de menú</p>
-                      <p className="text-sm text-[#B7C2D6]">
+                      <p className="text-xs sm:text-sm text-[#90e2f8]">Máximo 5 opciones de menú</p>
+                      <p className="text-xs sm:text-sm text-[#B7C2D6]">
                         Configura las opciones que aparecerán en el menú principal del bot.
                         Cada opción puede tener diferentes tipos de contenido que se mostrarán al usuario.
                       </p>
-                      <p className="text-sm text-[#B7C2D6]">
+                      <p className="text-xs sm:text-sm text-[#B7C2D6]">
                         Tipos de opciones disponibles:
                       </p>
-                      <ul className="text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
+                      <ul className="text-xs sm:text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
                         <li><strong>Acción</strong>: Ejecuta una acción específica (como agendar citas)</li>
                         <li><strong>Tabla</strong>: Muestra información en formato de tabla</li>
                         <li><strong>Lista</strong>: Presenta opciones en formato de lista numerada</li>
                         <li><strong>Ubicación</strong>: Muestra la dirección del negocio</li>
                         <li><strong>Transferencia</strong>: Transfiere la conversación a un agente humano</li>
                       </ul>
-                      <p className="text-sm text-[#90e2f8]">
+                      <p className="text-xs sm:text-sm text-[#90e2f8]">
                         Las opciones marcadas como "Fijo" no pueden ser modificadas o eliminadas ya que son esenciales para el funcionamiento del bot.
                       </p>
                       
                       {menuItemsEdit.length === 0 ? (
-                        <p className="text-[#B7C2D6]">No hay opciones de menú configuradas.</p>
+                        <p className="text-[#B7C2D6] text-xs sm:text-sm">No hay opciones de menú configuradas.</p>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                           {menuItemsEdit.map((item, index) => (
-                            <div key={item.id} className="bg-[#0b1e34] p-4 rounded border border-[#3ea0c9]">
-                              <div className="flex justify-between items-start mb-3">
+                            <div key={item.id} className="bg-[#0b1e34] p-3 sm:p-4 rounded border border-[#3ea0c9]">
+                              <div className="flex justify-between items-start mb-2 sm:mb-3">
                                 <div>
-                                  <span className="text-[#90e2f8]">Opción {index + 1}</span>
-                                  {item.fixed && <span className="ml-2 text-green-400 text-sm">Fijo</span>}
+                                  <span className="text-[#90e2f8] text-xs sm:text-sm">Opción {index + 1}</span>
+                                  {item.fixed && <span className="ml-2 text-green-400 text-xs sm:text-sm">Fijo</span>}
                                 </div>
                                 {!item.fixed && (
                                   <button
                                     onClick={() => removeMenuItem(item.id)}
-                                    className="text-red-400 hover:text-red-300"
+                                    className="text-red-400 hover:text-red-300 text-sm"
                                   >
                                     ×
                                   </button>
@@ -1340,34 +1370,34 @@ export default function BotFlowSettings() {
                                   value={item.label}
                                   onChange={(e) => updateMenuItem(item.id, 'label', e.target.value)}
                                   placeholder="Etiqueta de la opción"
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                                   disabled={isItemFixed(item)}
                                 />
                                 
                                 {/* Controles específicos por tipo */}
                                 {item.type === 'table' && (
                                   <div className="space-y-2">
-                                    <div className="flex gap-2 mb-2">
+                                    <div className="flex flex-col sm:flex-row gap-2 mb-2">
                                       <button
                                         onClick={() => handleTableChange(item.id, 'addColumn')}
-                                        className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                        className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-xs sm:text-sm"
                                         disabled={(item.meta?.table?.columns?.length || 0) >= 4}
                                       >
                                         + Columna ({(item.meta?.table?.columns?.length || 0)}/4)
                                       </button>
                                       <button
                                         onClick={() => handleTableChange(item.id, 'addRow')}
-                                        className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                        className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-xs sm:text-sm"
                                         disabled={(item.meta?.table?.rows?.length || 0) >= 10}
                                       >
                                         + Fila ({(item.meta?.table?.rows?.length || 0)}/10)
                                       </button>
                                     </div>
-                                    <p className="text-sm text-[#90e2f8]">Mínimo 2 columnas, máximo 4</p>
-                                    <p className="text-sm text-[#90e2f8] mb-2">Mínimo 1 fila, máximo 10</p>
+                                    <p className="text-xs sm:text-sm text-[#90e2f8]">Mínimo 2 columnas, máximo 4</p>
+                                    <p className="text-xs sm:text-sm text-[#90e2f8] mb-2">Mínimo 1 fila, máximo 10</p>
                                     
                                     {/* Encabezados de tabla con botones de eliminar */}
-                                    <div className="grid grid-cols-4 gap-2 mb-2">
+                                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 mb-2">
                                       {(item.meta?.table?.columns || []).map((col, colIndex) => (
                                         <div key={colIndex} className="flex gap-1 items-center">
                                           <input
@@ -1375,11 +1405,11 @@ export default function BotFlowSettings() {
                                             value={col}
                                             onChange={(e) => handleTableChange(item.id, 'updateColumn', colIndex, e.target.value)}
                                             placeholder={`Columna ${colIndex + 1}`}
-                                            className="flex-1 p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                            className="flex-1 p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm"
                                           />
                                           <button
                                             onClick={() => handleTableChange(item.id, 'removeColumn', colIndex)}
-                                            className="text-red-400 hover:text-red-300 text-sm"
+                                            className="text-red-400 hover:text-red-300 text-xs sm:text-sm"
                                             disabled={(item.meta?.table?.columns?.length || 0) <= 2}
                                             title="Eliminar columna"
                                           >
@@ -1392,8 +1422,8 @@ export default function BotFlowSettings() {
                                     {/* Filas de tabla con botones de eliminar */}
                                     <div className="space-y-1">
                                       {item.meta?.table?.rows?.map((row, rowIndex) => (
-                                        <div key={rowIndex} className="flex gap-2 items-center">
-                                          <div className="grid grid-cols-4 gap-2 flex-1">
+                                        <div key={rowIndex} className="flex flex-col sm:flex-row gap-2 items-center">
+                                          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2 flex-1">
                                             {row.map((cell, cellIndex) => (
                                               <input
                                                 key={cellIndex}
@@ -1401,13 +1431,13 @@ export default function BotFlowSettings() {
                                                 value={cell}
                                                 onChange={(e) => handleTableChange(item.id, 'updateCell', rowIndex, e.target.value, cellIndex)}
                                                 placeholder={`Fila ${rowIndex + 1}, Col ${cellIndex + 1}`}
-                                                className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                                className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm"
                                               />
                                             ))}
                                           </div>
                                           <button
                                             onClick={() => handleTableChange(item.id, 'removeRow', rowIndex)}
-                                            className="text-red-400 hover:text-red-300 text-sm"
+                                            className="text-red-400 hover:text-red-300 text-xs sm:text-sm"
                                             disabled={(item.meta?.table?.rows?.length || 0) <= 1}
                                             title="Eliminar fila"
                                           >
@@ -1428,21 +1458,21 @@ export default function BotFlowSettings() {
                                           value={option}
                                           onChange={(e) => handleListChange(item.id, index, e.target.value)}
                                           placeholder={`Opción ${index + 1}`}
-                                          className="flex-1 p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                          className="flex-1 p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm"
                                         />
                                         <button
                                           onClick={() => handleListChange(item.id, index)}
-                                          className="text-red-400 hover:text-red-300 disabled:text-gray-500"
+                                          className="text-red-400 hover:text-red-300 disabled:text-gray-500 text-xs sm:text-sm"
                                           disabled={(item.meta?.list?.options?.length || 0) <= 2}
                                         >
                                           ×
                                         </button>
                                       </div>
                                     ))}
-                                    <p className="text-sm text-[#90e2f8]">Mínimo 2 opciones requeridas</p>
+                                    <p className="text-xs sm:text-sm text-[#90e2f8]">Mínimo 2 opciones requeridas</p>
                                     <button
                                       onClick={() => handleListChange(item.id, -1)}
-                                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-xs sm:text-sm"
                                     >
                                       + Añadir opción
                                     </button>
@@ -1455,13 +1485,13 @@ export default function BotFlowSettings() {
                                       type="text"
                                       value={user?.address || ''}
                                       readOnly
-                                      className="w-full p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm cursor-not-allowed"
+                                      className="w-full p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm cursor-not-allowed"
                                     />
-                                    <p className="text-sm text-[#90e2f8]">
+                                    <p className="text-xs sm:text-sm text-[#90e2f8]">
                                       Actualiza tu dirección en {' '}
                                       <button
                                         onClick={() => router.push('/settings')}
-                                        className="text-[#90e2f8] hover:text-[#3ea0c9] underline"
+                                        className="text-[#90e2f8] hover:text-[#3ea0c9] underline text-xs sm:text-sm"
                                       >
                                         Configuración del perfil
                                       </button>
@@ -1471,7 +1501,7 @@ export default function BotFlowSettings() {
                                 <select
                                   value={item.type}
                                   onChange={(e) => updateMenuItem(item.id, 'type', e.target.value)}
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
+                                  className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                                   disabled={isItemFixed(item)}
                                 >
                                   <option value="action">Acción</option>
@@ -1482,30 +1512,30 @@ export default function BotFlowSettings() {
                                 </select>
                                 {/* Interfaz para servicios de agendamiento cuando el tipo es Acción */}
                                 {item.type === 'action' && (
-                                  <div className="space-y-3 mt-3 p-3 bg-[#012f78] rounded border border-[#3ea0c9]">
-                                    <h4 className="text-[#90e2f8] font-semibold">Servicios de Agendamiento</h4>
-                                    <p className="text-sm text-[#B7C2D6]">
+                                  <div className="space-y-2 sm:space-y-3 mt-2 sm:mt-3 p-2 sm:p-3 bg-[#012f78] rounded border border-[#3ea0c9]">
+                                    <h4 className="text-[#90e2f8] font-semibold text-sm sm:text-base">Servicios de Agendamiento</h4>
+                                    <p className="text-xs sm:text-sm text-[#B7C2D6]">
                                       Configura los servicios que se pueden agendar.
                                       Si solo defines un servicio, el usuario no verá una lista de selección.
                                       Si defines múltiples servicios, el usuario podrá elegir entre ellos.
                                     </p>
-                                    <p className="text-sm text-[#B7C2D6]">
+                                    <p className="text-xs sm:text-sm text-[#B7C2D6]">
                                       <strong>Tipos de servicio comunes:</strong>
                                     </p>
-                                    <ul className="text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
+                                    <ul className="text-xs sm:text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
                                       <li>Barbería: "Corte caballero", "Barba y bigote", "Paquete completo"</li>
                                       <li>Consultorio: "Cita básica", "Apertura de expediente", "Consulta especializada"</li>
                                       <li>Servicios generales: "Mantenimiento", "Reparación", "Instalación"</li>
                                     </ul>
                                     
                                     {getScheduleServices().length === 0 ? (
-                                      <p className="text-[#B7C2D6] text-sm">No hay servicios configurados.</p>
+                                      <p className="text-[#B7C2D6] text-xs sm:text-sm">No hay servicios configurados.</p>
                                     ) : (
                                       getScheduleServices().map((service, serviceIndex) => (
                                         <div key={serviceIndex} className="space-y-2 p-2 bg-[#0b1e34] rounded relative">
                                           <button
                                             onClick={() => removeSchedulingService(serviceIndex)}
-                                            className="absolute top-2 right-2 text-red-400 hover:text-red-300"
+                                            className="absolute top-1 right-1 sm:top-2 sm:right-2 text-red-400 hover:text-red-300 text-sm"
                                             disabled={getScheduleServices().length <= 1}
                                             title="Eliminar servicio"
                                           >
@@ -1518,7 +1548,7 @@ export default function BotFlowSettings() {
                                               value={service.serviceType}
                                               onChange={(e) => updateSchedulingService(serviceIndex, 'serviceType', e.target.value)}
                                               placeholder="Tipo de servicio (ej: Corte caballero)"
-                                              className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                              className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm"
                                             />
                                             
                                             <input
@@ -1526,11 +1556,11 @@ export default function BotFlowSettings() {
                                               value={service.price || ''}
                                               onChange={(e) => updateSchedulingService(serviceIndex, 'price', e.target.value)}
                                               placeholder="Precio (ej: $150)"
-                                              className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                              className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm"
                                             />
                                             
                                             <div className="space-y-1">
-                                              <label className="text-[#90e2f8] text-sm">Recomendaciones:</label>
+                                              <label className="text-[#90e2f8] text-xs sm:text-sm">Recomendaciones:</label>
                                               {(service.recommendations || []).map((recommendation, recIndex) => (
                                                 <div key={recIndex} className="flex gap-2 items-center">
                                                   <input
@@ -1538,11 +1568,11 @@ export default function BotFlowSettings() {
                                                     value={recommendation}
                                                     onChange={(e) => updateRecommendation(serviceIndex, recIndex, e.target.value)}
                                                     placeholder="Recomendación (ej: Llegar 15 minutos antes)"
-                                                    className="flex-1 p-1 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                                    className="flex-1 p-1 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm"
                                                   />
                                                   <button
                                                     onClick={() => removeRecommendation(serviceIndex, recIndex)}
-                                                    className="text-red-400 hover:text-red-300 text-sm"
+                                                    className="text-red-400 hover:text-red-300 text-xs sm:text-sm"
                                                     disabled={(service.recommendations || []).length <= 1}
                                                     title="Eliminar recomendación"
                                                   >
@@ -1552,7 +1582,7 @@ export default function BotFlowSettings() {
                                               ))}
                                               <button
                                                 onClick={() => addRecommendation(serviceIndex)}
-                                                className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                                className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-xs sm:text-sm"
                                               >
                                                 + Añadir recomendación
                                               </button>
@@ -1564,7 +1594,7 @@ export default function BotFlowSettings() {
                                     
                                     <button
                                       onClick={addSchedulingService}
-                                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-3 py-1 rounded text-sm"
+                                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-xs sm:text-sm"
                                     >
                                       + Agregar servicio
                                     </button>
@@ -1580,26 +1610,26 @@ export default function BotFlowSettings() {
 
                   {/* Form Editor */}
                   {activeTab === 'formulario' && (
-                    <div className="space-y-4">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-[#B7C2D6]">Campos del Formulario</h3>
+                    <div className="space-y-3 sm:space-y-4">
+                      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-2">
+                        <h3 className="text-lg sm:text-xl font-semibold text-[#B7C2D6]">Campos del Formulario</h3>
                         <button
                           onClick={addFormField}
                           disabled={formFieldsEdit.length >= 6}
-                          className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-3 py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed"
+                          className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 sm:px-3 sm:py-1 rounded disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                         >
                           + Añadir Campo
                         </button>
                       </div>
-                      <p className="text-sm text-[#90e2f8]">Máximo 6 campos de formulario</p>
-                      <p className="text-sm text-[#B7C2D6]">
+                      <p className="text-xs sm:text-sm text-[#90e2f8]">Máximo 6 campos de formulario</p>
+                      <p className="text-xs sm:text-sm text-[#B7C2D6]">
                         Configura los campos que aparecerán en los formularios que completarán los usuarios.
                         Los campos se generan automáticamente con keys basadas en su tipo y etiqueta.
                       </p>
-                      <p className="text-sm text-[#B7C2D6]">
+                      <p className="text-xs sm:text-sm text-[#B7C2D6]">
                         Tipos de campos disponibles:
                       </p>
-                      <ul className="text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
+                      <ul className="text-xs sm:text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
                         <li><strong>Texto</strong>: Para nombres, descripciones y texto libre</li>
                         <li><strong>Teléfono</strong>: Optimizado para números telefónicos</li>
                         <li><strong>Email</strong>: Validación automática de correos electrónicos</li>
@@ -1609,25 +1639,25 @@ export default function BotFlowSettings() {
                       </ul>
                       
                       {formFieldsEdit.length === 0 ? (
-                        <p className="text-[#B7C2D6]">No hay campos de formulario configurados.</p>
+                        <p className="text-[#B7C2D6] text-xs sm:text-sm">No hay campos de formulario configurados.</p>
                       ) : (
-                        <div className="space-y-3">
+                        <div className="space-y-2 sm:space-y-3">
                           {formFieldsEdit.map((field, index) => (
-                            <div key={field.key} className="bg-[#0b1e34] p-4 rounded border border-[#3ea0c9]">
-                              <div className="flex justify-between items-start mb-3">
-                                <span className="text-[#90e2f8]">Campo {index + 1}</span>
+                            <div key={field.key} className="bg-[#0b1e34] p-3 sm:p-4 rounded border border-[#3ea0c9]">
+                              <div className="flex justify-between items-start mb-2 sm:mb-3">
+                                <span className="text-[#90e2f8] text-xs sm:text-sm">Campo {index + 1}</span>
                                 <button
                                   onClick={() => removeFormField(field.key)}
-                                  className="text-red-400 hover:text-red-300"
+                                  className="text-red-400 hover:text-red-300 text-sm"
                                 >
                                   ×
                                 </button>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
                                 <select
                                   value={field.type}
                                   onChange={(e) => updateFormField(field.key, 'type', e.target.value)}
-                                  className="p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  className="p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
                                 >
                                   <option value="text">Texto</option>
                                   <option value="tel">Teléfono</option>
@@ -1643,18 +1673,18 @@ export default function BotFlowSettings() {
                                     onChange={(e) => updateFormField(field.key, 'required', e.target.checked)}
                                     className="mr-2"
                                   />
-                                  <span className="text-[#B7C2D6]">Requerido</span>
+                                  <span className="text-[#B7C2D6] text-xs sm:text-sm">Requerido</span>
                                 </div>
                               </div>
-                              <div className="space-y-2 mt-3">
+                              <div className="space-y-2 mt-2 sm:mt-3">
                                 <input
                                   type="text"
                                   value={field.label}
                                   onChange={(e) => updateFormField(field.key, 'label', e.target.value)}
                                   placeholder="Etiqueta del campo"
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none"
+                                  className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
                                 />
-                                <div className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#90e2f8] text-sm">
+                                <div className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#90e2f8] text-xs sm:text-sm">
                                   Key: {field.key}
                                 </div>
                               </div>
@@ -2001,11 +2031,11 @@ export default function BotFlowSettings() {
                   )}
 
                   {/* Save Button */}
-                  <div className="mt-8 flex justify-end">
+                  <div className="mt-6 sm:mt-8 flex justify-end">
                     <button
                       onClick={saveBotSettings}
                       disabled={saving}
-                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-6 py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-4 py-1.5 sm:px-6 sm:py-2 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-sm sm:text-base"
                     >
                       {saving ? 'Guardando...' : 'Guardar Configuración'}
                     </button>
