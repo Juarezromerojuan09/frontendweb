@@ -423,12 +423,12 @@ export default function BotFlowSettings() {
       
       const options = item.meta?.list?.options || []
       
-      if (index === -1) { // Añadir nueva opción
+      if (idx === -1) { // Añadir nueva opción
         options.push('')
       } else if (value === undefined) { // Eliminar opción
-        options.splice(index, 1)
+        options.splice(idx, 1)
       } else { // Actualizar opción
-        options[index] = value
+        options[idx] = value
       }
       
       return {
