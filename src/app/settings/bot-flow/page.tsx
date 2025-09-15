@@ -660,12 +660,12 @@ export default function BotFlowSettings() {
 
         const meta: any = {};
 
-        // Incluir servicios solo si hay datos
+        // Incluir servicios solo si hay datos (para cualquier item)
         if (item.meta?.services && item.meta.services.length > 0) {
           meta.services = item.meta.services;
         }
 
-        // Incluir formFields solo si hay datos
+        // Incluir formFields solo si hay datos (para cualquier item)
         if (item.meta?.formFields && item.meta.formFields.length > 0) {
           meta.formFields = item.meta.formFields;
         }
@@ -700,9 +700,35 @@ export default function BotFlowSettings() {
           }
         }
 
-        // Solo asignar meta si hay datos válidos
-        if (Object.keys(meta).length > 0) {
-          cleanedItem.meta = meta;
+        // Limpieza exhaustiva: eliminar propiedades vacías dentro de meta
+        const cleanedMeta: any = {};
+        Object.keys(meta).forEach(key => {
+          const value = meta[key];
+          
+          if (Array.isArray(value) && value.length > 0) {
+            // Arrays no vacíos: services, formFields
+            cleanedMeta[key] = value;
+          } else if (typeof value === 'object' && value !== null) {
+            // Objetos: table, list, location
+            if (key === 'table') {
+              if (value.columns && value.columns.length > 0 && value.rows && value.rows.length > 0) {
+                cleanedMeta[key] = value;
+              }
+            } else if (key === 'list') {
+              if (value.options && value.options.length > 0) {
+                cleanedMeta[key] = value;
+              }
+            } else if (key === 'location') {
+              if (value.address && value.address.trim() !== '') {
+                cleanedMeta[key] = value;
+              }
+            }
+          }
+        });
+
+        // Solo asignar meta si hay datos válidos después de la limpieza
+        if (Object.keys(cleanedMeta).length > 0) {
+          cleanedItem.meta = cleanedMeta;
         }
 
         return cleanedItem;
