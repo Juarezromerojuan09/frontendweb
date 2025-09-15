@@ -397,6 +397,24 @@ export default function BotFlowSettings() {
           }
           break
           
+        case 'removeColumn':
+          if (typeof index === 'number') {
+            if (meta.columns.length > 2) {
+              meta.columns.splice(index, 1)
+              // Eliminar la columna de todas las filas
+              meta.rows.forEach(row => row.splice(index, 1))
+            }
+          }
+          break
+          
+        case 'removeRow':
+          if (typeof index === 'number') {
+            if (meta.rows.length > 1) {
+              meta.rows.splice(index, 1)
+            }
+          }
+          break
+          
         default:
           break
       }
@@ -931,49 +949,56 @@ export default function BotFlowSettings() {
                                         + Fila ({(item.meta?.table?.rows?.length || 0)}/10)
                                       </button>
                                     </div>
-                                    <div className="grid grid-cols-4 gap-2 mb-2">
-                                      {(item.meta?.table?.columns || []).map((col, colIndex) => (
-                                        <input
-                                          key={colIndex}
-                                          type="text"
-                                          value={col}
-                                          onChange={(e) => handleTableChange(item.id, 'updateColumn', colIndex, e.target.value)}
-                                          placeholder={`Columna ${colIndex + 1}`}
-                                          className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
-                                        />
-                                      ))}
-                                    </div>
                                     <p className="text-sm text-[#90e2f8]">Mínimo 2 columnas, máximo 4</p>
                                     <p className="text-sm text-[#90e2f8] mb-2">Mínimo 1 fila, máximo 10</p>
                                     
-                                    {/* Encabezados de tabla */}
-                                    <div className="flex flex-wrap gap-2">
-                                      {item.meta?.table?.columns?.map((col, colIndex) => (
-                                        <input
-                                          key={colIndex}
-                                          type="text"
-                                          value={col}
-                                          onChange={(e) => handleTableChange(item.id, 'updateColumn', colIndex, e.target.value)}
-                                          placeholder={`Columna ${colIndex + 1}`}
-                                          className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
-                                        />
+                                    {/* Encabezados de tabla con botones de eliminar */}
+                                    <div className="grid grid-cols-4 gap-2 mb-2">
+                                      {(item.meta?.table?.columns || []).map((col, colIndex) => (
+                                        <div key={colIndex} className="flex gap-1 items-center">
+                                          <input
+                                            type="text"
+                                            value={col}
+                                            onChange={(e) => handleTableChange(item.id, 'updateColumn', colIndex, e.target.value)}
+                                            placeholder={`Columna ${colIndex + 1}`}
+                                            className="flex-1 p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                          />
+                                          <button
+                                            onClick={() => handleTableChange(item.id, 'removeColumn', colIndex)}
+                                            className="text-red-400 hover:text-red-300 text-sm"
+                                            disabled={(item.meta?.table?.columns?.length || 0) <= 2}
+                                            title="Eliminar columna"
+                                          >
+                                            ×
+                                          </button>
+                                        </div>
                                       ))}
                                     </div>
                                     
-                                    {/* Filas de tabla */}
+                                    {/* Filas de tabla con botones de eliminar */}
                                     <div className="space-y-1">
                                       {item.meta?.table?.rows?.map((row, rowIndex) => (
-                                        <div key={rowIndex} className="grid grid-cols-4 gap-2">
-                                          {row.map((cell, cellIndex) => (
-                                            <input
-                                              key={cellIndex}
-                                              type="text"
-                                              value={cell}
-                                              onChange={(e) => handleTableChange(item.id, 'updateCell', rowIndex, e.target.value, cellIndex)}
-                                              placeholder={`Fila ${rowIndex + 1}, Col ${cellIndex + 1}`}
-                                              className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
-                                            />
-                                          ))}
+                                        <div key={rowIndex} className="flex gap-2 items-center">
+                                          <div className="grid grid-cols-4 gap-2 flex-1">
+                                            {row.map((cell, cellIndex) => (
+                                              <input
+                                                key={cellIndex}
+                                                type="text"
+                                                value={cell}
+                                                onChange={(e) => handleTableChange(item.id, 'updateCell', rowIndex, e.target.value, cellIndex)}
+                                                placeholder={`Fila ${rowIndex + 1}, Col ${cellIndex + 1}`}
+                                                className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                              />
+                                            ))}
+                                          </div>
+                                          <button
+                                            onClick={() => handleTableChange(item.id, 'removeRow', rowIndex)}
+                                            className="text-red-400 hover:text-red-300 text-sm"
+                                            disabled={(item.meta?.table?.rows?.length || 0) <= 1}
+                                            title="Eliminar fila"
+                                          >
+                                            ×
+                                          </button>
                                         </div>
                                       ))}
                                     </div>
