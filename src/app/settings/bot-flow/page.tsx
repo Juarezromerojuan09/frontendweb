@@ -751,6 +751,7 @@ export default function BotFlowSettings() {
         formFields: validatedFormFields
       }
 
+      console.log('Validated menuItems:', JSON.stringify(validatedMenuItems, null, 2))
       console.log('Enviando configuración:', JSON.stringify(updatedSettings, null, 2))
 
       const response = await axios.patch<ApiResponse>(
@@ -770,8 +771,10 @@ export default function BotFlowSettings() {
         // Actualizar también los estados de edición con los datos validados
         setMenuItemsEdit(validatedMenuItems)
         setFormFieldsEdit(validatedFormFields)
+        console.log('Configuración guardada exitosamente en el backend:', response.data)
       } else {
         setError(response.data.message || 'Error al guardar la configuración')
+        console.error('Error from backend:', response.data)
       }
     } catch (err) {
       const axiosErr = err as AxiosError
