@@ -24,7 +24,7 @@ interface MenuItem {
   id: string
   label: string
   type: string
-  actionKey: string
+  actionKey?: string
   fixed?: boolean
   meta?: {
     table?: {
@@ -38,6 +38,12 @@ interface MenuItem {
       address: string
     }
   }
+}
+
+interface SchedulingService {
+  serviceType: string
+  price?: string
+  recommendations?: string[]
 }
 
 interface BotSettings {
@@ -69,6 +75,7 @@ interface BotSettings {
   appointmentInterval?: number
   autoConfirmAppointments?: boolean
   scheduleMessage?: string
+  schedulingServices?: SchedulingService[]
 }
 
 interface User {
@@ -121,13 +128,15 @@ export default function BotFlowSettings() {
     workingDays: ['monday', 'tuesday', 'wednesday', 'thursday', 'friday'],
     appointmentInterval: 30,
     autoConfirmAppointments: false,
-    scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
+    scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')",
+    schedulingServices: []
   })
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
   const [scheduleMessageEdit, setScheduleMessageEdit] = useState("Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
   const [menuItemsEdit, setMenuItemsEdit] = useState<MenuItem[]>([])
   const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
+  const [schedulingServicesEdit, setSchedulingServicesEdit] = useState<SchedulingService[]>([])
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -204,6 +213,7 @@ export default function BotFlowSettings() {
       
       setMenuItemsEdit(menuItems)
       setFormFieldsEdit(user.botSettings.formFields || [])
+      setSchedulingServicesEdit(user.botSettings.schedulingServices || [])
     }
   }, [user])
 
@@ -299,6 +309,7 @@ export default function BotFlowSettings() {
     setScheduleMessageEdit(selectedTemplate.scheduleMessage)
     setMenuItemsEdit(selectedTemplate.menuItems)
     setFormFieldsEdit(selectedTemplate.formFields)
+    setSchedulingServicesEdit([])
   }
 
   const addMenuItem = () => {
@@ -309,8 +320,7 @@ export default function BotFlowSettings() {
     const newItem = {
       id: Date.now().toString(),
       label: '',
-      type: 'action',
-      actionKey: 'custom'
+      type: 'action'
     }
     setMenuItemsEdit([...menuItemsEdit, newItem])
   }
@@ -465,6 +475,59 @@ export default function BotFlowSettings() {
     ))
   }
 
+  // Funciones para manejar servicios de agendamiento
+  const addSchedulingService = () => {
+    const newService = {
+      serviceType: '',
+      price: '',
+      recommendations: ['']
+    }
+    setSchedulingServicesEdit([...schedulingServicesEdit, newService])
+  }
+
+  const removeSchedulingService = (index: number) => {
+    if (schedulingServicesEdit.length <= 1) return
+    setSchedulingServicesEdit(schedulingServicesEdit.filter((_, i) => i !== index))
+  }
+
+  const updateSchedulingService = (index: number, field: string, value: string | string[]) => {
+    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+      i === index ? { ...service, [field]: value } : service
+    ))
+  }
+
+  const addRecommendation = (serviceIndex: number) => {
+    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+      i === serviceIndex
+        ? { ...service, recommendations: [...(service.recommendations || []), ''] }
+        : service
+    ))
+  }
+
+  const removeRecommendation = (serviceIndex: number, recIndex: number) => {
+    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+      i === serviceIndex
+        ? {
+            ...service,
+            recommendations: (service.recommendations || []).filter((_, j) => j !== recIndex)
+          }
+        : service
+    ))
+  }
+
+  const updateRecommendation = (serviceIndex: number, recIndex: number, value: string) => {
+    setSchedulingServicesEdit(schedulingServicesEdit.map((service, i) =>
+      i === serviceIndex
+        ? {
+            ...service,
+            recommendations: (service.recommendations || []).map((rec, j) =>
+              j === recIndex ? value : rec
+            )
+          }
+        : service
+    ))
+  }
+
   const saveBotSettings = async () => {
     setSaving(true)
     setError('')
@@ -487,7 +550,7 @@ export default function BotFlowSettings() {
           id: item.id || Date.now().toString(),
           label: item.label || '',
           type: item.type || 'action',
-          actionKey: item.actionKey || 'custom',
+          actionKey: item.actionKey,
           fixed: item.fixed,
           meta: undefined
         }
@@ -535,12 +598,24 @@ export default function BotFlowSettings() {
         required: field.required || false
       }))
 
+      // Validar servicios de agendamiento
+      const validatedSchedulingServices = schedulingServicesEdit
+        .filter(service => service.serviceType.trim() !== '')
+        .map(service => ({
+          serviceType: service.serviceType.trim(),
+          price: service.price?.trim() || '',
+          recommendations: (service.recommendations || [])
+            .filter(rec => rec.trim() !== '')
+            .map(rec => rec.trim())
+        }))
+
       const updatedSettings = {
         ...botSettings,
         greeting: greetingEdit || 'Hola, soy el asistente virtual. ¿En qué puedo ayudarte hoy?',
         scheduleMessage: scheduleMessageEdit || "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')",
         menuItems: validatedMenuItems,
-        formFields: validatedFormFields
+        formFields: validatedFormFields,
+        schedulingServices: validatedSchedulingServices
       }
 
       console.log('Enviando configuración:', JSON.stringify(updatedSettings, null, 2))
@@ -562,6 +637,7 @@ export default function BotFlowSettings() {
         // Actualizar también los estados de edición con los datos validados
         setMenuItemsEdit(validatedMenuItems)
         setFormFieldsEdit(validatedFormFields)
+        setSchedulingServicesEdit(validatedSchedulingServices)
       } else {
         setError(response.data.message || 'Error al guardar la configuración')
       }
@@ -1066,18 +1142,86 @@ export default function BotFlowSettings() {
                                   <option value="location">Ubicación</option>
                                   <option value="handoff">Transferencia</option>
                                 </select>
-                                <select
-                                  value={item.actionKey}
-                                  onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.value)}
-                                  className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
-                                  disabled={isItemFixed(item)}
-                                >
-                                  <option value="schedule">Agendar</option>
-                                  <option value="modify">Modificar</option>
-                                  <option value="prices">Precios/Información</option>
-                                  <option value="location">Ubicación</option>
-                                  <option value="custom">Personalizado</option>
-                                </select>
+                                {/* Interfaz para servicios de agendamiento cuando el tipo es Acción */}
+                                {item.type === 'action' && (
+                                  <div className="space-y-3 mt-3 p-3 bg-[#012f78] rounded border border-[#3ea0c9]">
+                                    <h4 className="text-[#90e2f8] font-semibold">Servicios de Agendamiento</h4>
+                                    <p className="text-sm text-[#B7C2D6]">
+                                      Configura los servicios que se pueden agendar
+                                    </p>
+                                    
+                                    {schedulingServicesEdit.length === 0 ? (
+                                      <p className="text-[#B7C2D6] text-sm">No hay servicios configurados.</p>
+                                    ) : (
+                                      schedulingServicesEdit.map((service, serviceIndex) => (
+                                        <div key={serviceIndex} className="space-y-2 p-2 bg-[#0b1e34] rounded relative">
+                                          <button
+                                            onClick={() => removeSchedulingService(serviceIndex)}
+                                            className="absolute top-2 right-2 text-red-400 hover:text-red-300"
+                                            disabled={schedulingServicesEdit.length <= 1}
+                                            title="Eliminar servicio"
+                                          >
+                                            ×
+                                          </button>
+                                          
+                                          <div className="space-y-2">
+                                            <input
+                                              type="text"
+                                              value={service.serviceType}
+                                              onChange={(e) => updateSchedulingService(serviceIndex, 'serviceType', e.target.value)}
+                                              placeholder="Tipo de servicio (ej: Corte caballero)"
+                                              className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                            />
+                                            
+                                            <input
+                                              type="text"
+                                              value={service.price || ''}
+                                              onChange={(e) => updateSchedulingService(serviceIndex, 'price', e.target.value)}
+                                              placeholder="Precio (ej: $150)"
+                                              className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                            />
+                                            
+                                            <div className="space-y-1">
+                                              <label className="text-[#90e2f8] text-sm">Recomendaciones:</label>
+                                              {(service.recommendations || []).map((recommendation, recIndex) => (
+                                                <div key={recIndex} className="flex gap-2 items-center">
+                                                  <input
+                                                    type="text"
+                                                    value={recommendation}
+                                                    onChange={(e) => updateRecommendation(serviceIndex, recIndex, e.target.value)}
+                                                    placeholder="Recomendación (ej: Llegar 15 minutos antes)"
+                                                    className="flex-1 p-1 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                                  />
+                                                  <button
+                                                    onClick={() => removeRecommendation(serviceIndex, recIndex)}
+                                                    className="text-red-400 hover:text-red-300 text-sm"
+                                                    disabled={(service.recommendations || []).length <= 1}
+                                                    title="Eliminar recomendación"
+                                                  >
+                                                    ×
+                                                  </button>
+                                                </div>
+                                              ))}
+                                              <button
+                                                onClick={() => addRecommendation(serviceIndex)}
+                                                className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                              >
+                                                + Añadir recomendación
+                                              </button>
+                                            </div>
+                                          </div>
+                                        </div>
+                                      ))
+                                    )}
+                                    
+                                    <button
+                                      onClick={addSchedulingService}
+                                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-3 py-1 rounded text-sm"
+                                    >
+                                      + Agregar servicio
+                                    </button>
+                                  </div>
+                                )}
                               </div>
                             </div>
                           ))}
