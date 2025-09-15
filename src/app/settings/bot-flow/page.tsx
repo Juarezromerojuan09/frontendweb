@@ -20,28 +20,30 @@ interface AxiosError {
   }
 }
 
+interface MenuItem {
+  id: string
+  label: string
+  type: string
+  actionKey: string
+  fixed?: boolean
+  meta?: {
+    table?: {
+      columns: string[]
+      rows: string[][]
+    }
+    list?: {
+      options: string[]
+    }
+    location?: {
+      address: string
+    }
+  }
+}
+
 interface BotSettings {
   template: string
   greeting: string
-  menuItems: Array<{
-    id: string
-    label: string
-    type: string
-    actionKey: string
-    fixed?: boolean
-    meta?: {
-      table?: {
-        columns: string[]
-        rows: string[][]
-      }
-      list?: {
-        options: string[]
-      }
-      location?: {
-        address: string
-      }
-    }
-  }>
+  menuItems: MenuItem[]
   formFields: Array<{
     key: string
     label: string
@@ -124,25 +126,7 @@ export default function BotFlowSettings() {
   const [activeTab, setActiveTab] = useState('template')
   const [greetingEdit, setGreetingEdit] = useState('')
   const [scheduleMessageEdit, setScheduleMessageEdit] = useState("Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')")
-  const [menuItemsEdit, setMenuItemsEdit] = useState<Array<{
-    id: string
-    label: string
-    type: string
-    actionKey: string
-    fixed?: boolean
-    meta?: {
-      table?: {
-        columns: string[]
-        rows: string[][]
-      }
-      list?: {
-        options: string[]
-      }
-      location?: {
-        address: string
-      }
-    }
-  }>>([])
+  const [menuItemsEdit, setMenuItemsEdit] = useState<MenuItem[]>([])
   const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
   const router = useRouter()
 
@@ -350,7 +334,7 @@ export default function BotFlowSettings() {
     setMenuItemsEdit(menuItemsEdit.filter(item => item.id !== id))
   }
 
-  const updateMenuItem = (id: string, field: string, value: string) => {
+  const updateMenuItem = (id: string, field: string, value: string | {}) => {
     const item = menuItemsEdit.find(item => item.id === id)
     if (isItemFixed(item)) {
       return // Don't update fixed items
@@ -378,6 +362,85 @@ export default function BotFlowSettings() {
     setFormFieldsEdit(formFieldsEdit.filter(field => field.key !== key))
   }
 
+  const handleTableChange = (id: string, action: string, index?: number, value?: any, cellIndex?: number) => {
+    setMenuItemsEdit(menuItemsEdit.map(item => {
+      if (item.id !== id) return item
+      
+      const meta = item.meta?.table || { columns: [], rows: [] }
+      
+      switch(action) {
+        case 'addColumn':
+          if (meta.columns.length < 4) {
+            meta.columns.push(`Columna ${meta.columns.length + 1}`)
+            // Añadir columna a todas las filas existentes
+            meta.rows.forEach(row => row.push(''))
+          }
+          break
+          
+        case 'addRow':
+          if (meta.rows.length < 10) {
+            meta.rows.push(Array(meta.columns.length).fill(''))
+          }
+          break
+          
+        case 'updateColumn':
+          if (typeof index === 'number' && typeof value === 'string') {
+            meta.columns[index] = value
+          }
+          break
+          
+        case 'updateCell':
+          if (typeof index === 'number' && typeof cellIndex === 'number' && typeof value === 'string') {
+            if (meta.rows[index]) {
+              meta.rows[index][cellIndex] = value
+            }
+          }
+          break
+          
+        default:
+          break
+      }
+      
+      return {
+        ...item,
+        meta: {
+          ...item.meta,
+          table: { ...meta }
+        }
+      }
+    }))
+  }
+
+  const handleListChange = (id: string, index: number | string, value?: string) => {
+    // Convertir string index a number si es necesario
+    const idx = typeof index === 'string' ? parseInt(index) : index
+    if (isNaN(idx) && idx !== -1) {
+      console.error('Invalid index:', index)
+      return
+    }
+    setMenuItemsEdit(menuItemsEdit.map(item => {
+      if (item.id !== id) return item
+      
+      const options = item.meta?.list?.options || []
+      
+      if (index === -1) { // Añadir nueva opción
+        options.push('')
+      } else if (value === undefined) { // Eliminar opción
+        options.splice(index, 1)
+      } else { // Actualizar opción
+        options[index] = value
+      }
+      
+      return {
+        ...item,
+        meta: {
+          ...item.meta,
+          list: { options: [...options] }
+        }
+      }
+    }))
+  }
+
   const updateFormField = (key: string, field: string, value: string | boolean) => {
     setFormFieldsEdit(formFieldsEdit.map(item =>
       item.key === key ? { ...item, [field]: value } : item
@@ -400,15 +463,50 @@ export default function BotFlowSettings() {
         return
       }
 
-      // Validar que todos los campos requeridos tengan valores
-      const validatedMenuItems = menuItemsEdit.map(item => ({
-        id: item.id || Date.now().toString(),
-        label: item.label || '',
-        type: item.type || 'action',
-        actionKey: item.actionKey || 'custom',
-        meta: item.meta || undefined,
-        fixed: item.fixed // Preservar la propiedad fixed
-      }))
+      // Validar y limpiar los items del menú
+      const validatedMenuItems = menuItemsEdit.map(item => {
+        const cleanedItem = {
+          id: item.id || Date.now().toString(),
+          label: item.label || '',
+          type: item.type || 'action',
+          actionKey: item.actionKey || 'custom',
+          fixed: item.fixed
+        }
+
+        // Solo incluir metadata si no es un item fijo y el tipo lo requiere
+        if (!item.fixed) {
+          if (item.type === 'table') {
+            cleanedItem.meta = {
+              table: {
+                columns: item.meta?.table?.columns || [],
+                rows: item.meta?.table?.rows || []
+              }
+            }
+            // Validar que tenga al menos 2 columnas y 1 fila
+            if (cleanedItem.meta.table.columns.length < 2 || cleanedItem.meta.table.rows.length < 1) {
+              throw new Error(`La tabla "${item.label}" debe tener al menos 2 columnas y 1 fila`)
+            }
+          } else if (item.type === 'list') {
+            cleanedItem.meta = {
+              list: {
+                options: item.meta?.list?.options || []
+              }
+            }
+            // Validar que tenga al menos 2 opciones
+            if (cleanedItem.meta.list.options.length < 2) {
+              throw new Error(`La lista "${item.label}" debe tener al menos 2 opciones`)
+            }
+          } else if (item.type === 'location') {
+            cleanedItem.meta = {
+              location: {
+                address: user?.address || ''
+              }
+            }
+          }
+        }
+
+        return cleanedItem
+      })
 
       const validatedFormFields = formFieldsEdit.map(field => ({
         key: field.key || `field_${Date.now()}`,
@@ -811,6 +909,124 @@ export default function BotFlowSettings() {
                                   className="w-full p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed"
                                   disabled={isItemFixed(item)}
                                 />
+                                
+                                {/* Controles específicos por tipo */}
+                                {item.type === 'table' && (
+                                  <div className="space-y-2">
+                                    <div className="flex gap-2 mb-2">
+                                      <button
+                                        onClick={() => handleTableChange(item.id, 'addColumn')}
+                                        className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                        disabled={(item.meta?.table?.columns?.length || 0) >= 4}
+                                      >
+                                        + Columna ({(item.meta?.table?.columns?.length || 0)}/4)
+                                      </button>
+                                      <button
+                                        onClick={() => handleTableChange(item.id, 'addRow')}
+                                        className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                        disabled={(item.meta?.table?.rows?.length || 0) >= 10}
+                                      >
+                                        + Fila ({(item.meta?.table?.rows?.length || 0)}/10)
+                                      </button>
+                                    </div>
+                                    <div className="grid grid-cols-4 gap-2 mb-2">
+                                      {(item.meta?.table?.columns || []).map((col, colIndex) => (
+                                        <input
+                                          key={colIndex}
+                                          type="text"
+                                          value={col}
+                                          onChange={(e) => handleTableChange(item.id, 'updateColumn', colIndex, e.target.value)}
+                                          placeholder={`Columna ${colIndex + 1}`}
+                                          className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                        />
+                                      ))}
+                                    </div>
+                                    <p className="text-sm text-[#90e2f8]">Mínimo 2 columnas, máximo 4</p>
+                                    <p className="text-sm text-[#90e2f8] mb-2">Mínimo 1 fila, máximo 10</p>
+                                    
+                                    {/* Encabezados de tabla */}
+                                    <div className="flex flex-wrap gap-2">
+                                      {item.meta?.table?.columns?.map((col, colIndex) => (
+                                        <input
+                                          key={colIndex}
+                                          type="text"
+                                          value={col}
+                                          onChange={(e) => handleTableChange(item.id, 'updateColumn', colIndex, e.target.value)}
+                                          placeholder={`Columna ${colIndex + 1}`}
+                                          className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                        />
+                                      ))}
+                                    </div>
+                                    
+                                    {/* Filas de tabla */}
+                                    <div className="space-y-1">
+                                      {item.meta?.table?.rows?.map((row, rowIndex) => (
+                                        <div key={rowIndex} className="grid grid-cols-4 gap-2">
+                                          {row.map((cell, cellIndex) => (
+                                            <input
+                                              key={cellIndex}
+                                              type="text"
+                                              value={cell}
+                                              onChange={(e) => handleTableChange(item.id, 'updateCell', rowIndex, cellIndex, e.target.value)}
+                                              placeholder={`Fila ${rowIndex + 1}, Col ${cellIndex + 1}`}
+                                              className="p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                            />
+                                          ))}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                )}
+
+                                {item.type === 'list' && (
+                                  <div className="space-y-2">
+                                    {item.meta?.list?.options?.map((option, index) => (
+                                      <div key={index} className="flex gap-2">
+                                        <input
+                                          type="text"
+                                          value={option}
+                                          onChange={(e) => handleListChange(item.id, index, e.target.value)}
+                                          placeholder={`Opción ${index + 1}`}
+                                          className="flex-1 p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm"
+                                        />
+                                        <button
+                                          onClick={() => handleListChange(item.id, index)}
+                                          className="text-red-400 hover:text-red-300 disabled:text-gray-500"
+                                          disabled={(item.meta?.list?.options?.length || 0) <= 2}
+                                        >
+                                          ×
+                                        </button>
+                                      </div>
+                                    ))}
+                                    <p className="text-sm text-[#90e2f8]">Mínimo 2 opciones requeridas</p>
+                                    <button
+                                      onClick={() => handleListChange(item.id, -1)}
+                                      className="bg-[#012f78] hover:bg-[#0073ba] text-[#B7C2D6] px-2 py-1 rounded text-sm"
+                                    >
+                                      + Añadir opción
+                                    </button>
+                                  </div>
+                                )}
+
+                                {item.type === 'location' && (
+                                  <div className="space-y-2">
+                                    <input
+                                      type="text"
+                                      value={user?.address || ''}
+                                      readOnly
+                                      className="w-full p-1 bg-[#0b1e34] border border-[#3ea0c9] rounded text-[#B7C2D6] text-sm cursor-not-allowed"
+                                    />
+                                    <p className="text-sm text-[#90e2f8]">
+                                      Actualiza tu dirección en {' '}
+                                      <button
+                                        onClick={() => router.push('/settings')}
+                                        className="text-[#90e2f8] hover:text-[#3ea0c9] underline"
+                                      >
+                                        Configuración del perfil
+                                      </button>
+                                    </p>
+                                  </div>
+                                )}
                                 <select
                                   value={item.type}
                                   onChange={(e) => updateMenuItem(item.id, 'type', e.target.value)}
