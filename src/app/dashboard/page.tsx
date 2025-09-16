@@ -76,6 +76,8 @@ function DashboardContent() {
   const [socket, setSocket] = useState<Socket | null>(null)
   const router = useRouter()
   const [presence, setPresence] = useState<PresenceStatus>('offline')
+  const [isMobile, setIsMobile] = useState(false)
+  const [currentView, setCurrentView] = useState<'conversations' | 'chat'>('conversations')
   
   // Refs para valores actuales de estado en event handlers de Socket.IO
   const selectedConversationRef = useRef<string | null>(null)
@@ -333,6 +335,20 @@ function DashboardContent() {
   useEffect(() => {
     messagesRef.current = messages
   }, [messages])
+
+  // Effect to handle mobile responsiveness
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth < 768)
+    }
+    
+    checkMobile() // initial check
+    window.addEventListener('resize', checkMobile)
+    
+    return () => {
+      window.removeEventListener('resize', checkMobile)
+    }
+  }, [])
 
   useEffect(() => {
     return () => {
@@ -693,6 +709,10 @@ function DashboardContent() {
                     if ((conversation.unreadCount || 0) > 0) {
                       dispatch({ type: 'RESET_UNREAD_COUNT', payload: conversation.customerWaId })
                     }
+                    // On mobile, switch to chat view
+                    if (isMobile) {
+                      setCurrentView('chat')
+                    }
                   }}
                   className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-50 border-b border-[#012f78] relative z-40 transition-colors ${
                     selectedConversation === conversation.customerWaId ? 'bg-[#012f78] bg-opacity-70' : ''
@@ -780,8 +800,8 @@ function DashboardContent() {
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
+        {/* Chat Area - Hidden on mobile when in conversations view */}
+        <div className={`${isMobile ? (currentView === 'chat' ? 'block' : 'hidden') : 'block'} flex-1 flex flex-col`}>
           {selectedConversation ? (
             <div className="flex flex-col h-full relative">
               {/* Chat Header */}
@@ -805,6 +825,15 @@ function DashboardContent() {
                       )
                     })()}
                   </div>
+                  {/* Back button for mobile */}
+                  {isMobile && (
+                    <button
+                      onClick={() => setCurrentView('conversations')}
+                      className="mr-2 text-white hover:text-[#90e2f8] transition-colors"
+                    >
+                      ←
+                    </button>
+                  )}
                   <div>
                     <h3 className="text-sm font-medium text-white">
                       {(() => {
