@@ -78,6 +78,7 @@ function DashboardContent() {
   const [presence, setPresence] = useState<PresenceStatus>('offline')
   const [isMobile, setIsMobile] = useState(false)
   const [currentView, setCurrentView] = useState<'conversations' | 'chat'>('conversations')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   
   // Refs para valores actuales de estado en event handlers de Socket.IO
   const selectedConversationRef = useRef<string | null>(null)
@@ -615,8 +616,18 @@ function DashboardContent() {
       {/* Header with integrated logo, title, and buttons - Compact layout */}
       <div className="relative z-50 bg-[#0b1e34] shadow-sm border-b border-[#012f78] px-6 py-3">
         <div className="flex items-center justify-between">
-          {/* Left section - Logo and title */}
+          {/* Left section - Logo, hamburger menu, and title */}
           <div className="flex items-center space-x-3">
+            {/* Hamburger menu for mobile */}
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden hamburger-menu p-2"
+            >
+              <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-transform ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+              <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-opacity ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+              <div className={`w-5 h-0.5 bg-[#B7C2D6] transition-transform ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+            </button>
+            
             <Image
               src="/Logobot.png"
               alt="SYNAPBOT"
@@ -631,7 +642,7 @@ function DashboardContent() {
 
           {/* Right section - User info and logout button */}
           <div className="flex items-center space-x-3">
-            <span className="text-sm text-[#B7C2D6]">
+            <span className="text-sm text-[#B7C2D6] hidden md:block">
               {user?.name}
             </span>
             <button
@@ -666,17 +677,38 @@ function DashboardContent() {
     <button
       onClick={() => router.push('/settings')}
       className="px-4 py-2 bg-[#0073ba] hover:bg-[#005a92] text-white rounded-md transition-colors cursor-pointer"
-
     >
-      Configuración
+      <span className="md:hidden">⚙️</span>
+      <span className="hidden md:inline">Configuración</span>
     </button>
         </div>
       </div>
 
+      {/* Mobile Menu Overlay */}
+      {mobileMenuOpen && (
+        <div
+          className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
+          onClick={() => setMobileMenuOpen(false)}
+        />
+      )}
+      
       {/* Main Content - WhatsApp Layout */}
       <div className="flex flex-1 overflow-hidden relative z-50">
         {/* Conversations Sidebar */}
-        <div className="w-full md:w-1/3 lg:w-1/4 bg-[#0b1e34] border-r border-[#012f78]">
+        <div className={`
+          ${isMobile ? (
+            currentView === 'chat' ? 'hidden' :
+            mobileMenuOpen ? 'fixed left-0 top-0 h-full w-72 z-50 transform translate-x-0' : 'fixed -translate-x-full'
+          ) : 'md:static'}
+          md:w-1/3 lg:w-1/4 bg-[#0b1e34] border-r border-[#012f78] transition-transform duration-300 ease-in-out
+        `}>
+          {/* Close button for mobile */}
+          <button
+            onClick={() => setMobileMenuOpen(false)}
+            className="md:hidden absolute top-3 right-3 text-[#B7C2D6] hover:text-[#90e2f8] text-xl z-50"
+          >
+            ×
+          </button>
           <div className="p-4 border-b border-[#012f78]">
             <h2 className="text-lg font-semibold text-white">
               Conversaciones
@@ -709,9 +741,10 @@ function DashboardContent() {
                     if ((conversation.unreadCount || 0) > 0) {
                       dispatch({ type: 'RESET_UNREAD_COUNT', payload: conversation.customerWaId })
                     }
-                    // On mobile, switch to chat view
+                    // On mobile, switch to chat view and close mobile menu
                     if (isMobile) {
                       setCurrentView('chat')
+                      setMobileMenuOpen(false)
                     }
                   }}
                   className={`p-4 cursor-pointer hover:bg-[#012f78] hover:bg-opacity-50 border-b border-[#012f78] relative z-40 transition-colors ${

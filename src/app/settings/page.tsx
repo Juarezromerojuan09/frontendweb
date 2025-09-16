@@ -54,6 +54,7 @@ export default function Settings() {
   const [success, setSuccess] = useState('')
   const [newImageFile, setNewImageFile] = useState<File | null>(null)
   const [imagePreview, setImagePreview] = useState<string>('')
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const router = useRouter()
 
   // Edit mode states for individual fields
@@ -430,31 +431,60 @@ export default function Settings() {
         </svg>
       </div>
 
-      <div className="relative z-50 pt-8 pb-12 px-4 sm:px-6 lg:px-8">
+      <div className="relative z-50 pt-4 pb-12 px-4 sm:px-6 lg:px-8">
         <div className="max-w-6xl mx-auto">
           {/* Header */}
-          <div className="flex justify-between items-center mb-8">
-            <div className="flex items-center space-x-6">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6 lg:mb-8">
+            <div className="flex items-center space-x-3 lg:space-x-6">
               <Image
                 src="/Logo.png"
                 alt="SYNAPBOT"
                 width={75}
                 height={19}
-                className="h-9 w-auto"
+                className="h-4 sm:h-5 lg:h-6 w-auto"
+                priority
               />
-              <h1 className="text-3xl font-bold text-[#B7C2D6]">Configuración</h1>
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#B7C2D6]">Configuración</h1>
             </div>
-            <button
-              onClick={() => router.push('/dashboard')}
-              className="bg-[#012f78] hover:bg-[#3ea0c9] text-[#B7C2D6] px-4 py-2 rounded-lg transition-colors"
-            >
-              Volver al Dashboard
-            </button>
+            <div className="flex items-center space-x-3 self-end sm:self-auto">
+              <button
+                onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+                className="lg:hidden hamburger-menu p-2"
+              >
+                <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-transform ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
+                <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-opacity ${mobileMenuOpen ? 'opacity-0' : ''}`} />
+                <div className={`w-5 h-0.5 bg-[#B7C2D6] transition-transform ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
+              </button>
+              <button
+                onClick={() => router.push('/dashboard')}
+                className="bg-[#012f78] hover:bg-[#3ea0c9] text-[#B7C2D6] px-3 py-1.5 sm:px-4 sm:py-2 rounded-lg transition-colors text-xs sm:text-sm lg:text-base whitespace-nowrap"
+              >
+                Volver al Dashboard
+              </button>
+            </div>
           </div>
 
-          <div className="flex gap-8">
+          <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 lg:gap-8">
+            {/* Mobile Menu Overlay */}
+            {mobileMenuOpen && (
+              <div
+                className="fixed inset-0 bg-black bg-opacity-50 z-40 lg:hidden"
+                onClick={() => setMobileMenuOpen(false)}
+              />
+            )}
+            
             {/* Sidebar */}
-            <div className="w-80 flex-shrink-0">
+            <div className={`
+              ${mobileMenuOpen ? 'fixed left-0 top-0 h-full w-72 sm:w-80 z-50 transform translate-x-0' : 'fixed -translate-x-full lg:translate-x-0'}
+              lg:static lg:w-72 xl:w-80 flex-shrink-0 bg-[#0b1e34] shadow-xl rounded-xl border-2 border-[#3ea0c9] p-4 sm:p-6 transition-transform duration-300 ease-in-out
+            `}>
+              {/* Close button for mobile */}
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="lg:hidden absolute top-3 right-3 sm:top-4 sm:right-4 text-[#B7C2D6] hover:text-[#90e2f8] text-xl"
+              >
+                ×
+              </button>
               <div className="bg-[#0b1e34] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9] p-6">
                 <div className="text-center">
                   <div className="relative mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-[#90e2f8] mb-4 bg-[#012f78]">
@@ -556,7 +586,7 @@ export default function Settings() {
             </div>
 
             {/* Main Content */}
-            <div className="flex-1">
+            <div className="flex-1 min-w-0">
               <div className="bg-[#0b1e34] shadow-xl rounded-xl overflow-hidden border-2 border-[#3ea0c9]">
                 {/* Header */}
                 <div className="bg-[#012f78] px-6 py-4 border-b border-[#3ea0c9]">
