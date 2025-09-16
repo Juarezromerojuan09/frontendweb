@@ -703,7 +703,10 @@ function DashboardContent() {
         `}>
           {/* Close button for mobile */}
           <button
-            onClick={() => setMobileMenuOpen(false)}
+            onClick={() => {
+              setMobileMenuOpen(false)
+              setCurrentView('chat')
+            }}
             className="md:hidden absolute top-3 right-3 text-[#B7C2D6] hover:text-[#90e2f8] text-xl z-50"
           >
             ×
@@ -724,8 +727,21 @@ function DashboardContent() {
                 <p className="text-[#B7C2D6] mt-2">Cargando conversaciones...</p>
               </div>
             ) : conversations.length === 0 ? (
-              <div className="p-4 text-center text-[#B7C2D6]">
-                No hay conversaciones disponibles
+              <div className="p-4 text-center">
+                <div className="text-[#B7C2D6] opacity-70 mb-4">
+                  <svg className="w-16 h-16 mx-auto mb-4 text-[#3ea0c9] opacity-60" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                  </svg>
+                  <p className="text-lg font-medium mb-2">Aún no hay conversaciones</p>
+                  <p className="text-sm">Aquí se mostrarán tus conversaciones de WhatsApp</p>
+                  <p className="text-xs mt-2 opacity-80">Puedes modificar la configuración de tu cuenta y bot en el botón de configuración</p>
+                </div>
+                <button
+                  onClick={() => router.push('/settings')}
+                  className="px-4 py-2 bg-[#0073ba] hover:bg-[#005a92] text-white rounded-md transition-colors cursor-pointer text-sm"
+                >
+                  Ir a Configuración
+                </button>
               </div>
             ) : (
               conversations.map((conversation) => (
