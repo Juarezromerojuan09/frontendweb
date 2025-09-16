@@ -193,9 +193,9 @@ export default function AdminCreate() {
           <Image
             src="/Logo.png"
             alt="JS SYNAPTECH"
-            width={128}
-            height={32}
-            className="h-8 w-auto"
+            width={64}
+            height={16}
+            className="h-4 w-auto"
           />
         </div>
       </div>
@@ -205,9 +205,9 @@ export default function AdminCreate() {
         <Image
           src="/Logobot.png"
           alt="SYNAPBOT"
-          width={128}
-          height={32}
-          className="h-8 w-auto"
+          width={64}
+          height={16}
+          className="h-4 w-auto"
         />
       </div>
 

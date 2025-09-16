@@ -618,15 +618,17 @@ function DashboardContent() {
         <div className="flex items-center justify-between">
           {/* Left section - Logo, hamburger menu, and title */}
           <div className="flex items-center space-x-3">
-            {/* Hamburger menu for mobile */}
-            <button
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden hamburger-menu p-2"
-            >
-              <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-transform ${mobileMenuOpen ? 'rotate-45 translate-y-2' : ''}`} />
-              <div className={`w-5 h-0.5 bg-[#B7C2D6] mb-1.5 transition-opacity ${mobileMenuOpen ? 'opacity-0' : ''}`} />
-              <div className={`w-5 h-0.5 bg-[#B7C2D6] transition-transform ${mobileMenuOpen ? '-rotate-45 -translate-y-2' : ''}`} />
-            </button>
+            {/* Hamburger menu for mobile - Only show in chat view */}
+            {isMobile && currentView === 'chat' && (
+              <button
+                onClick={() => setCurrentView('conversations')}
+                className="md:hidden hamburger-menu p-2"
+              >
+                <div className="w-5 h-0.5 bg-[#B7C2D6] mb-1.5" />
+                <div className="w-5 h-0.5 bg-[#B7C2D6] mb-1.5" />
+                <div className="w-5 h-0.5 bg-[#B7C2D6]" />
+              </button>
+            )}
             
             <Image
               src="/Logobot.png"
@@ -696,10 +698,7 @@ function DashboardContent() {
       <div className="flex flex-1 overflow-hidden relative z-50">
         {/* Conversations Sidebar */}
         <div className={`
-          ${isMobile ? (
-            currentView === 'chat' ? 'hidden' :
-            mobileMenuOpen ? 'fixed left-0 top-0 h-full w-72 z-50 transform translate-x-0' : 'fixed -translate-x-full'
-          ) : 'md:static'}
+          ${isMobile ? (currentView === 'chat' ? 'hidden' : 'fixed left-0 top-0 h-full w-72 z-50') : 'md:static'}
           md:w-1/3 lg:w-1/4 bg-[#0b1e34] border-r border-[#012f78] transition-transform duration-300 ease-in-out
         `}>
           {/* Close button for mobile */}
@@ -858,15 +857,6 @@ function DashboardContent() {
                       )
                     })()}
                   </div>
-                  {/* Back button for mobile */}
-                  {isMobile && (
-                    <button
-                      onClick={() => setCurrentView('conversations')}
-                      className="mr-2 text-white hover:text-[#90e2f8] transition-colors"
-                    >
-                      ←
-                    </button>
-                  )}
                   <div>
                     <h3 className="text-sm font-medium text-white">
                       {(() => {

@@ -536,9 +536,9 @@ export default function EditUserPage() {
           <Image
             src="/Logo.png"
             alt="JS SYNAPTECH"
-            width={120}
-            height={30}
-            className="h-8 w-auto"
+            width={60}
+            height={15}
+            className="h-4 w-auto"
           />
         </div>
       </div>
