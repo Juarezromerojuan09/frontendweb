@@ -604,8 +604,8 @@ function DashboardContent() {
             <Image
               src="/Logobot.png"
               alt="SYNAPBOT"
-              width={100}
-              height={25}
+              width={50}
+              height={13}
               className="h-6 w-auto"
             />
             <h1 className="text-lg font-semibold text-[#90e2f8]">

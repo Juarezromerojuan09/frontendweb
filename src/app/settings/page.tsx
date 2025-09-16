@@ -438,8 +438,8 @@ export default function Settings() {
               <Image
                 src="/Logo.png"
                 alt="SYNAPBOT"
-                width={150}
-                height={38}
+                width={75}
+                height={19}
                 className="h-9 w-auto"
               />
               <h1 className="text-3xl font-bold text-[#B7C2D6]">Configuración</h1>

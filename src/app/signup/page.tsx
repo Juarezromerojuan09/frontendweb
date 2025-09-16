@@ -204,12 +204,12 @@ export default function SignupPage() {
       {/* JS SYNAPTECH Branding - Top Left */}
       <div className="absolute top-6 left-6 z-10">
         <div className="flex items-center">
-          <Image 
-            src="/Logo.png" 
-            alt="JS SYNAPTECH" 
-            width={192} 
-            height={48}
-            className="h-12 w-auto"
+          <Image
+            src="/Logo.png"
+            alt="JS SYNAPTECH"
+            width={96}
+            height={24}
+            className="h-6 w-auto"
           />
         </div>
       </div>
@@ -220,12 +220,12 @@ export default function SignupPage() {
           {/* SYNAPBOT Logo */}
           <div className="text-center">
             <div className="mx-auto mb-4">
-              <Image 
-                src="/Logobot.png" 
-                alt="SYNAPBOT" 
-                width={192} 
-                height={48}
-                className="mx-auto h-12 w-auto"
+              <Image
+                src="/Logobot.png"
+                alt="SYNAPBOT"
+                width={96}
+                height={24}
+                className="mx-auto h-6 w-auto"
               />
             </div>
             <h1 className="text-3xl font-bold uppercase tracking-wider text-[#90e2f8]">

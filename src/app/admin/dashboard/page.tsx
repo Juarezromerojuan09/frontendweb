@@ -275,9 +275,9 @@ export default function AdminDashboard() {
             <Image
               src="/Logo.png"
               alt="JS SYNAPTECH"
-              width={192}
-              height={48}
-              className="h-12 w-auto"
+              width={96}
+              height={24}
+              className="h-6 w-auto"
             />
           </div>
           {adminUsername && (
@@ -290,12 +290,12 @@ export default function AdminDashboard() {
 
       {/* SYNAPBOT Logo - Top Center */}
       <div className="absolute top-6 left-1/2 transform -translate-x-1/2 z-10">
-        <Image 
-          src="/Logobot.png" 
-          alt="SYNAPBOT" 
-          width={192} 
-          height={48}
-          className="h-12 w-auto"
+        <Image
+          src="/Logobot.png"
+          alt="SYNAPBOT"
+          width={96}
+          height={24}
+          className="h-6 w-auto"
         />
       </div>
 

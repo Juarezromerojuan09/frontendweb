@@ -356,7 +356,7 @@ export default function BotFlowSettings() {
     setMenuItemsEdit(menuItemsEdit.filter(item => item.id !== id))
   }
 
-  const updateMenuItem = (id: string, field: string, value: string | {}) => {
+  const updateMenuItem = (id: string, field: string, value: string | {} | undefined) => {
     const item = menuItemsEdit.find(item => item.id === id)
     if (isItemFixed(item)) {
       return // Don't update fixed items
@@ -968,9 +968,9 @@ export default function BotFlowSettings() {
               <Image
                 src="/Logo.png"
                 alt="SYNAPBOT"
-                width={150}
-                height={38}
-                className="h-7 sm:h-8 lg:h-9 w-auto"
+                width={75}
+                height={19}
+                className="h-4 sm:h-5 lg:h-6 w-auto"
                 priority
               />
               <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-[#B7C2D6]">Configuración</h1>
@@ -1374,6 +1374,33 @@ export default function BotFlowSettings() {
                                   disabled={isItemFixed(item)}
                                 />
                                 
+                                {/* Selector de tipo - Ahora justo debajo del nombre de la opción */}
+                                <select
+                                  value={item.type}
+                                  onChange={(e) => updateMenuItem(item.id, 'type', e.target.value)}
+                                  className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
+                                  disabled={isItemFixed(item)}
+                                >
+                                  <option value="action">Acción</option>
+                                  <option value="table">Tabla</option>
+                                  <option value="list">Lista</option>
+                                  <option value="location">Ubicación</option>
+                                  <option value="handoff">Transferencia</option>
+                                </select>
+
+                                {item.type === 'action' && (
+                                  <div className="flex items-center space-x-2 mt-2">
+                                    <input
+                                      type="checkbox"
+                                      checked={item.actionKey === 'schedule'}
+                                      onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.checked ? 'schedule' : undefined)}
+                                      className="rounded"
+                                      disabled={isItemFixed(item)}
+                                    />
+                                    <span className="text-[#B7C2D6] text-xs sm:text-sm">Usar para agendamiento</span>
+                                  </div>
+                                )}
+                                
                                 {/* Controles específicos por tipo */}
                                 {item.type === 'table' && (
                                   <div className="space-y-2">
@@ -1511,7 +1538,7 @@ export default function BotFlowSettings() {
                                   <option value="handoff">Transferencia</option>
                                 </select>
                                 {/* Interfaz para servicios de agendamiento cuando el tipo es Acción */}
-                                {item.type === 'action' && (
+                                {item.type === 'action' && item.actionKey === 'schedule' && (
                                   <div className="space-y-2 sm:space-y-3 mt-2 sm:mt-3 p-2 sm:p-3 bg-[#012f78] rounded border border-[#3ea0c9]">
                                     <h4 className="text-[#90e2f8] font-semibold text-sm sm:text-base">Servicios de Agendamiento</h4>
                                     <p className="text-xs sm:text-sm text-[#B7C2D6]">
