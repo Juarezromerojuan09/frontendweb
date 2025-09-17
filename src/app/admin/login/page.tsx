@@ -137,9 +137,9 @@ export default function AdminLoginPage() {
           <Image
             src="/Logo.png"
             alt="JS SYNAPTECH"
-            width={32}
-            height={8}
-            className="h-2 w-auto"
+            width={60}
+            height={15}
+            className="h-3 w-auto"
           />
         </div>
       </div>
@@ -153,9 +153,9 @@ export default function AdminLoginPage() {
               <Image
                 src="/Logobot.png"
                 alt="SYNAPBOT"
-                width={40}
-                height={16}
-                className="mx-auto"
+                width={80}
+                height={32}
+                className="mx-auto h-4 w-auto"
               />
             </div>
             <h1 className="text-3xl font-bold uppercase tracking-wider text-[#90e2f8]">

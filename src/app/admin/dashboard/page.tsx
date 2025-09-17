@@ -275,9 +275,9 @@ export default function AdminDashboard() {
             <Image
               src="/Logo.png"
               alt="JS SYNAPTECH"
-              width={32}
-              height={8}
-              className="h-2 w-auto"
+              width={60}
+              height={15}
+              className="h-3 w-auto"
             />
           </div>
           {adminUsername && (
@@ -293,9 +293,9 @@ export default function AdminDashboard() {
         <Image
           src="/Logobot.png"
           alt="SYNAPBOT"
-          width={32}
-          height={8}
-          className="h-2 w-auto"
+          width={80}
+          height={32}
+          className="h-4 w-auto"
         />
       </div>
 
@@ -414,9 +414,11 @@ export default function AdminDashboard() {
                     <tr key={user._id} className="hover:bg-[#012f78] hover:bg-opacity-30 transition-colors">
                       <td className="px-6 py-4 whitespace-nowrap">
                         {user.profileImageUrl ? (
-                          <img
+                          <Image
                             src={user.profileImageUrl}
                             alt={`${user.fullName} avatar`}
+                            width={48}
+                            height={48}
                             className="w-12 h-12 rounded-full object-cover border-2 border-[#3ea0c9]"
                           />
                         ) : (

@@ -55,7 +55,6 @@ interface AxiosError {
 }
 
 export default function BotConfiguration() {
-  const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState('')
@@ -103,7 +102,6 @@ export default function BotConfiguration() {
 
       if (response.data.success && response.data.user) {
         const userData = response.data.user
-        setUser(userData)
 
         // Initialize form values from user data
         if (userData.botSettings) {
@@ -124,25 +122,23 @@ export default function BotConfiguration() {
             setRemindersEnabled(userData.botSettings.reminders.enabled || false)
             
             // Initialize client reminders from time1Before
-            const clientRems = []
+            const clientRems: { value: number; unit: 'hours' | 'minutes' }[] = []
             if (userData.botSettings.reminders.time1Before) {
+              const unit = userData.botSettings.reminders.time1Before.unit
               clientRems.push({
                 value: userData.botSettings.reminders.time1Before.value || 0,
-                unit: userData.botSettings.reminders.time1Before.unit === 'hours' || userData.botSettings.reminders.time1Before.unit === 'minutes'
-                      ? userData.botSettings.reminders.time1Before.unit
-                      : 'hours'
+                unit: unit === 'hours' || unit === 'minutes' ? unit : 'hours'
               })
             }
             setClientReminders(clientRems)
             
             // Initialize user reminders from time2Before
-            const userRems = []
+            const userRems: { value: number; unit: 'hours' | 'minutes' }[] = []
             if (userData.botSettings.reminders.time2Before) {
+              const unit = userData.botSettings.reminders.time2Before.unit
               userRems.push({
                 value: userData.botSettings.reminders.time2Before.value || 24,
-                unit: userData.botSettings.reminders.time2Before.unit === 'hours' || userData.botSettings.reminders.time2Before.unit === 'minutes'
-                      ? userData.botSettings.reminders.time2Before.unit
-                      : 'hours'
+                unit: unit === 'hours' || unit === 'minutes' ? unit : 'hours'
               })
             }
             setUserReminders(userRems)
@@ -219,30 +215,26 @@ export default function BotConfiguration() {
         setSuccess('Configuración guardada correctamente')
         setTimeout(() => setSuccess(''), 3000)
         
-        // Update local user state with data from response
-        if (response.data.user) {
-          setUser(response.data.user)
-          // Also update form values from response to ensure consistency
-          if (response.data.user.botSettings) {
-            const botSettings = response.data.user.botSettings
-            if (botSettings.businessHours) {
-              setBusinessHours(botSettings.businessHours)
-            }
-            if (botSettings.workingDays) {
-              setWorkingDays(botSettings.workingDays)
-            }
-            if (botSettings.appointmentInterval) {
-              setAppointmentInterval(botSettings.appointmentInterval)
-            }
-            if (botSettings.autoConfirmAppointments !== undefined) {
-              setAutoConfirmAppointments(botSettings.autoConfirmAppointments)
-            }
+        // Update form values from response to ensure consistency
+        if (response.data.user?.botSettings) {
+          const botSettings = response.data.user.botSettings
+          if (botSettings.businessHours) {
+            setBusinessHours(botSettings.businessHours)
+          }
+          if (botSettings.workingDays) {
+            setWorkingDays(botSettings.workingDays)
+          }
+          if (botSettings.appointmentInterval) {
+            setAppointmentInterval(botSettings.appointmentInterval)
+          }
+          if (botSettings.autoConfirmAppointments !== undefined) {
+            setAutoConfirmAppointments(botSettings.autoConfirmAppointments)
           }
         }
       } else {
         setError(response.data.message || 'Error al guardar la configuración')
       }
-    } catch (err) {
+    } catch {
       setError('Error al guardar la configuración')
     } finally {
       setUpdating(false)

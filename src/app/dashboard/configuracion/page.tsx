@@ -48,7 +48,6 @@ interface User {
 export default function ConfiguracionPage() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [newImageFile, setNewImageFile] = useState<File | null>(null);

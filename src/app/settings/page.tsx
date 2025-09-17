@@ -49,7 +49,6 @@ interface User {
 export default function Settings() {
   const [user, setUser] = useState<User | null>(null)
   const [loading, setLoading] = useState(true)
-  const [updating, setUpdating] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
   const [newImageFile, setNewImageFile] = useState<File | null>(null)
@@ -308,7 +307,7 @@ export default function Settings() {
         setImagePreview('')
         setTimeout(() => setSuccess(''), 3000)
       }
-    } catch (err) {
+    } catch {
       setError('Error actualizando imagen de perfil')
     }
   }
@@ -489,9 +488,11 @@ export default function Settings() {
                 <div className="text-center">
                   <div className="relative mx-auto w-32 h-32 rounded-full overflow-hidden border-4 border-[#90e2f8] mb-4 bg-[#012f78]">
                     {user.profileImageUrl ? (
-                      <img
+                      <Image
                         src={user.profileImageUrl}
                         alt="Profile"
+                        width={128}
+                        height={128}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;

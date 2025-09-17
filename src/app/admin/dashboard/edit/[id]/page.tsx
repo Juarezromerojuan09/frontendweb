@@ -318,7 +318,7 @@ export default function EditUserPage() {
         setImagePreview('');
         setTimeout(() => setSuccess(''), 3000);
       }
-    } catch (err) {
+    } catch {
       setError('Error actualizando imagen de perfil');
     }
   };
@@ -538,7 +538,7 @@ export default function EditUserPage() {
             alt="JS SYNAPTECH"
             width={60}
             height={15}
-            className="h-4 w-auto"
+            className="h-3 w-auto"
           />
         </div>
       </div>
@@ -733,15 +733,19 @@ export default function EditUserPage() {
                   {/* Image Display/Preview */}
                   <div className="relative">
                     {imagePreview ? (
-                      <img
+                      <Image
                         src={imagePreview}
                         alt="New profile preview"
+                        width={96}
+                        height={96}
                         className="w-24 h-24 rounded-full object-cover border-4 border-[#3ea0c9]"
                       />
                     ) : user?.profileImageUrl ? (
-                      <img
+                      <Image
                         src={user.profileImageUrl}
                         alt={`${user.fullName} current profile`}
+                        width={96}
+                        height={96}
                         className="w-24 h-24 rounded-full object-cover border-2 border-[#3ea0c9]"
                       />
                     ) : (

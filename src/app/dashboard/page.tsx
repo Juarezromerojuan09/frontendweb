@@ -20,20 +20,6 @@ interface WhatsAppNumber {
    isActive: boolean;
 }
 
-interface Conversation {
-    customerWaId: string;
-    customerName: string;
-    customerPhone: string;
-    displayName: string;
-    lastMessage: string;
-    lastMessageTime: string;
-    lastMessageStatus?: 'sent' | 'delivered' | 'read' | 'failed';
-    lastMessageFrom?: 'customer' | 'business';
-    messageCount: number;
-    pendingReply: boolean;
-    customerProfilePic?: string;
-    unreadCount?: number;
-}
 
 interface Message {
     _id: string;
@@ -53,14 +39,6 @@ interface Message {
     status?: 'sent' | 'delivered' | 'read' | 'failed';
   }
  
- interface UpdatedConversation {
-   customerWaId: string;
-   customerName: string;
-   lastMessage: string;
-   lastMessageTime: string;
-   pendingReply: boolean;
-   unreadCount?: number;
- }
 
  type PresenceStatus = 'online' | 'typing' | 'offline'
 
@@ -172,7 +150,7 @@ function DashboardContent() {
     }
   }, [router, fetchWhatsAppNumbers])
 
-  const fetchConversations = useCallback(async (whatsAppNumberId: string) => {
+  const fetchConversations = useCallback(async () => {
      try {
        dispatch({ type: 'SET_LOADING', payload: true })
        const token = localStorage.getItem('token')
@@ -217,7 +195,7 @@ function DashboardContent() {
      } finally {
        dispatch({ type: 'SET_LOADING', payload: false })
      }
-   }, [apiUrl, dispatch, router])
+   }, [apiUrl, router])
 
   const fetchMessages = useCallback(async (customerWaId: string, whatsAppNumberId: string) => {
     try {
@@ -265,7 +243,9 @@ function DashboardContent() {
   }, [apiUrl, router])
 
   const sendMessage = useCallback(async () => {
-    if (!newMessage.trim() || !selectedConversation || !selectedWhatsAppNumber) return
+    const currentSelectedConversation = selectedConversationRef.current
+    const currentSelectedWhatsAppNumber = selectedWhatsAppNumberRef.current
+    if (!newMessage.trim() || !currentSelectedConversation || !currentSelectedWhatsAppNumber) return
 
     const token = localStorage.getItem('token')
     if (!token) return
@@ -282,16 +262,16 @@ function DashboardContent() {
       from: 'business',
       type: 'text',
       messageId: optimisticId,
-      customerWaId: selectedConversation,
-      whatsAppNumberId: selectedWhatsAppNumber,
+      customerWaId: currentSelectedConversation,
+      whatsAppNumberId: currentSelectedWhatsAppNumber,
       status: 'sent'
     }
 
     setMessages(prevMessages => [...prevMessages, optimisticMessage])
     
     // Actualizar la conversación en el estado global con mensaje enviado
-    if (selectedConversation) {
-      dispatch({ type: 'UPDATE_CONVERSATION_STATUS', payload: { customerWaId: selectedConversation, status: 'sent' } })
+    if (currentSelectedConversation) {
+      dispatch({ type: 'UPDATE_CONVERSATION_STATUS', payload: { customerWaId: currentSelectedConversation, status: 'sent' } })
     }
 
     setNewMessage('')
@@ -304,8 +284,8 @@ function DashboardContent() {
           'Authorization': `Bearer ${token}`
         },
         body: JSON.stringify({
-          whatsAppNumberId: selectedWhatsAppNumber,
-          customerWaId: selectedConversation,
+          whatsAppNumberId: currentSelectedWhatsAppNumber,
+          customerWaId: currentSelectedConversation,
           message: optimisticMessage.content.body
         })
       })
@@ -322,7 +302,7 @@ function DashboardContent() {
     } catch (error) {
       console.error('Error enviando mensaje:', error)
     }
-  }, [newMessage, selectedConversation, selectedWhatsAppNumber, apiUrl])
+  }, [newMessage, apiUrl])
 
   // Actualizar refs cuando el estado cambia
   useEffect(() => {
@@ -379,7 +359,7 @@ function DashboardContent() {
 
   useEffect(() => {
     if (selectedWhatsAppNumber) {
-      fetchConversations(selectedWhatsAppNumber)
+      fetchConversations()
     }
   }, [selectedWhatsAppNumber, fetchConversations])
 
@@ -508,7 +488,7 @@ function DashboardContent() {
         console.log('👋 Saliendo de sala:', roomData)
       }
     }
-  }, [socket, selectedConversation, selectedWhatsAppNumber, user?.id])
+  }, [socket, selectedConversation, selectedWhatsAppNumber, user])
 
   // Efecto para unirse a la sala del usuario cuando el usuario o el socket cambian
   useEffect(() => {
@@ -516,7 +496,7 @@ function DashboardContent() {
       socket.emit('join-user-room', { userId: user.id });
       console.log('👤 Uniéndose a sala de usuario:', user.id);
     }
-  }, [socket, user?.id])
+  }, [socket, user])
 
 
   const handleLogout = () => {
@@ -769,9 +749,11 @@ function DashboardContent() {
                   <div className="flex items-start space-x-3">
                     <div className="flex-shrink-0">
                       {conversation.customerProfilePic ? (
-                        <img
-                          src={conversation.customerProfilePic}
+                        <Image
+                          src={conversation.customerProfilePic || ''}
                           alt={conversation.customerName}
+                          width={40}
+                          height={40}
                           className="w-10 h-10 rounded-full object-cover border-2 border-[#3ea0c9]"
                         />
                       ) : (
@@ -859,9 +841,11 @@ function DashboardContent() {
                     {(() => {
                       const selectedConv = conversations.find(c => c.customerWaId === selectedConversation)
                       return selectedConv?.customerProfilePic ? (
-                        <img
-                          src={selectedConv.customerProfilePic}
+                        <Image
+                          src={selectedConv.customerProfilePic || ''}
                           alt="Profile"
+                          width={40}
+                          height={40}
                           className="w-10 h-10 rounded-full object-cover border-2 border-[#3ea0c9]"
                         />
                       ) : (

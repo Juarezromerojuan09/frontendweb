@@ -337,7 +337,7 @@ export default function BotFlowSettings() {
     setMenuItemsEdit([...menuItemsEdit, newItem])
   }
 
-  const isItemFixed = (item: any) => {
+  const isItemFixed = (item: MenuItem | undefined) => {
     if (!item) return false
     if (item.fixed) return true
     if (botSettings.template === 'consultorio' || botSettings.template === 'barberia') {
@@ -356,7 +356,7 @@ export default function BotFlowSettings() {
     setMenuItemsEdit(menuItemsEdit.filter(item => item.id !== id))
   }
 
-  const updateMenuItem = (id: string, field: string, value: string | {} | undefined) => {
+  const updateMenuItem = (id: string, field: string, value: string | object | undefined) => {
     const item = menuItemsEdit.find(item => item.id === id)
     if (isItemFixed(item)) {
       return // Don't update fixed items
@@ -399,7 +399,7 @@ export default function BotFlowSettings() {
     setFormFieldsEdit(formFieldsEdit.filter(field => field.key !== key))
   }
 
-  const handleTableChange = (id: string, action: string, index?: number, value?: any, cellIndex?: number) => {
+  const handleTableChange = (id: string, action: string, index?: number, value?: string, cellIndex?: number) => {
     setMenuItemsEdit(menuItemsEdit.map(item => {
       if (item.id !== id) return item
       
@@ -725,7 +725,29 @@ export default function BotFlowSettings() {
           meta: undefined
         };
 
-        const meta: any = {};
+        const meta: {
+          services?: Array<{
+            serviceType: string;
+            price?: string;
+            recommendations?: string[];
+          }>;
+          formFields?: Array<{
+            key: string;
+            label: string;
+            type: string;
+            required: boolean;
+          }>;
+          table?: {
+            columns: string[];
+            rows: string[][];
+          };
+          list?: {
+            options: string[];
+          };
+          location?: {
+            address: string;
+          };
+        } = {};
 
         // Incluir servicios solo si hay datos (para cualquier item)
         if (item.meta?.services && item.meta.services.length > 0) {
@@ -768,9 +790,9 @@ export default function BotFlowSettings() {
         }
 
         // Limpieza exhaustiva: eliminar propiedades vacías dentro de meta
-        const cleanedMeta: any = {};
+        const cleanedMeta: Record<string, unknown> = {};
         Object.keys(meta).forEach(key => {
-          const value = meta[key];
+          const value = (meta as Record<string, unknown>)[key];
           
           if (Array.isArray(value) && value.length > 0) {
             // Arrays no vacíos: services, formFields
@@ -778,16 +800,19 @@ export default function BotFlowSettings() {
           } else if (typeof value === 'object' && value !== null) {
             // Objetos: table, list, location
             if (key === 'table') {
-              if (value.columns && value.columns.length > 0 && value.rows && value.rows.length > 0) {
-                cleanedMeta[key] = value;
+              const tableValue = value as { columns?: string[]; rows?: string[][] };
+              if (tableValue.columns && tableValue.columns.length > 0 && tableValue.rows && tableValue.rows.length > 0) {
+                cleanedMeta[key] = value as { columns: string[]; rows: string[][] };
               }
             } else if (key === 'list') {
-              if (value.options && value.options.length > 0) {
-                cleanedMeta[key] = value;
+              const listValue = value as { options?: string[] };
+              if (listValue.options && listValue.options.length > 0) {
+                cleanedMeta[key] = value as { options: string[] };
               }
             } else if (key === 'location') {
-              if (value.address && value.address.trim() !== '') {
-                cleanedMeta[key] = value;
+              const locationValue = value as { address?: string };
+              if (locationValue.address && locationValue.address.trim() !== '') {
+                cleanedMeta[key] = value as { address: string };
               }
             }
           }
@@ -1018,9 +1043,11 @@ export default function BotFlowSettings() {
                 <div className="text-center">
                   <div className="relative mx-auto w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-4 border-[#90e2f8] mb-3 sm:mb-4 bg-[#012f78]">
                     {user.profileImageUrl ? (
-                      <img
-                        src={user.profileImageUrl}
+                      <Image
+                        src={user.profileImageUrl || ''}
                         alt="Profile"
+                        width={96}
+                        height={96}
                         className="w-full h-full object-cover"
                         onError={(e) => {
                           const target = e.target as HTMLImageElement;
@@ -1341,7 +1368,7 @@ export default function BotFlowSettings() {
                         <li><strong>Transferencia</strong>: Transfiere la conversación a un agente humano</li>
                       </ul>
                       <p className="text-xs sm:text-sm text-[#90e2f8]">
-                        Las opciones marcadas como "Fijo" no pueden ser modificadas o eliminadas ya que son esenciales para el funcionamiento del bot.
+                        Las opciones marcadas como &quot;Fijo&quot; no pueden ser modificadas o eliminadas ya que son esenciales para el funcionamiento del bot.
                       </p>
                       
                       {menuItemsEdit.length === 0 ? (
@@ -1550,9 +1577,9 @@ export default function BotFlowSettings() {
                                       <strong>Tipos de servicio comunes:</strong>
                                     </p>
                                     <ul className="text-xs sm:text-sm text-[#B7C2D6] list-disc list-inside space-y-1">
-                                      <li>Barbería: "Corte caballero", "Barba y bigote", "Paquete completo"</li>
-                                      <li>Consultorio: "Cita básica", "Apertura de expediente", "Consulta especializada"</li>
-                                      <li>Servicios generales: "Mantenimiento", "Reparación", "Instalación"</li>
+                                      <li>Barbería: &quot;Corte caballero&quot;, &quot;Barba y bigote&quot;, &quot;Paquete completo&quot;</li>
+                                      <li>Consultorio: &quot;Cita básica&quot;, &quot;Apertura de expediente&quot;, &quot;Consulta especializada&quot;</li>
+                                      <li>Servicios generales: &quot;Mantenimiento&quot;, &quot;Reparación&quot;, &quot;Instalación&quot;</li>
                                     </ul>
                                     
                                     {getScheduleServices().length === 0 ? (
