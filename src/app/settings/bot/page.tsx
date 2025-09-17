@@ -21,14 +21,8 @@ interface User {
     autoConfirmAppointments?: boolean
     reminders?: {
       enabled?: boolean
-      time1Before?: {
-        value: number
-        unit: string
-      }
-      time2Before?: {
-        value: number
-        unit: string
-      }
+      clientReminders?: Array<{ value: number; unit: 'hours' | 'minutes' }>
+      userReminders?: Array<{ value: number; unit: 'hours' | 'minutes' }>
     }
   }
 }
@@ -121,26 +115,20 @@ export default function BotConfiguration() {
           if (userData.botSettings.reminders) {
             setRemindersEnabled(userData.botSettings.reminders.enabled || false)
             
-            // Initialize client reminders from time1Before
-            const clientRems: { value: number; unit: 'hours' | 'minutes' }[] = []
-            if (userData.botSettings.reminders.time1Before) {
-              const unit = userData.botSettings.reminders.time1Before.unit
-              clientRems.push({
-                value: userData.botSettings.reminders.time1Before.value || 0,
-                unit: unit === 'hours' || unit === 'minutes' ? unit : 'hours'
-              })
-            }
+            // Initialize client reminders from new array format
+            const clientRems: { value: number; unit: 'hours' | 'minutes' }[] =
+              userData.botSettings.reminders.clientReminders?.map((rem: { value: number; unit: string }) => ({
+                value: rem.value || 0,
+                unit: rem.unit === 'hours' || rem.unit === 'minutes' ? rem.unit : 'hours'
+              })) || []
             setClientReminders(clientRems)
             
-            // Initialize user reminders from time2Before
-            const userRems: { value: number; unit: 'hours' | 'minutes' }[] = []
-            if (userData.botSettings.reminders.time2Before) {
-              const unit = userData.botSettings.reminders.time2Before.unit
-              userRems.push({
-                value: userData.botSettings.reminders.time2Before.value || 24,
-                unit: unit === 'hours' || unit === 'minutes' ? unit : 'hours'
-              })
-            }
+            // Initialize user reminders from new array format
+            const userRems: { value: number; unit: 'hours' | 'minutes' }[] =
+              userData.botSettings.reminders.userReminders?.map((rem: { value: number; unit: string }) => ({
+                value: rem.value || 24,
+                unit: rem.unit === 'hours' || rem.unit === 'minutes' ? rem.unit : 'hours'
+              })) || []
             setUserReminders(userRems)
           }
         }
