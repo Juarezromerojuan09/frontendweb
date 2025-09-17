@@ -272,6 +272,18 @@ function DashboardContent() {
     // Actualizar la conversación en el estado global con mensaje enviado
     if (currentSelectedConversation) {
       dispatch({ type: 'UPDATE_CONVERSATION_STATUS', payload: { customerWaId: currentSelectedConversation, status: 'sent' } })
+      
+      // Actualizar también el último mensaje en la lista de conversaciones
+      dispatch({
+        type: 'UPDATE_CONVERSATION_LAST_MESSAGE',
+        payload: {
+          customerWaId: currentSelectedConversation,
+          lastMessage: newMessage.trim(),
+          lastMessageTime: new Date().toISOString(),
+          lastMessageFrom: 'business',
+          lastMessageStatus: 'sent'
+        }
+      })
     }
 
     setNewMessage('')
@@ -405,6 +417,18 @@ function DashboardContent() {
           return [...filteredMessages, newMessage]
         }
         return filteredMessages
+      })
+
+      // Actualizar la conversación en la lista con el último mensaje
+      dispatch({
+        type: 'UPDATE_CONVERSATION_LAST_MESSAGE',
+        payload: {
+          customerWaId: newMessage.customerWaId,
+          lastMessage: newMessage.content.body,
+          lastMessageTime: newMessage.timestamp,
+          lastMessageFrom: newMessage.from,
+          lastMessageStatus: newMessage.status
+        }
       })
 
       if (newMessage.from === 'customer' && newMessage.whatsAppNumberId === selectedWhatsAppNumberRef.current) {
@@ -876,7 +900,7 @@ function DashboardContent() {
                 {/* Messages Area - Scrollable container with hidden scrollbar and fixed height */}
                 <div
                   ref={messagesContainerRef}
-                  className="p-4 mb-24 overflow-y-auto"
+                  className="p-4 mb-32 overflow-y-auto"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',

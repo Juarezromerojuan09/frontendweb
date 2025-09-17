@@ -28,6 +28,7 @@ type ConversationsAction =
   | { type: 'UPDATE_CONVERSATION_STATUS'; payload: { customerWaId: string; status: 'sent' | 'delivered' | 'read' | 'failed' } }
   | { type: 'INCREMENT_UNREAD_COUNT'; payload: string }
   | { type: 'RESET_UNREAD_COUNT'; payload: string }
+  | { type: 'UPDATE_CONVERSATION_LAST_MESSAGE'; payload: { customerWaId: string; lastMessage: string; lastMessageTime: string; lastMessageFrom: 'customer' | 'business'; lastMessageStatus?: 'sent' | 'delivered' | 'read' | 'failed' } }
 
 interface ConversationsContextType {
   state: ConversationsState;
@@ -66,6 +67,21 @@ function conversationsReducer(state: ConversationsState, action: ConversationsAc
         conversations: state.conversations.map(conversation =>
           conversation.customerWaId === action.payload
             ? { ...conversation, unreadCount: 0 }
+            : conversation
+        )
+      }
+    case 'UPDATE_CONVERSATION_LAST_MESSAGE':
+      return {
+        ...state,
+        conversations: state.conversations.map(conversation =>
+          conversation.customerWaId === action.payload.customerWaId
+            ? {
+                ...conversation,
+                lastMessage: action.payload.lastMessage,
+                lastMessageTime: action.payload.lastMessageTime,
+                lastMessageFrom: action.payload.lastMessageFrom,
+                lastMessageStatus: action.payload.lastMessageStatus
+              }
             : conversation
         )
       }
