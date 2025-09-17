@@ -900,7 +900,7 @@ function DashboardContent() {
                 {/* Messages Area - Scrollable container with hidden scrollbar and fixed height */}
                 <div
                   ref={messagesContainerRef}
-                  className="p-4 mb-38 overflow-y-auto"
+                  className="p-4 mb-48 overflow-y-auto"
                   style={{
                     scrollbarWidth: 'none',
                     msOverflowStyle: 'none',
