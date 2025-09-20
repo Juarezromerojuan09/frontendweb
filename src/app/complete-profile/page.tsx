@@ -284,4 +284,4 @@ export default function CompleteProfilePage() {
   );
 }
 
-//si
+export const dynamic = 'force-dynamic';
