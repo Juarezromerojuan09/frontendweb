@@ -906,7 +906,7 @@ function DashboardContent() {
                     msOverflowStyle: 'none',
                     maxHeight: 'calc(100vh - 240px)',
                     height: '100%',
-                    paddingBottom: '80px' // Space to ensure last message is visible above input
+                    paddingBottom: '120px' // Increased space to ensure last message is visible above input
                   }}
                 >
                   <style>{`
