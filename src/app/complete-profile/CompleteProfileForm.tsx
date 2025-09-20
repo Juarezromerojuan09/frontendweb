@@ -7,8 +7,6 @@ import Image from 'next/image';
 import axios from 'axios';
 
 interface CompleteProfileForm {
-  username: string;
-  password: string;
   businessName: string;
   businessType: string;
   address: string;
@@ -29,8 +27,6 @@ export default function CompleteProfileForm() {
   const token = searchParams.get('token');
   
   const [formData, setFormData] = useState<CompleteProfileForm>({
-    username: '',
-    password: '',
     businessName: '',
     businessType: '',
     address: '',
@@ -75,19 +71,13 @@ export default function CompleteProfileForm() {
           }
         });
 
-        if (response.data.success) {
-          const user = response.data.user;
-          setUserData(user);
-          setFormData(prev => ({
-            ...prev,
-            fullName: user.name || '',
-            email: user.email || '',
-            username: user.username || '',
-            // Pre-fill other fields if available
-          }));
-        } else {
-          setError('Error al cargar datos del usuario');
-        }
+        // El endpoint ahora retorna directamente { name, email }
+        setUserData(response.data);
+        setFormData(prev => ({
+          ...prev,
+          fullName: response.data.name || '',
+          email: response.data.email || ''
+        }));
       } catch (error) {
         setError('Error de conexión al cargar datos del usuario');
       }
@@ -570,44 +560,6 @@ export default function CompleteProfileForm() {
               </div>
             </div>
 
-            {/* Credenciales de acceso */}
-            <div>
-              <h3 className="text-lg font-medium text-[#3ea0c9] mb-4">Credenciales de Acceso</h3>
-              <div className="space-y-4">
-                <div>
-                  <label htmlFor="username" className="block text-sm font-medium text-white">
-                    Usuario *
-                  </label>
-                  <input
-                    id="username"
-                    name="username"
-                    type="text"
-                    required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
-                    style={{ backgroundColor: '#000e24' }}
-                    placeholder="tuusuario"
-                    value={formData.username}
-                    onChange={handleInputChange}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="password" className="block text-sm font-medium text-white">
-                    Contraseña *
-                  </label>
-                  <input
-                    id="password"
-                    name="password"
-                    type="password"
-                    required
-                    className="mt-1 block w-full px-3 py-2 border-2 border-[#3ea0c9] placeholder-gray-400 text-white focus:outline-none focus:ring-2 focus:ring-[#3ea0c9] focus:border-transparent sm:text-sm rounded-md"
-                    style={{ backgroundColor: '#000e24' }}
-                    placeholder="Contraseña segura"
-                    value={formData.password}
-                    onChange={handleInputChange}
-                  />
-                </div>
-              </div>
-            </div>
 
             {/* Imagen de Perfil */}
             <div>
