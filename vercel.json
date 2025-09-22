@@ -1,0 +1,17 @@
+{
+  "installCommand": "npm install",
+  "buildCommand": "npm run build",
+  "devCommand": "npm run dev",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "env": {
+    "PRODUCTION_API_URL": "https://tu-app-backend.herokuapp.com",
+    "NEXT_PUBLIC_API_URL": "https://tu-app-backend.herokuapp.com"
+  },
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "https://tu-app-backend.herokuapp.com/api/:path*"
+    }
+  ]
+}
