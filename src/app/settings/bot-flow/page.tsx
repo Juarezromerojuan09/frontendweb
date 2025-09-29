@@ -218,8 +218,8 @@ export default function BotFlowSettings() {
           if (index === 0 && (item.label === 'Agendar cita' || item.id === 'agendar-cita-fixed')) {
             return { ...item, fixed: true, label: 'Agendar cita' }
           }
-          if (index === 1 && (item.label.includes('Modificar') || item.label.includes('cancelar') || item.id === 'modificar-cita-fixed')) {
-            return { ...item, fixed: true, label: 'Modificar/cancelar cita' }
+          if (index === 1 && (item.label.includes('Modificar') || item.label.includes('Cancelar') || item.id === 'modificar-cita-fixed')) {
+            return { ...item, fixed: true, label: 'Modificar / Cancelar' }
           }
           return item
         })
@@ -244,7 +244,7 @@ export default function BotFlowSettings() {
           },
           {
             id: 'modificar-cita-fixed',
-            label: 'Modificar/cancelar cita',
+            label: 'Modificar / Cancelar',
             type: 'action',
             actionKey: 'modify',
             fixed: true
@@ -271,7 +271,7 @@ export default function BotFlowSettings() {
           },
           {
             id: 'modificar-cita-fixed',
-            label: 'Modificar/cancelar cita',
+            label: 'Modificar / Cancelar',
             type: 'action',
             actionKey: 'modify',
             fixed: true
@@ -341,7 +341,7 @@ export default function BotFlowSettings() {
     if (!item) return false
     if (item.fixed) return true
     if (botSettings.template === 'consultorio' || botSettings.template === 'barberia') {
-      if (item.label === 'Agendar cita' || item.label === 'Modificar/cancelar cita') {
+      if (item.label === 'Agendar cita' || item.label === 'Modificar / Cancelar') {
         return true
       }
     }
