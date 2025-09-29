@@ -149,6 +149,7 @@ export default function BotFlowSettings() {
   const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
   const [menuItemErrors, setMenuItemErrors] = useState<{[key: string]: string}>({})
   const [formFieldErrors, setFormFieldErrors] = useState<{[key: string]: string}>({})
+  const [serviceErrors, setServiceErrors] = useState<{[key: string]: string}>({})
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -512,8 +513,8 @@ export default function BotFlowSettings() {
   const updateFormField = (key: string, field: string, value: string | boolean) => {
     // Validar longitud máxima para el campo label
     if (field === 'label' && typeof value === 'string') {
-      if (value.length > 24) {
-        setFormFieldErrors(prev => ({ ...prev, [key]: 'Máximo 24 caracteres permitidos' }))
+      if (value.length > 40) {
+        setFormFieldErrors(prev => ({ ...prev, [key]: 'Máximo 40 caracteres permitidos' }))
         return // No actualizar si excede el límite
       } else {
         setFormFieldErrors(prev => ({ ...prev, [key]: '' }))
@@ -624,6 +625,16 @@ export default function BotFlowSettings() {
     const scheduleItem = getScheduleItem();
     if (!scheduleItem) return;
 
+    // Validar longitud máxima para el campo serviceType
+    if (field === 'serviceType' && typeof value === 'string') {
+      if (value.length > 24) {
+        setServiceErrors(prev => ({ ...prev, [index]: 'Máximo 24 caracteres permitidos' }))
+        return // No actualizar si excede el límite
+      } else {
+        setServiceErrors(prev => ({ ...prev, [index]: '' }))
+      }
+    }
+
     const updatedServices = getScheduleServices().map((service, i) =>
       i === index ? { ...service, [field]: value } : service
     );
@@ -733,11 +744,17 @@ export default function BotFlowSettings() {
     
     // Validar longitud de las etiquetas de los campos del formulario antes de guardar
     const invalidFormFields = formFieldsEdit.filter(field =>
-      field.label && field.label.length > 24
+      field.label && field.label.length > 40
     )
     
-    if (invalidMenuItems.length > 0 || invalidFormFields.length > 0) {
-      setError('Algunas etiquetas exceden el límite de 24 caracteres')
+    // Validar longitud de los tipos de servicio en servicios de agendamiento
+    const scheduleItem = getScheduleItem()
+    const invalidServices = scheduleItem?.meta?.services?.filter(service =>
+      service.serviceType && service.serviceType.length > 24
+    ) || []
+    
+    if (invalidMenuItems.length > 0 || invalidFormFields.length > 0 || invalidServices.length > 0) {
+      setError('Algunas etiquetas exceden el límite de caracteres')
       setSaving(false)
       return
     }
@@ -1651,9 +1668,20 @@ export default function BotFlowSettings() {
                                               type="text"
                                               value={service.serviceType}
                                               onChange={(e) => updateSchedulingService(serviceIndex, 'serviceType', e.target.value)}
-                                              placeholder="Tipo de servicio (ej: Corte caballero)"
+                                              placeholder="Tipo de servicio, máximo 24 caracteres (ej: Corte caballero)"
                                               className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] text-xs sm:text-sm"
+                                              maxLength={24}
                                             />
+                                            <div className="flex justify-between items-center mt-1">
+                                              <div className="text-xs text-[#90e2f8]">
+                                                {service.serviceType?.length || 0}/24 caracteres
+                                              </div>
+                                              {serviceErrors[serviceIndex] && (
+                                                <div className="text-red-400 text-xs">
+                                                  {serviceErrors[serviceIndex]}
+                                                </div>
+                                              )}
+                                            </div>
                                             
                                             <input
                                               type="text"
@@ -1766,7 +1794,7 @@ export default function BotFlowSettings() {
                                   <option value="text">Texto</option>
                                   <option value="tel">Teléfono</option>
                                   <option value="email">Email</option>
-                                  <option value="date">Fecha</option>
+                                  <option value="date">Fecha de nacimiento</option>
                                   <option value="select">Selección</option>
                                   <option value="textarea">Texto Largo</option>
                                 </select>
@@ -1785,13 +1813,13 @@ export default function BotFlowSettings() {
                                   type="text"
                                   value={field.label}
                                   onChange={(e) => updateFormField(field.key, 'label', e.target.value)}
-                                  placeholder="Etiqueta del campo, máximo 24 caracteres"
+                                  placeholder="Etiqueta del campo, máximo 40 caracteres"
                                   className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
-                                  maxLength={24}
+                                  maxLength={40}
                                 />
                                 <div className="flex justify-between items-center mt-1">
                                   <div className="text-xs text-[#90e2f8]">
-                                    {field.label?.length || 0}/24 caracteres
+                                    {field.label?.length || 0}/40 caracteres
                                   </div>
                                   {formFieldErrors[field.key] && (
                                     <div className="text-red-400 text-xs">
