@@ -147,6 +147,8 @@ export default function BotFlowSettings() {
   const [orderAcknowledgementEdit, setOrderAcknowledgementEdit] = useState('Gracias. En breve un encargado le responderá.')
   const [menuItemsEdit, setMenuItemsEdit] = useState<MenuItem[]>([])
   const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
+  const [menuItemErrors, setMenuItemErrors] = useState<{[key: string]: string}>({})
+  const [formFieldErrors, setFormFieldErrors] = useState<{[key: string]: string}>({})
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -361,6 +363,17 @@ export default function BotFlowSettings() {
     if (isItemFixed(item)) {
       return // Don't update fixed items
     }
+    
+    // Validar longitud máxima para el campo label
+    if (field === 'label' && typeof value === 'string') {
+      if (value.length > 24) {
+        setMenuItemErrors(prev => ({ ...prev, [id]: 'Máximo 24 caracteres permitidos' }))
+        return // No actualizar si excede el límite
+      } else {
+        setMenuItemErrors(prev => ({ ...prev, [id]: '' }))
+      }
+    }
+    
     setMenuItemsEdit(menuItemsEdit.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ))
@@ -497,6 +510,16 @@ export default function BotFlowSettings() {
   }
 
   const updateFormField = (key: string, field: string, value: string | boolean) => {
+    // Validar longitud máxima para el campo label
+    if (field === 'label' && typeof value === 'string') {
+      if (value.length > 24) {
+        setFormFieldErrors(prev => ({ ...prev, [key]: 'Máximo 24 caracteres permitidos' }))
+        return // No actualizar si excede el límite
+      } else {
+        setFormFieldErrors(prev => ({ ...prev, [key]: '' }))
+      }
+    }
+
     setFormFieldsEdit(formFieldsEdit.map(item => {
       if (item.key !== key) return item;
       
@@ -702,6 +725,22 @@ export default function BotFlowSettings() {
     setSaving(true)
     setError('')
     setSuccess('')
+
+    // Validar longitud de las etiquetas del menú antes de guardar
+    const invalidMenuItems = menuItemsEdit.filter(item =>
+      !item.fixed && item.label && item.label.length > 24
+    )
+    
+    // Validar longitud de las etiquetas de los campos del formulario antes de guardar
+    const invalidFormFields = formFieldsEdit.filter(field =>
+      field.label && field.label.length > 24
+    )
+    
+    if (invalidMenuItems.length > 0 || invalidFormFields.length > 0) {
+      setError('Algunas etiquetas exceden el límite de 24 caracteres')
+      setSaving(false)
+      return
+    }
 
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
@@ -1396,10 +1435,21 @@ export default function BotFlowSettings() {
                                   type="text"
                                   value={item.label}
                                   onChange={(e) => updateMenuItem(item.id, 'label', e.target.value)}
-                                  placeholder="Etiqueta de la opción"
+                                  placeholder="Etiqueta de la opción, máximo 24 caracteres"
                                   className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed text-xs sm:text-sm"
                                   disabled={isItemFixed(item)}
+                                  maxLength={24}
                                 />
+                                <div className="flex justify-between items-center mt-1">
+                                  <div className="text-xs text-[#90e2f8]">
+                                    {item.label?.length || 0}/24 caracteres
+                                  </div>
+                                  {menuItemErrors[item.id] && (
+                                    <div className="text-red-400 text-xs">
+                                      {menuItemErrors[item.id]}
+                                    </div>
+                                  )}
+                                </div>
                                 
                                 {/* Selector de tipo - Ahora justo debajo del nombre de la opción */}
                                 <select
@@ -1735,9 +1785,20 @@ export default function BotFlowSettings() {
                                   type="text"
                                   value={field.label}
                                   onChange={(e) => updateFormField(field.key, 'label', e.target.value)}
-                                  placeholder="Etiqueta del campo"
+                                  placeholder="Etiqueta del campo, máximo 24 caracteres"
                                   className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#B7C2D6] focus:border-[#90e2f8] focus:outline-none text-xs sm:text-sm"
+                                  maxLength={24}
                                 />
+                                <div className="flex justify-between items-center mt-1">
+                                  <div className="text-xs text-[#90e2f8]">
+                                    {field.label?.length || 0}/24 caracteres
+                                  </div>
+                                  {formFieldErrors[field.key] && (
+                                    <div className="text-red-400 text-xs">
+                                      {formFieldErrors[field.key]}
+                                    </div>
+                                  )}
+                                </div>
                                 <div className="w-full p-1.5 sm:p-2 bg-[#012f78] border border-[#3ea0c9] rounded text-[#90e2f8] text-xs sm:text-sm">
                                   Key: {field.key}
                                 </div>
