@@ -60,7 +60,7 @@ export default function SignupPage() {
     }
   };
 
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+  const uploadImageToCloudinary = async (file: File, token: string): Promise<string> => {
     try {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
       const formData = new FormData();
@@ -68,7 +68,8 @@ export default function SignupPage() {
 
       const response = await axios.post(`${apiUrl}/api/auth/upload-profile-image`, formData, {
         headers: {
-          'Content-Type': 'multipart/form-data'
+          'Content-Type': 'multipart/form-data',
+          'Authorization': `Bearer ${token}`
         }
       });
 
@@ -90,24 +91,40 @@ export default function SignupPage() {
     setSuccess('')
 
     try {
-      let profileImageUrl = '';
-
-      // Upload image to Cloudinary first if exists
-      if (profileImage) {
-        profileImageUrl = await uploadImageToCloudinary(profileImage);
-      }
-
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const registrationData = {
         ...formData,
-        profileImageUrl,
+        profileImageUrl: '', // Inicialmente vacío
         whatsappNumber: formData.whatsappNumber,
         whatsappDisplayName: formData.whatsappDisplayName
       };
 
+      // 1. Primero hacer el registro
       const response = await axios.post(`${apiUrl}/api/auth/register`, registrationData);
 
       if (response.data.success) {
+        const { token, user } = response.data;
+        
+        // 2. Si hay imagen, subirla después del registro usando el token
+        let profileImageUrl = '';
+        if (profileImage) {
+          try {
+            profileImageUrl = await uploadImageToCloudinary(profileImage, token);
+            
+            // 3. Actualizar el usuario con la URL de la imagen
+            await axios.patch(`${apiUrl}/api/auth/user/${user.id}`, {
+              profileImageUrl
+            }, {
+              headers: {
+                'Authorization': `Bearer ${token}`
+              }
+            });
+          } catch (imageError) {
+            console.error('Error subiendo imagen, pero usuario registrado:', imageError);
+            // No fallar el registro completo si hay error en la imagen
+          }
+        }
+
         setSuccess('Registro exitoso. Tu cuenta está pendiente de verificación. Te contactaremos pronto.')
         setTimeout(() => {
           router.push('/login')
