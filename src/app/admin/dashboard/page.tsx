@@ -39,6 +39,17 @@ interface User {
   createdAt: string
 }
 
+interface Notification {
+  _id: string
+  type: string
+  title: string
+  message: string
+  data?: any
+  read: boolean
+  priority: 'low' | 'medium' | 'high'
+  createdAt: string
+}
+
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -46,6 +57,10 @@ export default function AdminDashboard() {
   const [error, setError] = useState('')
   const [searchTerm, setSearchTerm] = useState('')
   const [adminUsername, setAdminUsername] = useState('')
+  const [notifications, setNotifications] = useState<Notification[]>([])
+  const [unreadCount, setUnreadCount] = useState(0)
+  const [showNotifications, setShowNotifications] = useState(false)
+  const [notificationsLoading, setNotificationsLoading] = useState(false)
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -84,15 +99,82 @@ export default function AdminDashboard() {
     }
   }, [router])
 
+  const fetchNotifications = useCallback(async () => {
+    try {
+      setNotificationsLoading(true)
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const adminToken = localStorage.getItem('adminToken')
+      
+      const response = await axios.get(`${apiUrl}/api/notifications`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        }
+      })
+
+      if (response.data.success) {
+        setNotifications(response.data.notifications || [])
+        const unread = response.data.notifications?.filter((n: Notification) => !n.read).length || 0
+        setUnreadCount(unread)
+      }
+    } catch (err) {
+      console.error('Error obteniendo notificaciones:', err)
+    } finally {
+      setNotificationsLoading(false)
+    }
+  }, [])
+
+  const markNotificationAsRead = useCallback(async (notificationId: string) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const adminToken = localStorage.getItem('adminToken')
+      
+      const response = await axios.patch(`${apiUrl}/api/notifications/${notificationId}/read`, {}, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        }
+      })
+
+      if (response.data.success) {
+        setNotifications(prev =>
+          prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
+        )
+        setUnreadCount(prev => Math.max(0, prev - 1))
+      }
+    } catch (err) {
+      console.error('Error marcando notificación como leída:', err)
+    }
+  }, [])
+
+  const markAllNotificationsAsRead = useCallback(async () => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const adminToken = localStorage.getItem('adminToken')
+      
+      const response = await axios.patch(`${apiUrl}/api/notifications/mark-all-read`, {}, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        }
+      })
+
+      if (response.data.success) {
+        setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+        setUnreadCount(0)
+      }
+    } catch (err) {
+      console.error('Error marcando todas las notificaciones como leídas:', err)
+    }
+  }, [])
+
   useEffect(() => {
     checkAuth()
     fetchUsers()
+    fetchNotifications()
     // Get admin username from localStorage
     const username = localStorage.getItem('adminUsername')
     if (username) {
       setAdminUsername(username)
     }
-  }, [checkAuth, fetchUsers])
+  }, [checkAuth, fetchUsers, fetchNotifications])
 
   useEffect(() => {
     if (searchTerm.trim() === '') {
@@ -347,9 +429,104 @@ export default function AdminDashboard() {
 
           {/* Stats and Search */}
           <div className="flex justify-between items-center mb-8">
-            <div className="text-center bg-[#0b1e34] rounded-lg p-4 shadow-lg">
-              <div className="text-3xl font-bold text-[#90e2f8]">{users.length}</div>
-              <div className="text-sm text-[#B7C2D6]">Usuarios totales</div>
+            <div className="flex items-center space-x-4">
+              {/* Notifications Bell */}
+              <div className="relative">
+                <button
+                  onClick={() => setShowNotifications(!showNotifications)}
+                  className="relative p-2 rounded-lg bg-[#0b1e34] hover:bg-[#012f78] transition-colors border border-[#3ea0c9]"
+                >
+                  <svg
+                    className="w-6 h-6 text-[#90e2f8]"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M15 17h5l-5 5v-5zM10.24 8.56a5.97 5.97 0 01-4.66-7.4 1 1 0 00-1.17-1.17 5.97 5.97 0 01-7.4 4.66 1 1 0 00-1.17 1.17 5.97 5.97 0 014.66 7.4 1 1 0 001.17 1.17 5.97 5.97 0 017.4-4.66 1 1 0 001.17-1.17z"
+                    />
+                  </svg>
+                  {unreadCount > 0 && (
+                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                      {unreadCount}
+                    </span>
+                  )}
+                </button>
+
+                {/* Notifications Dropdown */}
+                {showNotifications && (
+                  <div className="absolute right-0 mt-2 w-80 bg-[#0b1e34] border border-[#3ea0c9] rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                    <div className="p-4 border-b border-[#012f78]">
+                      <div className="flex justify-between items-center">
+                        <h3 className="text-lg font-semibold text-[#90e2f8]">Notificaciones</h3>
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllNotificationsAsRead}
+                            className="text-sm text-[#3ea0c9] hover:text-[#90e2f8] transition-colors"
+                          >
+                            Marcar todas como leídas
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    <div className="p-2">
+                      {notificationsLoading ? (
+                        <div className="text-center py-4">
+                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#90e2f8] mx-auto"></div>
+                          <p className="mt-2 text-[#B7C2D6] text-sm">Cargando notificaciones...</p>
+                        </div>
+                      ) : notifications.length === 0 ? (
+                        <div className="text-center py-4 text-[#B7C2D6]">
+                          No hay notificaciones
+                        </div>
+                      ) : (
+                        notifications.map((notification) => (
+                          <div
+                            key={notification._id}
+                            className={`p-3 rounded-lg mb-2 border ${
+                              notification.read
+                                ? 'border-[#012f78] bg-[#0b1e34]'
+                                : 'border-[#3ea0c9] bg-[#012f78]'
+                            }`}
+                          >
+                            <div className="flex justify-between items-start">
+                              <div className="flex-1">
+                                <h4 className="font-semibold text-white text-sm">
+                                  {notification.title}
+                                </h4>
+                                <p className="text-[#B7C2D6] text-xs mt-1">
+                                  {notification.message}
+                                </p>
+                                <p className="text-[#76b2f2] text-xs mt-2">
+                                  {new Date(notification.createdAt).toLocaleString('es-ES')}
+                                </p>
+                              </div>
+                              {!notification.read && (
+                                <button
+                                  onClick={() => markNotificationAsRead(notification._id)}
+                                  className="ml-2 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+                                >
+                                  Listo
+                                </button>
+                              )}
+                            </div>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Users Count */}
+              <div className="text-center bg-[#0b1e34] rounded-lg p-4 shadow-lg">
+                <div className="text-3xl font-bold text-[#90e2f8]">{users.length}</div>
+                <div className="text-sm text-[#B7C2D6]">Usuarios totales</div>
+              </div>
             </div>
 
             {/* Search Bar */}
