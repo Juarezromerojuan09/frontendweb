@@ -174,6 +174,13 @@ export default function AdminDashboard() {
     if (username) {
       setAdminUsername(username)
     }
+
+    // Polling para actualizar notificaciones cada 10 segundos
+    const interval = setInterval(() => {
+      fetchNotifications()
+    }, 10000)
+
+    return () => clearInterval(interval)
   }, [checkAuth, fetchUsers, fetchNotifications])
 
   useEffect(() => {
@@ -382,8 +389,100 @@ export default function AdminDashboard() {
       </div>
 
       {/* Navigation Buttons - Top Right */}
-      <div className="absolute top-6 right-6 z-50 flex flex-col items-end space-y-2">
+      <div className="absolute top-12 right-6 z-50 flex flex-col items-end space-y-2">
         <div className="flex items-center space-x-4">
+          {/* Notifications Bell */}
+          <div className="relative">
+            <button
+              onClick={() => setShowNotifications(!showNotifications)}
+              className="relative p-2 rounded-lg bg-[#0b1e34] hover:bg-[#012f78] transition-colors border border-[#3ea0c9]"
+            >
+              <svg
+                className="w-5 h-5 text-[#90e2f8]"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0"
+                />
+              </svg>
+              {unreadCount > 0 && (
+                <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
+                  {unreadCount}
+                </span>
+              )}
+            </button>
+
+            {/* Notifications Dropdown */}
+            {showNotifications && (
+              <div className="absolute right-0 mt-2 w-80 bg-[#0b1e34] border border-[#3ea0c9] rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
+                <div className="p-4 border-b border-[#012f78]">
+                  <div className="flex justify-between items-center">
+                    <h3 className="text-lg font-semibold text-[#90e2f8]">Notificaciones</h3>
+                    {unreadCount > 0 && (
+                      <button
+                        onClick={markAllNotificationsAsRead}
+                        className="text-sm text-[#3ea0c9] hover:text-[#90e2f8] transition-colors"
+                      >
+                        Marcar todas como leídas
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="p-2">
+                  {notificationsLoading ? (
+                    <div className="text-center py-4">
+                      <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#90e2f8] mx-auto"></div>
+                      <p className="mt-2 text-[#B7C2D6] text-sm">Cargando notificaciones...</p>
+                    </div>
+                  ) : notifications.length === 0 ? (
+                    <div className="text-center py-4 text-[#B7C2D6]">
+                      No hay notificaciones
+                    </div>
+                  ) : (
+                    notifications.map((notification) => (
+                      <div
+                        key={notification._id}
+                        className={`p-3 rounded-lg mb-2 border ${
+                          notification.read
+                            ? 'border-[#012f78] bg-[#0b1e34]'
+                            : 'border-[#3ea0c9] bg-[#012f78]'
+                        }`}
+                      >
+                        <div className="flex justify-between items-start">
+                          <div className="flex-1">
+                            <h4 className="font-semibold text-white text-sm">
+                              {notification.title}
+                            </h4>
+                            <p className="text-[#B7C2D6] text-xs mt-1">
+                              {notification.message}
+                            </p>
+                            <p className="text-[#76b2f2] text-xs mt-2">
+                              {new Date(notification.createdAt).toLocaleString('es-ES')}
+                            </p>
+                          </div>
+                          {!notification.read && (
+                            <button
+                              onClick={() => markNotificationAsRead(notification._id)}
+                              className="ml-2 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
+                            >
+                              Listo
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+
           <button
             onClick={() => {
               console.log('Botón Volver clickeado - redirigiendo a /login');
@@ -430,98 +529,6 @@ export default function AdminDashboard() {
           {/* Stats and Search */}
           <div className="flex justify-between items-center mb-8">
             <div className="flex items-center space-x-4">
-              {/* Notifications Bell */}
-              <div className="relative">
-                <button
-                  onClick={() => setShowNotifications(!showNotifications)}
-                  className="relative p-2 rounded-lg bg-[#0b1e34] hover:bg-[#012f78] transition-colors border border-[#3ea0c9]"
-                >
-                  <svg
-                    className="w-6 h-6 text-[#90e2f8]"
-                    fill="none"
-                    stroke="currentColor"
-                    viewBox="0 0 24 24"
-                  >
-                    <path
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M15 17h5l-5 5v-5zM10.24 8.56a5.97 5.97 0 01-4.66-7.4 1 1 0 00-1.17-1.17 5.97 5.97 0 01-7.4 4.66 1 1 0 00-1.17 1.17 5.97 5.97 0 014.66 7.4 1 1 0 001.17 1.17 5.97 5.97 0 017.4-4.66 1 1 0 001.17-1.17z"
-                    />
-                  </svg>
-                  {unreadCount > 0 && (
-                    <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">
-                      {unreadCount}
-                    </span>
-                  )}
-                </button>
-
-                {/* Notifications Dropdown */}
-                {showNotifications && (
-                  <div className="absolute right-0 mt-2 w-80 bg-[#0b1e34] border border-[#3ea0c9] rounded-lg shadow-xl z-50 max-h-96 overflow-y-auto">
-                    <div className="p-4 border-b border-[#012f78]">
-                      <div className="flex justify-between items-center">
-                        <h3 className="text-lg font-semibold text-[#90e2f8]">Notificaciones</h3>
-                        {unreadCount > 0 && (
-                          <button
-                            onClick={markAllNotificationsAsRead}
-                            className="text-sm text-[#3ea0c9] hover:text-[#90e2f8] transition-colors"
-                          >
-                            Marcar todas como leídas
-                          </button>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="p-2">
-                      {notificationsLoading ? (
-                        <div className="text-center py-4">
-                          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[#90e2f8] mx-auto"></div>
-                          <p className="mt-2 text-[#B7C2D6] text-sm">Cargando notificaciones...</p>
-                        </div>
-                      ) : notifications.length === 0 ? (
-                        <div className="text-center py-4 text-[#B7C2D6]">
-                          No hay notificaciones
-                        </div>
-                      ) : (
-                        notifications.map((notification) => (
-                          <div
-                            key={notification._id}
-                            className={`p-3 rounded-lg mb-2 border ${
-                              notification.read
-                                ? 'border-[#012f78] bg-[#0b1e34]'
-                                : 'border-[#3ea0c9] bg-[#012f78]'
-                            }`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <div className="flex-1">
-                                <h4 className="font-semibold text-white text-sm">
-                                  {notification.title}
-                                </h4>
-                                <p className="text-[#B7C2D6] text-xs mt-1">
-                                  {notification.message}
-                                </p>
-                                <p className="text-[#76b2f2] text-xs mt-2">
-                                  {new Date(notification.createdAt).toLocaleString('es-ES')}
-                                </p>
-                              </div>
-                              {!notification.read && (
-                                <button
-                                  onClick={() => markNotificationAsRead(notification._id)}
-                                  className="ml-2 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
-                                >
-                                  Listo
-                                </button>
-                              )}
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-                  </div>
-                )}
-              </div>
-
               {/* Users Count */}
               <div className="text-center bg-[#0b1e34] rounded-lg p-4 shadow-lg">
                 <div className="text-3xl font-bold text-[#90e2f8]">{users.length}</div>
