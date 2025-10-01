@@ -176,12 +176,86 @@ export default function AdminDashboard() {
       setAdminUsername(username)
     }
 
-    // Polling para actualizar notificaciones cada 10 segundos
-    const interval = setInterval(() => {
-      fetchNotifications()
-    }, 10000)
+    // Configurar SSE para notificaciones en tiempo real
+    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+    const adminToken = localStorage.getItem('adminToken')
+    
+    if (adminToken) {
+      // Para SSE, pasamos el token como parámetro de consulta ya que EventSource no soporta headers
+      const eventSource = new EventSource(`${apiUrl}/api/sse/notifications/stream?token=${adminToken}`)
 
-    return () => clearInterval(interval)
+      eventSource.onopen = () => {
+        console.log('🔗 Conexión SSE establecida')
+      }
+
+      eventSource.onmessage = (event) => {
+        console.log('📨 Evento SSE recibido:', event)
+      }
+
+      eventSource.addEventListener('connected', (event) => {
+        console.log('✅ Conexión SSE confirmada:', event)
+      })
+
+      eventSource.addEventListener('initial-state', (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          console.log('📊 Estado inicial recibido:', data)
+          if (data.notifications) {
+            setNotifications(data.notifications)
+          }
+          if (data.unreadCount !== undefined) {
+            setUnreadCount(data.unreadCount)
+          }
+        } catch (error) {
+          console.error('Error parseando estado inicial:', error)
+        }
+      })
+
+      eventSource.addEventListener('new-notification', (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          console.log('🆕 Nueva notificación recibida:', data)
+          
+          // Agregar la nueva notificación al principio de la lista
+          setNotifications(prev => [data.notification, ...prev])
+          
+          // Incrementar contador de no leídos
+          setUnreadCount(prev => prev + 1)
+        } catch (error) {
+          console.error('Error parseando nueva notificación:', error)
+        }
+      })
+
+      eventSource.addEventListener('state-update', (event) => {
+        try {
+          const data = JSON.parse(event.data)
+          console.log('📈 Actualización de estado:', data)
+          if (data.unreadCount !== undefined) {
+            setUnreadCount(data.unreadCount)
+          }
+        } catch (error) {
+          console.error('Error parseando actualización de estado:', error)
+        }
+      })
+
+      eventSource.addEventListener('heartbeat', (event) => {
+        console.log('💓 Heartbeat SSE recibido:', event.data)
+      })
+
+      eventSource.onerror = (error) => {
+        console.error('❌ Error en conexión SSE:', error)
+        // Reconectar automáticamente después de 5 segundos
+        setTimeout(() => {
+          console.log('🔄 Intentando reconectar SSE...')
+          // La reconexión se maneja automáticamente por EventSource
+        }, 5000)
+      }
+
+      return () => {
+        console.log('🔌 Cerrando conexión SSE')
+        eventSource.close()
+      }
+    }
   }, [checkAuth, fetchUsers, fetchNotifications])
 
   useEffect(() => {
