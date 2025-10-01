@@ -45,7 +45,8 @@ interface Notification {
   title: string
   message: string
   data?: any
-  read: boolean
+  isRead: boolean
+  readAt?: string
   priority: 'low' | 'medium' | 'high'
   createdAt: string
 }
@@ -113,7 +114,7 @@ export default function AdminDashboard() {
 
       if (response.data.success) {
         setNotifications(response.data.notifications || [])
-        const unread = response.data.notifications?.filter((n: Notification) => !n.read).length || 0
+        const unread = response.data.notifications?.filter((n: Notification) => !n.isRead).length || 0
         setUnreadCount(unread)
       }
     } catch (err) {
@@ -136,7 +137,7 @@ export default function AdminDashboard() {
 
       if (response.data.success) {
         setNotifications(prev =>
-          prev.map(n => n._id === notificationId ? { ...n, read: true } : n)
+          prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
         )
         setUnreadCount(prev => Math.max(0, prev - 1))
       }
@@ -157,7 +158,7 @@ export default function AdminDashboard() {
       })
 
       if (response.data.success) {
-        setNotifications(prev => prev.map(n => ({ ...n, read: true })))
+        setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
         setUnreadCount(0)
       }
     } catch (err) {
@@ -449,7 +450,7 @@ export default function AdminDashboard() {
                       <div
                         key={notification._id}
                         className={`p-3 rounded-lg mb-2 border ${
-                          notification.read
+                          notification.isRead
                             ? 'border-[#012f78] bg-[#0b1e34]'
                             : 'border-[#3ea0c9] bg-[#012f78]'
                         }`}
@@ -466,7 +467,7 @@ export default function AdminDashboard() {
                               {new Date(notification.createdAt).toLocaleString('es-ES')}
                             </p>
                           </div>
-                          {!notification.read && (
+                          {!notification.isRead && (
                             <button
                               onClick={() => markNotificationAsRead(notification._id)}
                               className="ml-2 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
