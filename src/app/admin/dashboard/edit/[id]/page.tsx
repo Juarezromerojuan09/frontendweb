@@ -59,8 +59,6 @@ export default function EditUserPage() {
   const [updating, setUpdating] = useState(false)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState('')
-  const [newImageFile, setNewImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string>('');
   const router = useRouter()
   const params = useParams()
   const userId = params.id as string
@@ -242,91 +240,6 @@ export default function EditUserPage() {
     toggleEditMode(field)
   }
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      setNewImageFile(file);
-
-      // Create image preview
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        if (event.target?.result) {
-          setImagePreview(event.target.result as string);
-        }
-      };
-      reader.readAsDataURL(file);
-    }
-  };
-
-  const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const adminToken = localStorage.getItem('adminToken');
-      const formData = new FormData();
-      formData.append('profileImage', file);
-
-      const response = await axios.post(`${apiUrl}/api/auth/upload-profile-image`, formData, {
-        headers: {
-          'Content-Type': 'multipart/form-data',
-          Authorization: `Bearer ${adminToken}`
-        }
-      });
-
-      if (response.data.success) {
-        return response.data.imageUrl;
-      } else {
-        throw new Error('Error uploading image');
-      }
-    } catch (error) {
-      console.error('Error uploading to Cloudinary:', error);
-      throw new Error('Error subiendo imagen de perfil');
-    }
-  };
-
-  const updateProfileImage = async () => {
-    if (!newImageFile) {
-      setError('Seleccione una imagen primero');
-      return;
-    }
-
-    try {
-      const imageUrl = await uploadImageToCloudinary(newImageFile);
-
-      // Update user data with new image URL
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
-      const adminToken = localStorage.getItem('adminToken');
-
-      const updateData = { profileImageUrl: imageUrl };
-
-      const response = await axios.patch<UpdateResponse>(
-        `${apiUrl}/api/admin/users/${userId}`,
-        updateData,
-        {
-          headers: {
-            Authorization: `Bearer ${adminToken}`
-          }
-        }
-      );
-
-      if (response.data.success && user) {
-        setUser({
-          ...user,
-          profileImageUrl: imageUrl
-        });
-        setSuccess('Imagen de perfil actualizada correctamente');
-        setNewImageFile(null);
-        setImagePreview('');
-        setTimeout(() => setSuccess(''), 3000);
-      }
-    } catch {
-      setError('Error actualizando imagen de perfil');
-    }
-  };
-
-  const removeImage = () => {
-    setNewImageFile(null);
-    setImagePreview('');
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -730,68 +643,70 @@ export default function EditUserPage() {
                   Imagen de Perfil
                 </h4>
                 <div className="flex items-center space-x-6">
-                  {/* Image Display/Preview */}
+                  {/* Image Display */}
                   <div className="relative">
-                    {imagePreview ? (
-                      <Image
-                        src={imagePreview}
-                        alt="New profile preview"
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 rounded-full object-cover border-4 border-[#3ea0c9]"
-                      />
-                    ) : user?.profileImageUrl ? (
-                      <Image
-                        src={user.profileImageUrl}
-                        alt={`${user.fullName} current profile`}
-                        width={96}
-                        height={96}
-                        className="w-24 h-24 rounded-full object-cover border-2 border-[#3ea0c9]"
-                      />
+                    {user?.profileImageUrl ? (
+                      <div className="relative group">
+                        <Image
+                          src={user.profileImageUrl}
+                          alt={`${user.fullName} current profile`}
+                          width={96}
+                          height={96}
+                          className="w-24 h-24 rounded-full object-cover border-2 border-[#3ea0c9] group-hover:opacity-80 transition-opacity"
+                        />
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="bg-black bg-opacity-50 rounded-full p-2">
+                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                            </svg>
+                          </div>
+                        </div>
+                      </div>
                     ) : (
                       <div className="w-24 h-24 rounded-full bg-[#0b1e34] border-2 border-[#3ea0c9] flex items-center justify-center">
                         <svg className="w-10 h-10 text-[#B7C2D6]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        </div>
+                      </div>
                     )}
                   </div>
 
-                  {/* Upload Controls */}
+                  {/* Download Controls */}
                   <div className="space-y-3">
-                    <div>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        id="profileImage"
-                        className="hidden"
-                        onChange={handleImageChange}
-                      />
-                      <label
-                        htmlFor="profileImage"
-                        className="inline-flex items-center px-4 py-2 border-2 border-[#3ea0c9] rounded-md text-sm font-medium text-white bg-transparent hover:bg-[#3ea0c9] hover:bg-opacity-20 cursor-pointer transition-colors"
-                      >
-                        <svg className="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-                        </svg>
-                        {user?.profileImageUrl || imagePreview ? 'Cambiar Imagen' : 'Subir Imagen'}
-                      </label>
-                    </div>
-
-                    {(imagePreview || newImageFile) && (
-                      <div className="flex space-x-2">
+                    {user?.profileImageUrl ? (
+                      <div className="space-y-2">
                         <button
-                          onClick={updateProfileImage}
-                          className="inline-flex items-center px-3 py-2 bg-green-600 text-white text-sm rounded-md hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors disabled:opacity-50"
+                          onClick={() => {
+                            // Create a temporary link to download the image
+                            const link = document.createElement('a');
+                            link.href = user.profileImageUrl!;
+                            link.download = `perfil-${user.fullName.replace(/\s+/g, '-').toLowerCase()}.jpg`;
+                            document.body.appendChild(link);
+                            link.click();
+                            document.body.removeChild(link);
+                          }}
+                          className="inline-flex items-center px-4 py-2 border-2 border-[#3ea0c9] rounded-md text-sm font-medium text-white bg-transparent hover:bg-[#3ea0c9] hover:bg-opacity-20 cursor-pointer transition-colors"
                         >
-                          ✓ Guardar Nuevo
+                          <svg className="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                          </svg>
+                          Descargar Imagen
                         </button>
                         <button
-                          onClick={removeImage}
-                          className="inline-flex items-center px-3 py-2 bg-red-600 text-white text-sm rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-white cursor-pointer transition-colors"
+                          onClick={() => window.open(user.profileImageUrl!, '_blank')}
+                          className="inline-flex items-center px-4 py-2 border-2 border-[#90e2f8] rounded-md text-sm font-medium text-white bg-transparent hover:bg-[#90e2f8] hover:bg-opacity-20 cursor-pointer transition-colors"
                         >
-                          ✕ Cancelar
+                          <svg className="w-4 h-4 mr-2 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                          </svg>
+                          Ver en Nueva Pestaña
                         </button>
+                      </div>
+                    ) : (
+                      <div className="text-center">
+                        <p className="text-sm text-[#B7C2D6] mb-2">El usuario no ha subido una imagen de perfil</p>
+                        <p className="text-xs text-[#B7C2D6]">No hay imagen disponible para descargar</p>
                       </div>
                     )}
                   </div>
@@ -799,12 +714,16 @@ export default function EditUserPage() {
 
                 <div className="mt-4">
                   <p className="text-sm text-[#B7C2D6]">
-                    <strong>Imagen actual:</strong> {user?.profileImageUrl ? 'Imagen subida' : 'Sin imagen'}
-                    {imagePreview && ' (Nueva imagen seleccionada)'}
+                    <strong>Estado:</strong> {user?.profileImageUrl ? 'Imagen disponible para descargar' : 'Sin imagen de perfil'}
                   </p>
                   <p className="text-xs text-[#B7C2D6] mt-1">
-                    JPG o PNG. Tamaño máximo: 5MB. Se optimizará automáticamente.
+                    Descarga esta imagen para subirla manualmente a Facebook Business Manager
                   </p>
+                  {user?.profileImageUrl && (
+                    <p className="text-xs text-[#3ea0c9] mt-1">
+                      <strong>URL de la imagen:</strong> <span className="break-all">{user.profileImageUrl}</span>
+                    </p>
+                  )}
                 </div>
               </div>
 

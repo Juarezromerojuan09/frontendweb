@@ -505,9 +505,10 @@ export default function SignupPage() {
                 <div className="flex items-center space-x-6">
                   {imagePreview ? (
                     <div className="relative">
-                      <Image
+                      {/* Usar img normal para data URLs en lugar de Next.js Image */}
+                      <img
                         src={imagePreview}
-                        alt="Preview"
+                        alt="Vista previa de imagen de perfil"
                         width={80}
                         height={80}
                         className="w-20 h-20 rounded-full object-cover border-2 border-[#3ea0c9]"
@@ -519,6 +520,7 @@ export default function SignupPage() {
                           setImagePreview('');
                         }}
                         className="absolute -top-2 -right-2 bg-red-600 text-white rounded-full w-6 h-6 text-xs flex items-center justify-center hover:bg-red-700"
+                        aria-label="Eliminar imagen"
                       >
                         ✕
                       </button>
