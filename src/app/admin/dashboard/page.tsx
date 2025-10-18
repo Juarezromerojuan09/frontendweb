@@ -88,6 +88,12 @@ interface SocketAllNotificationsMarkedRead {
   error?: string
 }
 
+interface SocketNotificationDeleted {
+  success: boolean
+  notificationId?: string
+  error?: string
+}
+
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -224,6 +230,33 @@ export default function AdminDashboard() {
     }
   }, [socket])
 
+  const deleteNotification = useCallback(async (notificationId: string) => {
+    try {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+      const adminToken = localStorage.getItem('adminToken')
+      
+      const response = await axios.delete(`${apiUrl}/api/notifications/${notificationId}`, {
+        headers: {
+          Authorization: `Bearer ${adminToken}`
+        }
+      })
+
+      if (response.data.success) {
+        // Remover notificación del estado local
+        setNotifications(prev => prev.filter(n => n._id !== notificationId))
+        
+        // Actualizar contador de no leídos si la notificación no estaba leída
+        const deletedNotification = notifications.find(n => n._id === notificationId)
+        if (deletedNotification && !deletedNotification.isRead) {
+          setUnreadCount(prev => Math.max(0, prev - 1))
+        }
+      }
+    } catch (err) {
+      console.error('Error eliminando notificación:', err)
+      alert('Error al eliminar la notificación')
+    }
+  }, [notifications])
+
   useEffect(() => {
     checkAuth()
     fetchUsers()
@@ -299,6 +332,14 @@ export default function AdminDashboard() {
         console.log('✅ Todas las notificaciones marcadas como leídas:', data)
         if (data.success) {
           // El estado ya se actualiza automáticamente por state-update
+        }
+      })
+
+      newSocket.on('notification-deleted', (data: SocketNotificationDeleted) => {
+        console.log('🗑️ Notificación eliminada:', data)
+        if (data.success && data.notificationId) {
+          // Remover notificación del estado local
+          setNotifications(prev => prev.filter(n => n._id !== data.notificationId))
         }
       })
 
@@ -588,7 +629,7 @@ export default function AdminDashboard() {
                     notifications.map((notification) => (
                       <div
                         key={notification._id}
-                        className={`p-3 rounded-lg mb-2 border cursor-pointer ${
+                        className={`p-3 rounded-lg mb-2 border cursor-pointer relative group ${
                           notification.isRead
                             ? 'border-[#012f78] bg-[#0b1e34]'
                             : 'border-[#3ea0c9] bg-[#012f78]'
@@ -606,6 +647,20 @@ export default function AdminDashboard() {
                           }
                         }}
                       >
+                        {/* Botón de eliminar (X) */}
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            if (confirm('¿Estás seguro de que quieres eliminar esta notificación?')) {
+                              deleteNotification(notification._id);
+                            }
+                          }}
+                          className="absolute -top-2 -right-2 w-6 h-6 bg-red-600 hover:bg-red-700 text-white rounded-full flex items-center justify-center text-xs font-bold opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                          title="Eliminar notificación"
+                        >
+                          ×
+                        </button>
+
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
                             <h4 className="font-semibold text-white text-sm">
