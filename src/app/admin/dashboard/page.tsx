@@ -5,6 +5,7 @@ import axios from 'axios'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
 import Image from 'next/image'
+import { io, Socket } from 'socket.io-client'
 
 interface ApiResponse {
   success: boolean
@@ -51,6 +52,42 @@ interface Notification {
   createdAt: string
 }
 
+interface SocketInitialState {
+  notifications: Notification[]
+  unreadCount: number
+  message: string
+}
+
+interface SocketNewNotification {
+  notification: Notification
+  unreadCount: number
+}
+
+interface SocketStateUpdate {
+  unreadCount: number
+  timestamp: string
+}
+
+interface SocketNewUser {
+  user: User
+  timestamp: string
+}
+
+interface SocketHeartbeat {
+  timestamp: string
+}
+
+interface SocketNotificationMarkedRead {
+  success: boolean
+  notificationId?: string
+  error?: string
+}
+
+interface SocketAllNotificationsMarkedRead {
+  success: boolean
+  error?: string
+}
+
 export default function AdminDashboard() {
   const [users, setUsers] = useState<User[]>([])
   const [filteredUsers, setFilteredUsers] = useState<User[]>([])
@@ -62,6 +99,7 @@ export default function AdminDashboard() {
   const [unreadCount, setUnreadCount] = useState(0)
   const [showNotifications, setShowNotifications] = useState(false)
   const [notificationsLoading, setNotificationsLoading] = useState(false)
+  const [socket, setSocket] = useState<any>(null)
   const router = useRouter()
 
   const checkAuth = useCallback(() => {
@@ -126,45 +164,65 @@ export default function AdminDashboard() {
 
   const markNotificationAsRead = useCallback(async (notificationId: string) => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const adminToken = localStorage.getItem('adminToken')
-      
-      const response = await axios.patch(`${apiUrl}/api/notifications/${notificationId}/read`, {}, {
-        headers: {
-          Authorization: `Bearer ${adminToken}`
-        }
-      })
-
-      if (response.data.success) {
+      if (socket) {
+        socket.emit('mark-notification-read', { notificationId });
+        
+        // Actualizar estado local inmediatamente para mejor UX
         setNotifications(prev =>
           prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
         )
         setUnreadCount(prev => Math.max(0, prev - 1))
+      } else {
+        // Fallback a HTTP si no hay socket
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const adminToken = localStorage.getItem('adminToken')
+        
+        const response = await axios.patch(`${apiUrl}/api/notifications/${notificationId}/read`, {}, {
+          headers: {
+            Authorization: `Bearer ${adminToken}`
+          }
+        })
+
+        if (response.data.success) {
+          setNotifications(prev =>
+            prev.map(n => n._id === notificationId ? { ...n, isRead: true } : n)
+          )
+          setUnreadCount(prev => Math.max(0, prev - 1))
+        }
       }
     } catch (err) {
       console.error('Error marcando notificación como leída:', err)
     }
-  }, [])
+  }, [socket])
 
   const markAllNotificationsAsRead = useCallback(async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
-      const adminToken = localStorage.getItem('adminToken')
-      
-      const response = await axios.patch(`${apiUrl}/api/notifications/mark-all-read`, {}, {
-        headers: {
-          Authorization: `Bearer ${adminToken}`
-        }
-      })
-
-      if (response.data.success) {
+      if (socket) {
+        socket.emit('mark-all-notifications-read');
+        
+        // Actualizar estado local inmediatamente para mejor UX
         setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
         setUnreadCount(0)
+      } else {
+        // Fallback a HTTP si no hay socket
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
+        const adminToken = localStorage.getItem('adminToken')
+        
+        const response = await axios.patch(`${apiUrl}/api/notifications/mark-all-read`, {}, {
+          headers: {
+            Authorization: `Bearer ${adminToken}`
+          }
+        })
+
+        if (response.data.success) {
+          setNotifications(prev => prev.map(n => ({ ...n, isRead: true })))
+          setUnreadCount(0)
+        }
       }
     } catch (err) {
       console.error('Error marcando todas las notificaciones como leídas:', err)
     }
-  }, [])
+  }, [socket])
 
   useEffect(() => {
     checkAuth()
@@ -176,84 +234,91 @@ export default function AdminDashboard() {
       setAdminUsername(username)
     }
 
-    // Configurar SSE para notificaciones en tiempo real
+    // Configurar WebSocket para notificaciones en tiempo real
     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
     const adminToken = localStorage.getItem('adminToken')
     
     if (adminToken) {
-      // Para SSE, pasamos el token como parámetro de consulta ya que EventSource no soporta headers
-      const eventSource = new EventSource(`${apiUrl}/api/sse/notifications/stream?token=${adminToken}`)
-
-      eventSource.onopen = () => {
-        console.log('🔗 Conexión SSE establecida')
-      }
-
-      eventSource.onmessage = (event) => {
-        console.log('📨 Evento SSE recibido:', event)
-      }
-
-      eventSource.addEventListener('connected', (event) => {
-        console.log('✅ Conexión SSE confirmada:', event)
+      // Configurar Socket.IO
+      const newSocket = io(apiUrl, {
+        auth: {
+          token: adminToken
+        },
+        transports: ['websocket', 'polling']
       })
 
-      eventSource.addEventListener('initial-state', (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          console.log('📊 Estado inicial recibido:', data)
-          if (data.notifications) {
-            setNotifications(data.notifications)
-          }
-          if (data.unreadCount !== undefined) {
-            setUnreadCount(data.unreadCount)
-          }
-        } catch (error) {
-          console.error('Error parseando estado inicial:', error)
+      newSocket.on('connect', () => {
+        console.log('🔗 Conexión WebSocket establecida:', newSocket.id)
+      })
+
+      newSocket.on('initial-state', (data: SocketInitialState) => {
+        console.log('📊 Estado inicial recibido:', data)
+        if (data.notifications) {
+          setNotifications(data.notifications)
+        }
+        if (data.unreadCount !== undefined) {
+          setUnreadCount(data.unreadCount)
         }
       })
 
-      eventSource.addEventListener('new-notification', (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          console.log('🆕 Nueva notificación recibida:', data)
-          
-          // Agregar la nueva notificación al principio de la lista
-          setNotifications(prev => [data.notification, ...prev])
-          
-          // Incrementar contador de no leídos
-          setUnreadCount(prev => prev + 1)
-        } catch (error) {
-          console.error('Error parseando nueva notificación:', error)
+      newSocket.on('new-notification', (data: SocketNewNotification) => {
+        console.log('🆕 Nueva notificación recibida:', data)
+        
+        // Agregar la nueva notificación al principio de la lista
+        setNotifications(prev => [data.notification, ...prev])
+        
+        // Actualizar contador de no leídos
+        setUnreadCount(data.unreadCount)
+      })
+
+      newSocket.on('state-update', (data: SocketStateUpdate) => {
+        console.log('📈 Actualización de estado:', data)
+        if (data.unreadCount !== undefined) {
+          setUnreadCount(data.unreadCount)
         }
       })
 
-      eventSource.addEventListener('state-update', (event) => {
-        try {
-          const data = JSON.parse(event.data)
-          console.log('📈 Actualización de estado:', data)
-          if (data.unreadCount !== undefined) {
-            setUnreadCount(data.unreadCount)
-          }
-        } catch (error) {
-          console.error('Error parseando actualización de estado:', error)
+      newSocket.on('new-user', (data: SocketNewUser) => {
+        console.log('👤 Nuevo usuario recibido:', data)
+        // Recargar lista de usuarios cuando se registra un nuevo usuario
+        fetchUsers()
+      })
+
+      newSocket.on('heartbeat', (data: SocketHeartbeat) => {
+        console.log('💓 Heartbeat WebSocket recibido:', data)
+      })
+
+      newSocket.on('notification-marked-read', (data: SocketNotificationMarkedRead) => {
+        console.log('✅ Notificación marcada como leída:', data)
+        if (data.success) {
+          // Actualizar estado local si es necesario
         }
       })
 
-      eventSource.addEventListener('heartbeat', (event) => {
-        console.log('💓 Heartbeat SSE recibido:', event.data)
+      newSocket.on('all-notifications-marked-read', (data: SocketAllNotificationsMarkedRead) => {
+        console.log('✅ Todas las notificaciones marcadas como leídas:', data)
+        if (data.success) {
+          // El estado ya se actualiza automáticamente por state-update
+        }
       })
 
-      eventSource.onerror = (error) => {
-        console.error('❌ Error en conexión SSE:', error)
+      newSocket.on('disconnect', () => {
+        console.log('🔌 Conexión WebSocket desconectada')
+      })
+
+      newSocket.on('connect_error', (error: Error) => {
+        console.error('❌ Error de conexión WebSocket:', error)
         // Reconectar automáticamente después de 5 segundos
         setTimeout(() => {
-          console.log('🔄 Intentando reconectar SSE...')
-          // La reconexión se maneja automáticamente por EventSource
+          console.log('🔄 Intentando reconectar WebSocket...')
         }, 5000)
-      }
+      })
+
+      setSocket(newSocket)
 
       return () => {
-        console.log('🔌 Cerrando conexión SSE')
-        eventSource.close()
+        console.log('🔌 Cerrando conexión WebSocket')
+        newSocket.close()
       }
     }
   }, [checkAuth, fetchUsers, fetchNotifications])
