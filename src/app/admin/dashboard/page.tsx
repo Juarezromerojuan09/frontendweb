@@ -588,11 +588,23 @@ export default function AdminDashboard() {
                     notifications.map((notification) => (
                       <div
                         key={notification._id}
-                        className={`p-3 rounded-lg mb-2 border ${
+                        className={`p-3 rounded-lg mb-2 border cursor-pointer ${
                           notification.isRead
                             ? 'border-[#012f78] bg-[#0b1e34]'
                             : 'border-[#3ea0c9] bg-[#012f78]'
-                        }`}
+                        } hover:border-[#90e2f8] hover:bg-[#012f78] transition-colors`}
+                        onClick={() => {
+                          // Marcar como leída al hacer clic
+                          if (!notification.isRead) {
+                            markNotificationAsRead(notification._id);
+                          }
+                          
+                          // Redirigir si hay URL en los datos
+                          if (notification.data?.redirectUrl) {
+                            setShowNotifications(false);
+                            router.push(notification.data.redirectUrl);
+                          }
+                        }}
                       >
                         <div className="flex justify-between items-start">
                           <div className="flex-1">
@@ -605,10 +617,21 @@ export default function AdminDashboard() {
                             <p className="text-[#76b2f2] text-xs mt-2">
                               {new Date(notification.createdAt).toLocaleString('es-ES')}
                             </p>
+                            {notification.data?.redirectUrl && (
+                              <p className="text-[#3ea0c9] text-xs mt-1 flex items-center">
+                                <svg className="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                                </svg>
+                                Haz clic para ver detalles
+                              </p>
+                            )}
                           </div>
                           {!notification.isRead && (
                             <button
-                              onClick={() => markNotificationAsRead(notification._id)}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                markNotificationAsRead(notification._id);
+                              }}
                               className="ml-2 px-2 py-1 text-xs bg-green-600 hover:bg-green-700 text-white rounded transition-colors"
                             >
                               Listo
