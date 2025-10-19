@@ -158,20 +158,44 @@ export default function ConfiguracionPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const token = localStorage.getItem('token')
       
+      if (!token) {
+        console.warn('No hay token disponible para obtener estado de Google')
+        // En caso de no tener token, mostrar el botón para permitir la verificación
+        setGoogleStatus({
+          isGoogleVerified: false,
+          googleEmail: undefined
+        })
+        return
+      }
+
+      console.log('🔍 Obteniendo estado de Google OAuth...')
       const response = await axios.get(`${apiUrl}/api/auth/google/status`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
 
+      console.log('✅ Respuesta de estado Google:', response.data)
+
       if (response.data.success) {
         setGoogleStatus({
           isGoogleVerified: response.data.isGoogleVerified,
           googleEmail: response.data.googleEmail
         })
+      } else {
+        // Si la respuesta no es exitosa, mostrar el botón
+        setGoogleStatus({
+          isGoogleVerified: false,
+          googleEmail: undefined
+        })
       }
     } catch (err) {
-      console.error('Error obteniendo estado de Google:', err)
+      console.error('❌ Error obteniendo estado de Google:', err)
+      // En caso de error, asumir que no está verificado para mostrar el botón
+      setGoogleStatus({
+        isGoogleVerified: false,
+        googleEmail: undefined
+      })
     }
   }, [])
 
@@ -370,18 +394,41 @@ export default function ConfiguracionPage() {
       const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000'
       const token = localStorage.getItem('token')
       
+      if (!token) {
+        setError('No hay token de autenticación disponible. Por favor, inicia sesión nuevamente.')
+        setVerifyingGoogle(false)
+        return
+      }
+
+      console.log('🚀 Iniciando verificación de Google OAuth...')
       const response = await axios.get(`${apiUrl}/api/auth/google/verify`, {
         headers: {
           Authorization: `Bearer ${token}`
         }
       })
 
+      console.log('✅ Respuesta de verificación Google:', response.data)
+
       if (response.data.success && response.data.authorizeUrl) {
         // Redirigir a Google OAuth
+        console.log('🔗 Redirigiendo a:', response.data.authorizeUrl)
         window.location.href = response.data.authorizeUrl
+      } else {
+        setError('No se pudo obtener la URL de autorización de Google. Verifica la configuración del servidor.')
+        setVerifyingGoogle(false)
       }
-    } catch (err) {
-      setError('Error iniciando verificación de Google')
+    } catch (err: any) {
+      console.error('❌ Error iniciando verificación de Google:', err)
+      
+      // Mensaje de error más específico
+      if (err.response?.status === 401) {
+        setError('Sesión expirada. Por favor, inicia sesión nuevamente.')
+      } else if (err.response?.status === 500) {
+        setError('Error del servidor. Verifica que las credenciales de Google OAuth estén configuradas correctamente.')
+      } else {
+        setError('Error iniciando verificación de Google. Verifica tu conexión a internet.')
+      }
+      
       setVerifyingGoogle(false)
     }
   }
