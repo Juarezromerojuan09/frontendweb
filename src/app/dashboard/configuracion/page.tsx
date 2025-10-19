@@ -1274,16 +1274,17 @@ export default function ConfiguracionPage() {
                               )}
                             </button>
                           ) : (
-                          <button
-                            onClick={revokeGoogleAccount}
-                            className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
-                          >
-                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
-                            </svg>
-                            <span>Desconectar</span>
-                          </button>
-                        )}
+                            <button
+                              onClick={revokeGoogleAccount}
+                              className="bg-red-600 hover:bg-red-700 text-white px-4 py-2 rounded-lg flex items-center space-x-2"
+                            >
+                              <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
+                              </svg>
+                              <span>Desconectar</span>
+                            </button>
+                          )
+                        })()}
                       </div>
                       
                       <div className="text-[#90e2f8] text-sm bg-[#012f78] p-3 rounded-lg border border-[#3ea0c9]">
