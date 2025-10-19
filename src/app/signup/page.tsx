@@ -346,9 +346,6 @@ export default function SignupPage() {
                     value={formData.email}
                     onChange={handleChange}
                   />
-                  <p className="mt-1 text-xs text-gray-400">
-                    Debe ser un correo Gmail para la conexión con Google Calendar
-                  </p>
                 </div>
                 <div>
                   <label htmlFor="personalPhone" className="block text-sm font-medium text-white">
