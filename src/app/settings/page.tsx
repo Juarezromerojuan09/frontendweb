@@ -26,6 +26,14 @@ interface AxiosError {
   }
 }
 
+interface GoogleCredentials {
+  client_id?: string
+  client_secret?: string
+  refresh_token?: string
+  access_token?: string
+  token_expiry?: string
+}
+
 interface User {
   _id: string
   username: string
@@ -42,6 +50,7 @@ interface User {
   website?: string
   profileImageUrl?: string
   status: 'pending_verification' | 'active' | 'suspended'
+  googleCredentials?: GoogleCredentials
   createdAt: string
   updatedAt?: string
 }
@@ -685,6 +694,23 @@ export default function Settings() {
                             >
                               <PencilIcon />
                             </button>
+                            {/* Botón Verificar - Solo visible si las credenciales de Google están vacías */}
+                            {user.googleCredentials &&
+                             (!user.googleCredentials.client_id ||
+                              !user.googleCredentials.client_secret ||
+                              !user.googleCredentials.refresh_token) && (
+                              <button
+                                onClick={() => {
+                                  // Aquí puedes agregar la lógica para la verificación de Google
+                                  setSuccess('Redirigiendo a verificación de Google...');
+                                  // Por ahora solo mostramos un mensaje
+                                  setTimeout(() => setSuccess(''), 3000);
+                                }}
+                                className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm ml-2"
+                              >
+                                Verificar
+                              </button>
+                            )}
                           </div>
                         )}
                       </div>
