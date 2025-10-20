@@ -711,9 +711,23 @@ export default function Settings() {
                                       return;
                                     }
 
-                                    // Redirigir directamente al endpoint de Google OAuth
-                                    // El backend manejará la autenticación y redirección a Google
-                                    window.location.href = `${apiUrl}/api/auth/google`;
+                                    // Hacer fetch al backend enviando el JWT en el header Authorization
+                                    const response = await fetch(`${apiUrl}/api/auth/google`, {
+                                      method: 'GET',
+                                      headers: {
+                                        'Authorization': `Bearer ${token}`,
+                                        'Content-Type': 'application/json'
+                                      }
+                                    });
+
+                                    const data = await response.json();
+
+                                    if (data.success && data.authUrl) {
+                                      // Redirigir al usuario a Google usando la URL de autorización recibida
+                                      window.location.href = data.authUrl;
+                                    } else {
+                                      setError(data.message || 'Error al conectar con Google. Intenta nuevamente.');
+                                    }
                                   } catch (error) {
                                     console.error('Error al iniciar autenticación de Google:', error);
                                     setError('Error al conectar con Google. Intenta nuevamente.');
