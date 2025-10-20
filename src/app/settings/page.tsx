@@ -694,21 +694,41 @@ export default function Settings() {
                             >
                               <PencilIcon />
                             </button>
-                            {/* Botón Verificar - Solo visible si las credenciales de Google están vacías */}
-                            {user.googleCredentials &&
-                             (!user.googleCredentials.client_id ||
+                            {/* Botón Verificar - Solo visible si las credenciales de Google están vacías o no existen */}
+                            {(!user.googleCredentials ||
+                              !user.googleCredentials.client_id ||
                               !user.googleCredentials.client_secret ||
                               !user.googleCredentials.refresh_token) && (
                               <button
-                                onClick={() => {
-                                  // Aquí puedes agregar la lógica para la verificación de Google
-                                  setSuccess('Redirigiendo a verificación de Google...');
-                                  // Por ahora solo mostramos un mensaje
-                                  setTimeout(() => setSuccess(''), 3000);
+                                onClick={async () => {
+                                  try {
+                                    setLoading(true);
+                                    const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+                                    const token = localStorage.getItem('token');
+                                    
+                                    const response = await axios.get(`${apiUrl}/api/auth/google`, {
+                                      headers: {
+                                        Authorization: `Bearer ${token}`
+                                      }
+                                    });
+
+                                    if (response.data.success) {
+                                      // Redirigir a la URL de autenticación de Google
+                                      window.location.href = response.data.authUrl;
+                                    } else {
+                                      setError('Error al iniciar la verificación de Google');
+                                    }
+                                  } catch (error) {
+                                    console.error('Error al iniciar autenticación de Google:', error);
+                                    setError('Error al conectar con Google. Intenta nuevamente.');
+                                  } finally {
+                                    setLoading(false);
+                                  }
                                 }}
-                                className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm ml-2"
+                                disabled={loading}
+                                className="bg-yellow-600 hover:bg-yellow-700 text-white px-3 py-1 rounded text-sm ml-2 disabled:opacity-50"
                               >
-                                Verificar
+                                {loading ? 'Cargando...' : 'Verificar'}
                               </button>
                             )}
                           </div>
