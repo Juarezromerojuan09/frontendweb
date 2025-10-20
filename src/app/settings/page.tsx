@@ -706,18 +706,14 @@ export default function Settings() {
                                     const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
                                     const token = localStorage.getItem('token');
                                     
-                                    const response = await axios.get(`${apiUrl}/api/auth/google`, {
-                                      headers: {
-                                        Authorization: `Bearer ${token}`
-                                      }
-                                    });
-
-                                    if (response.data.success) {
-                                      // Redirigir a la URL de autenticación de Google
-                                      window.location.href = response.data.authUrl;
-                                    } else {
-                                      setError('Error al iniciar la verificación de Google');
+                                    if (!token) {
+                                      setError('No estás autenticado. Por favor, inicia sesión nuevamente.');
+                                      return;
                                     }
+
+                                    // Redirigir directamente al endpoint de Google OAuth
+                                    // El backend manejará la autenticación y redirección a Google
+                                    window.location.href = `${apiUrl}/api/auth/google`;
                                   } catch (error) {
                                     console.error('Error al iniciar autenticación de Google:', error);
                                     setError('Error al conectar con Google. Intenta nuevamente.');
