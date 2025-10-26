@@ -569,7 +569,7 @@ export default function BotFlowSettings() {
 
   // Funciones para manejar servicios de agendamiento dentro del primer menuItem
   const getScheduleItem = () => {
-    return menuItemsEdit.find(item => item.label === 'Agendar cita' || item.actionKey === 'schedule') || menuItemsEdit[0];
+    return menuItemsEdit.find(item => item.actionKey === 'schedule') || menuItemsEdit[0];
   }
 
   const getScheduleServices = () => {
