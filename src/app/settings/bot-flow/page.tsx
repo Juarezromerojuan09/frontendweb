@@ -1814,7 +1814,7 @@ export default function BotFlowSettings() {
                         <li><strong>Texto Largo</strong>: Para mensajes extensos o comentarios</li>
                       </ul>
                       <p className="text-xs sm:text-sm text-[#90e2f8]">
-                        <strong>Nota sobre "Para modificar":</strong> Solo un campo puede estar marcado como "Para modificar".
+                        <strong>Nota sobre "Necesario para modificar":</strong> Solo un campo puede estar marcado como "Necesario para modificar".
                         Este campo se utilizará para identificar al usuario cuando quiera modificar o cancelar una cita.
                       </p>
                       
@@ -1862,7 +1862,7 @@ export default function BotFlowSettings() {
                                     onChange={(e) => updateFormField(field.key, 'toModified', e.target.checked)}
                                     className="mr-2"
                                   />
-                                  <span className="text-[#B7C2D6] text-xs sm:text-sm">Para modificar</span>
+                                  <span className="text-[#B7C2D6] text-xs sm:text-sm">Necesario para modificar</span>
                                 </div>
                               </div>
                               <div className="space-y-2 mt-2 sm:mt-3">
