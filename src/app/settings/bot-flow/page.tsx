@@ -374,9 +374,23 @@ export default function BotFlowSettings() {
         setMenuItemErrors(prev => ({ ...prev, [id]: '' }))
       }
     }
+
+    // Manejar actionKey para que sea exclusivo
+    let updatedValue = value;
+    if (field === 'actionKey' && typeof value === 'string') {
+      // Si se está estableciendo un actionKey, eliminar cualquier otro actionKey del mismo tipo
+      if (value === 'schedule' || value === 'modify') {
+        setMenuItemsEdit(menuItemsEdit.map(item =>
+          item.id === id
+            ? { ...item, [field]: value }
+            : (item.actionKey === value ? { ...item, actionKey: undefined } : item)
+        ))
+        return;
+      }
+    }
     
     setMenuItemsEdit(menuItemsEdit.map(item =>
-      item.id === id ? { ...item, [field]: value } : item
+      item.id === id ? { ...item, [field]: updatedValue } : item
     ))
   }
 
@@ -1483,15 +1497,27 @@ export default function BotFlowSettings() {
                                 </select>
 
                                 {item.type === 'action' && (
-                                  <div className="flex items-center space-x-2 mt-2">
-                                    <input
-                                      type="checkbox"
-                                      checked={item.actionKey === 'schedule'}
-                                      onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.checked ? 'schedule' : undefined)}
-                                      className="rounded"
-                                      disabled={isItemFixed(item)}
-                                    />
-                                    <span className="text-[#B7C2D6] text-xs sm:text-sm">Usar para agendamiento</span>
+                                  <div className="space-y-2 mt-2">
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={item.actionKey === 'schedule'}
+                                        onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.checked ? 'schedule' : undefined)}
+                                        className="rounded"
+                                        disabled={isItemFixed(item)}
+                                      />
+                                      <span className="text-[#B7C2D6] text-xs sm:text-sm">Usar para agendamiento</span>
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                      <input
+                                        type="checkbox"
+                                        checked={item.actionKey === 'modify'}
+                                        onChange={(e) => updateMenuItem(item.id, 'actionKey', e.target.checked ? 'modify' : undefined)}
+                                        className="rounded"
+                                        disabled={isItemFixed(item)}
+                                      />
+                                      <span className="text-[#B7C2D6] text-xs sm:text-sm">Usar para modificar o cancelar agendamiento</span>
+                                    </div>
                                   </div>
                                 )}
                                 
