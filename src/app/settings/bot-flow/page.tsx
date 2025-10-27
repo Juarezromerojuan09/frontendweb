@@ -230,7 +230,23 @@ export default function BotFlowSettings() {
       }
       
       setMenuItemsEdit(menuItems)
-      setFormFieldsEdit(user.botSettings.formFields || [])
+      
+      // Procesar formFields para asegurar que al menos un campo tenga toModified: true
+      let formFields = user.botSettings.formFields || []
+      if (formFields.length > 0) {
+        // Verificar si algún campo tiene toModified: true
+        const hasToModifiedField = formFields.some(field => field.toModified === true)
+        
+        // Si no hay ningún campo con toModified: true, marcar el primer campo
+        if (!hasToModifiedField) {
+          formFields = formFields.map((field, index) => ({
+            ...field,
+            toModified: index === 0
+          }))
+        }
+      }
+      
+      setFormFieldsEdit(formFields)
     }
   }, [user])
 
@@ -425,7 +441,16 @@ export default function BotFlowSettings() {
       required: false,
       toModified: isFirstField
     }
-    setFormFieldsEdit([...formFieldsEdit, newField])
+    
+    // Si no es el primer campo, mantener la selección actual
+    let updatedFields;
+    if (isFirstField) {
+      updatedFields = [newField];
+    } else {
+      updatedFields = [...formFieldsEdit, newField];
+    }
+    
+    setFormFieldsEdit(updatedFields)
   }
 
   const removeFormField = (key: string) => {
