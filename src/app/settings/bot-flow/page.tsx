@@ -61,6 +61,7 @@ interface BotSettings {
     label: string
     type: string
     required: boolean
+    toModified: boolean
   }>
   messages: {
     scheduleConfirmation: string
@@ -146,7 +147,7 @@ export default function BotFlowSettings() {
   const [cancellationConfirmationEdit, setCancellationConfirmationEdit] = useState('Cita cancelada.')
   const [orderAcknowledgementEdit, setOrderAcknowledgementEdit] = useState('Gracias. En breve un encargado le responderá.')
   const [menuItemsEdit, setMenuItemsEdit] = useState<MenuItem[]>([])
-  const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean}>>([])
+  const [formFieldsEdit, setFormFieldsEdit] = useState<Array<{key: string, label: string, type: string, required: boolean, toModified: boolean}>>([])
   const [menuItemErrors, setMenuItemErrors] = useState<{[key: string]: string}>({})
   const [formFieldErrors, setFormFieldErrors] = useState<{[key: string]: string}>({})
   const [serviceErrors, setServiceErrors] = useState<{[key: string]: string}>({})
@@ -256,9 +257,9 @@ export default function BotFlowSettings() {
           { id: '4', label: 'Ubicación y horarios', type: 'action', actionKey: 'location' }
         ],
         formFields: [
-          { key: 'name', label: 'Nombre completo', type: 'text', required: true },
-          { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
-          { key: 'date', label: 'Fecha preferida', type: 'date', required: true }
+          { key: 'name', label: 'Nombre completo', type: 'text', required: true, toModified: true },
+          { key: 'phone', label: 'Teléfono', type: 'tel', required: true, toModified: false },
+          { key: 'date', label: 'Fecha preferida', type: 'date', required: true, toModified: false }
         ],
         scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
       },
@@ -284,9 +285,9 @@ export default function BotFlowSettings() {
           { id: '5', label: 'Paquetes completos', type: 'action', actionKey: 'prices' }
         ],
         formFields: [
-          { key: 'name', label: 'Nombre', type: 'text', required: true },
-          { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
-          { key: 'service', label: 'Servicio', type: 'select', required: true }
+          { key: 'name', label: 'Nombre', type: 'text', required: true, toModified: true },
+          { key: 'phone', label: 'Teléfono', type: 'tel', required: true, toModified: false },
+          { key: 'service', label: 'Servicio', type: 'select', required: true, toModified: false }
         ],
         scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
       },
@@ -298,9 +299,9 @@ export default function BotFlowSettings() {
           { id: '3', label: 'Soporte técnico', type: 'action', actionKey: 'custom' }
         ],
         formFields: [
-          { key: 'name', label: 'Nombre', type: 'text', required: true },
-          { key: 'phone', label: 'Teléfono', type: 'tel', required: true },
-          { key: 'description', label: 'Descripción del servicio', type: 'textarea', required: true }
+          { key: 'name', label: 'Nombre', type: 'text', required: true, toModified: true },
+          { key: 'phone', label: 'Teléfono', type: 'tel', required: true, toModified: false },
+          { key: 'description', label: 'Descripción del servicio', type: 'textarea', required: true, toModified: false }
         ],
         scheduleMessage: "Por favor ingresa la fecha y hora en la cual deseas agendar con nosotros (ejemplo: '15 de julio a las 3pm')"
       },
@@ -414,11 +415,15 @@ export default function BotFlowSettings() {
     const existingKeys = formFieldsEdit.map(field => field.key);
     const newKey = generateUniqueKey(defaultType, existingKeys);
     
+    // Si es el primer campo, toModified será true, de lo contrario false
+    const isFirstField = formFieldsEdit.length === 0;
+    
     const newField = {
       key: newKey,
       label: '',
       type: defaultType,
-      required: false
+      required: false,
+      toModified: isFirstField
     }
     setFormFieldsEdit([...formFieldsEdit, newField])
   }
@@ -533,6 +538,18 @@ export default function BotFlowSettings() {
       } else {
         setFormFieldErrors(prev => ({ ...prev, [key]: '' }))
       }
+    }
+
+    // Manejar la selección exclusiva de toModified
+    if (field === 'toModified' && value === true) {
+      setFormFieldsEdit(formFieldsEdit.map(item => {
+        if (item.key === key) {
+          return { ...item, toModified: true };
+        } else {
+          return { ...item, toModified: false };
+        }
+      }))
+      return;
     }
 
     setFormFieldsEdit(formFieldsEdit.map(item => {
@@ -900,7 +917,8 @@ export default function BotFlowSettings() {
         key: field.key || `field_${Date.now()}`,
         label: field.label || '',
         type: field.type || 'text',
-        required: field.required || false
+        required: field.required || false,
+        toModified: field.toModified || false
       }))
 
       // Validar servicios de agendamiento (ahora dentro del meta del primer menuItem)
