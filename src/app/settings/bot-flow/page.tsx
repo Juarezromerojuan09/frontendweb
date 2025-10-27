@@ -1813,6 +1813,10 @@ export default function BotFlowSettings() {
                         <li><strong>Selección</strong>: Lista desplegable de opciones</li>
                         <li><strong>Texto Largo</strong>: Para mensajes extensos o comentarios</li>
                       </ul>
+                      <p className="text-xs sm:text-sm text-[#90e2f8]">
+                        <strong>Nota sobre "Para modificar":</strong> Solo un campo puede estar marcado como "Para modificar".
+                        Este campo se utilizará para identificar al usuario cuando quiera modificar o cancelar una cita.
+                      </p>
                       
                       {formFieldsEdit.length === 0 ? (
                         <p className="text-[#B7C2D6] text-xs sm:text-sm">No hay campos de formulario configurados.</p>
@@ -1829,7 +1833,7 @@ export default function BotFlowSettings() {
                                   ×
                                 </button>
                               </div>
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3">
+                              <div className="grid grid-cols-1 md:grid-cols-3 gap-2 sm:gap-3">
                                 <select
                                   value={field.type}
                                   onChange={(e) => updateFormField(field.key, 'type', e.target.value)}
@@ -1850,6 +1854,15 @@ export default function BotFlowSettings() {
                                     className="mr-2"
                                   />
                                   <span className="text-[#B7C2D6] text-xs sm:text-sm">Requerido</span>
+                                </div>
+                                <div className="flex items-center">
+                                  <input
+                                    type="checkbox"
+                                    checked={field.toModified}
+                                    onChange={(e) => updateFormField(field.key, 'toModified', e.target.checked)}
+                                    className="mr-2"
+                                  />
+                                  <span className="text-[#B7C2D6] text-xs sm:text-sm">Para modificar</span>
                                 </div>
                               </div>
                               <div className="space-y-2 mt-2 sm:mt-3">
